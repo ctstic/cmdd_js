@@ -71,18 +71,18 @@ export class ScientificDataDto {
   permeability1: string = '' // 透气度基准参数
   quantitative1: string = '' // 定量基准参数
   citrate1: string = '' // 柠檬酸根基准参数
-  potassiumRatio1: string = '' // 钾盐占比基准参数
+  // potassiumRatio1: string = '' // 钾盐占比基准参数
   tar1: string = '' // 焦油基准参数
   nicotine1: string = '' // 烟碱基准参数
   co1: string = '' // CO基准参数
 
   // 第二组数据
-  filterVentilation2: string = '' // 滤嘴通风率预测参数
-  filterPressureDrop2: string = '' // 滤棒压降预测参数
-  permeability2: string = '' // 透气度预测参数
-  quantitative2: string = '' // 定量预测参数
-  citrate2: string = '' // 柠檬酸根预测参数
-  potassiumRatio2: string = '' // 钾盐占比预测参数
+  filterVentilation2: string[] = [] // 滤嘴通风率预测参数数组
+  filterPressureDrop2: string[] = [] // 滤棒压降预测参数数组
+  permeability2: string[] = [] // 透气度预测参数数组
+  quantitative2: string[] = [] // 定量预测参数数组
+  citrate2: string[] = [] // 柠檬酸根预测参数数组
+  // potassiumRatio2: string[] = [] // 钾盐占比预测参数数组
 
   constructor(data: Partial<ScientificDataDto> = {}) {
     Object.assign(this, data)
