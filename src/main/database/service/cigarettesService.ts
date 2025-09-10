@@ -14,18 +14,6 @@ export class CigarettesService {
   private sqlite = db.getSqliteInstance()
 
   /**
-   * 获取所有卷烟数据
-   * @returns 卷烟数据列表，按创建时间倒序排列
-   */
-  public getAllCigarettes(): schema.Cigarettes[] {
-    const results = this.sqlite
-      .prepare('SELECT * FROM cigarettes ORDER BY created_at DESC')
-      .all() as Record<string, unknown>[]
-
-    return results.map((result) => this.mapToCigarettes(result))
-  }
-
-  /**
    * 根据编码搜索卷烟数据
    * @param code 卷烟编码（支持模糊搜索）
    * @returns 匹配的卷烟数据列表

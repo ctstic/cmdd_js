@@ -17,7 +17,6 @@
 
 import { ipcMain } from 'electron'
 import { schema } from './database'
-import { userService } from './database/service/userService'
 import { cigarettesService } from './database/service/cigarettesService'
 import { harmfulService } from './database/service/harmfulService'
 
@@ -29,107 +28,6 @@ export function registerIPC(): void {
   /* -------------------- 基础连通性测试 -------------------- */
   ipcMain.on('ping', () => console.log('[ipc] pong'))
 
-  /* -------------------- 用户管理 -------------------- */
-
-  /**
-   * 创建新用户
-   */
-  ipcMain.handle('user:create', async (_evt, userData: schema.NewUser) => {
-    try {
-      const user = await userService.createUser(userData)
-      return { success: true, data: user }
-    } catch (error) {
-      console.error('[ipc] user:create failed:', error)
-      return { success: false, error: (error as Error).message }
-    }
-  })
-
-  /**
-   * 根据ID获取用户
-   */
-  ipcMain.handle('user:get-by-id', async (_evt, userId: number) => {
-    try {
-      return { success: true, data: userService.getUserById(userId) }
-    } catch (error) {
-      console.error('[ipc] user:get-by-id failed:', error)
-      return { success: false, error: (error as Error).message }
-    }
-  })
-
-  /**
-   * 根据邮箱获取用户
-   */
-  ipcMain.handle('user:get-by-email', async (_evt, email: string) => {
-    try {
-      return { success: true, data: userService.getUserByEmail(email) }
-    } catch (error) {
-      console.error('[ipc] user:get-by-email failed:', error)
-      return { success: false, error: (error as Error).message }
-    }
-  })
-
-  /**
-   * 根据用户名获取用户
-   */
-  ipcMain.handle('user:get-by-username', async (_evt, username: string) => {
-    try {
-      return { success: true, data: userService.getUserByUsername(username) }
-    } catch (error) {
-      console.error('[ipc] user:get-by-username failed:', error)
-      return { success: false, error: (error as Error).message }
-    }
-  })
-
-  /**
-   * 获取所有用户
-   */
-  ipcMain.handle('user:get-all', async () => {
-    try {
-      return { success: true, data: userService.getAllUsers() }
-    } catch (error) {
-      console.error('[ipc] user:get-all failed:', error)
-      return { success: false, error: (error as Error).message }
-    }
-  })
-
-  /**
-   * 更新用户信息
-   */
-  ipcMain.handle('user:update', async (_evt, id: number, updates: Partial<schema.User>) => {
-    try {
-      const user = await userService.updateUser(id, updates)
-      return { success: true, data: user }
-    } catch (error) {
-      console.error('[ipc] user:update failed:', error)
-      return { success: false, error: (error as Error).message }
-    }
-  })
-
-  /**
-   * 删除用户
-   */
-  ipcMain.handle('user:delete', async (_evt, id: number) => {
-    try {
-      await userService.deleteUser(id)
-      return { success: true }
-    } catch (error) {
-      console.error('[ipc] user:delete failed:', error)
-      return { success: false, error: (error as Error).message }
-    }
-  })
-
-  /**
-   * 搜索用户
-   */
-  ipcMain.handle('user:search', async (_evt, query: string) => {
-    try {
-      return { success: true, data: await userService.searchUsers(query) }
-    } catch (error) {
-      console.error('[ipc] user:search failed:', error)
-      return { success: false, error: (error as Error).message }
-    }
-  })
-
   /* -------------------- 多因素卷烟管理 -------------------- */
 
   /**
@@ -140,18 +38,6 @@ export function registerIPC(): void {
       return { success: true, data: cigarettesService.getCigarettes(query) }
     } catch (error) {
       console.error('[ipc] cigarettes:query failed:', error)
-      return { success: false, error: (error as Error).message }
-    }
-  })
-
-  /**
-   * 获取所有卷烟数据
-   */
-  ipcMain.handle('cigarettes:get-all', async () => {
-    try {
-      return { success: true, data: cigarettesService.getAllCigarettes() }
-    } catch (error) {
-      console.error('[ipc] cigarettes:get-all failed:', error)
       return { success: false, error: (error as Error).message }
     }
   })

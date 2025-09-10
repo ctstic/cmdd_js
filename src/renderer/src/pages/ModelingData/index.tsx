@@ -89,16 +89,15 @@ const ModelingData: React.FC = () => {
               cancelText="否"
               onConfirm={async () => {
                 try {
-                  const res = await window.electronAPI.user.getAll()
-                  message.success('删除文献成功')
-                  setTableData(res.data)
-                  // if (actionRef.current) {
-                  //   actionRef.current.reload();
-                  // }
-                  return true
+                  const res = await window.electronAPI.cigarettes.delete(record.id)
+                  if (res.success) {
+                    message.success('删除成功')
+                    setTableData((prevData) => prevData.filter((item) => item.id !== record.id))
+                  } else {
+                    message.error('删除失败，请重试')
+                  }
                 } catch (error) {
                   message.error('删除文献失败，请重试')
-                  return false
                 }
               }}
             >
@@ -119,7 +118,9 @@ const ModelingData: React.FC = () => {
         onClick={async () => {
           setCalculationModal(true)
           try {
-            const res = await window.electronAPI.user.getAll()
+            console.log('1111111111111111111111111')
+
+            const res = await window.electronAPI.harmful.query('')
             message.success('删除文献成功')
             // if (actionRef.current) {
             //   actionRef.current.reload();

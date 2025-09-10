@@ -23,7 +23,7 @@ export class HarmfulService {
    */
   public getHarmful(type: string): schema.HarmfulConstants[] {
     const results = this.sqlite
-      .prepare('SELECT * FROM harmful_constants WHERE type = ? ORDER BY created_at DESC')
+      .prepare('SELECT * FROM harmful_constants WHERE type like ? ORDER BY created_at DESC')
       .all(`%${type}%`) as Record<string, unknown>[]
 
     return results.map((result) => this.mapToHarmfulConstants(result))
