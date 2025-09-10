@@ -12,6 +12,7 @@ const Page = () => {
   // const [loginType, setLoginType] = useState<LoginType>('phone')
   const { token } = theme.useToken()
   const navigate = useNavigate()
+
   return (
     <div
       style={{
@@ -25,10 +26,8 @@ const Page = () => {
         // backgroundVideoUrl="https://gw.alipayobjects.com/v/huamei_gcee1x/afts/video/jXRBRK_VAwoAAAAAAAAAAAAAK4eUAQBr"
         title="Github"
         onFinish={(a) => {
-          console.log(a, 'aaaaaaaa')
+          navigate('/modelingData')
           message.success('登录成功！')
-          // 登录成功后跳转到主页
-          navigate('/home')
         }}
         containerStyle={{
           backgroundColor: 'rgba(0, 0, 0, 0.154)',

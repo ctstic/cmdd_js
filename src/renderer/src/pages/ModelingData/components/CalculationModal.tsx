@@ -18,9 +18,15 @@ export type CalculationModalProps = {
   modalOpen: boolean
   onCancel: () => void
   modalData: any
+  setModalData: React.Dispatch<React.SetStateAction<DataType[]>>
 }
 
-const CalculationModal: React.FC<CalculationModalProps> = ({ modalData, modalOpen, onCancel }) => {
+const CalculationModal: React.FC<CalculationModalProps> = ({
+  modalData,
+  modalOpen,
+  setModalData,
+  onCancel
+}) => {
   const columns: TableProps<DataType>['columns'] = [
     {
       title: '批次号',
@@ -68,14 +74,13 @@ const CalculationModal: React.FC<CalculationModalProps> = ({ modalData, modalOpe
               cancelText="否"
               onConfirm={async () => {
                 try {
-                  const res = await window.electronAPI.user.getAll()
+                  await window.electronAPI.harmful.delete(record.id)
+
+                  const res = await window.electronAPI.harmful.query('')
                   message.success('删除文献成功')
-                  //   setTableData(res.data)
-                  // if (actionRef.current) {
-                  //   actionRef.current.reload();
-                  // }
+                  setModalData(res.data)
                   return true
-                } catch (error) {
+                } catch {
                   message.error('删除文献失败，请重试')
                   return false
                 }
@@ -105,6 +110,22 @@ const CalculationModal: React.FC<CalculationModalProps> = ({ modalData, modalOpe
         }
         onCancel={onCancel}
       >
+        <Button
+          type="primary"
+          onClick={async () => {
+            try {
+              const res = await window.electronAPI.harmful.generate()
+              message.success('删除文献成功')
+              console.log(res, 'aaaaaa')
+              return true
+            } catch {
+              message.error('删除文献失败，请重试')
+              return false
+            }
+          }}
+        >
+          生成系数管理
+        </Button>
         <Table<DataType> rowKey="id" columns={columns} dataSource={modalData} />
       </Modal>
     </>
