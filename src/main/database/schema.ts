@@ -1,23 +1,6 @@
 import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core'
 import { createInsertSchema, createSelectSchema } from 'drizzle-zod'
 
-// 用户表
-export const users = sqliteTable('users', {
-  id: integer('id').primaryKey({ autoIncrement: true }),
-  username: text('username').notNull().unique(),
-  email: text('email').notNull().unique(),
-  fullName: text('full_name'),
-  avatar: text('avatar'),
-  status: text('status', { enum: ['active', 'inactive', 'pending'] }).default('active'),
-  createdAt: integer('created_at', { mode: 'timestamp' })
-    .notNull()
-    .$defaultFn(() => new Date()),
-  updatedAt: integer('updated_at', { mode: 'timestamp' })
-    .notNull()
-    .$defaultFn(() => new Date())
-    .$onUpdateFn(() => new Date())
-})
-
 // 多因素数据表
 export const cigarettes = sqliteTable('cigarettes', {
   id: integer('id').primaryKey({ autoIncrement: true }),
@@ -89,10 +72,6 @@ export class ScientificDataDto {
   }
 }
 
-// Zod 模式用于验证
-export const insertUserSchema = createInsertSchema(users)
-export const selectUserSchema = createSelectSchema(users)
-
 // 🚬 卷烟检测结果表
 export const insertCigaretteSchema = createInsertSchema(cigarettes)
 export const selectCigaretteSchema = createSelectSchema(cigarettes)
@@ -102,20 +81,9 @@ export const insertHarmfulConstantSchema = createInsertSchema(harmfulConstants)
 export const selectHarmfulConstantSchema = createSelectSchema(harmfulConstants)
 
 // 导出类型
-export type User = typeof users.$inferSelect
 export type Cigarettes = typeof cigarettes.$inferSelect
 export type HarmfulConstants = typeof harmfulConstants.$inferSelect
-export type NewUser = typeof users.$inferInsert
-// 默认用户数据
-export const defaultUsers: Omit<User, 'id' | 'createdAt' | 'updatedAt'>[] = [
-  {
-    username: 'admin',
-    email: 'admin@example.com',
-    fullName: '系统管理员',
-    avatar: null,
-    status: 'active'
-  }
-]
+
 // 默认卷烟数据
 export const defaultCigarettes: Omit<Cigarettes, 'id' | 'createdAt' | 'updatedAt'>[] = [
   {

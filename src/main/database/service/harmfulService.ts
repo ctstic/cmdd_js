@@ -30,68 +30,6 @@ export class HarmfulService {
   }
 
   /**
-   * 根据批次号查询有害成分系数
-   * @param batchNo 批次号
-   * @returns 有害成分系数列表
-   */
-  public getHarmfulbatchNo(batchNo: string): schema.HarmfulConstants[] {
-    const results = this.sqlite
-      .prepare('SELECT * FROM harmful_constants WHERE batch_no = ? ORDER BY created_at DESC')
-      .all(batchNo) as Record<string, unknown>[]
-
-    return results.map((result) => this.mapToHarmfulConstants(result))
-  }
-
-  /**
-   * 根据ID获取有害成分系数
-   * @param id 系数ID
-   * @returns 有害成分系数或undefined
-   */
-  public getHarmfulById(id: number): schema.HarmfulConstants | undefined {
-    const result = this.sqlite
-      .prepare('SELECT * FROM harmful_constants WHERE id = ?')
-      .get(id) as Record<string, unknown>
-    if (!result) return undefined
-
-    return this.mapToHarmfulConstants(result)
-  }
-
-  /**
-   * 创建新的有害成分系数记录
-   * @param obj 有害成分系数对象
-   * @returns 创建的有害成分系数
-   */
-  public async createHarmful(obj: schema.HarmfulConstants): Promise<schema.HarmfulConstants> {
-    const now = new Date()
-    const result = this.sqlite
-      .prepare(
-        `
-    INSERT INTO harmful_constants (
-      type, batch_no, changliang,
-      filter_vent_coef, filter_pressure_coef, permeability_coef,
-      quantitative_coef, citrate_coef, potassium_coef,
-      created_at, updated_at
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `
-      )
-      .run(
-        obj.type,
-        obj.batchNo,
-        obj.changliang,
-        obj.filterVentCoef,
-        obj.filterPressureCoef,
-        obj.permeabilityCoef,
-        obj.quantitativeCoef,
-        obj.citrateCoef,
-        obj.potassiumCoef,
-        now.getTime(),
-        now.getTime()
-      )
-
-    return this.getHarmfulById(result.lastInsertRowid as number)!
-  }
-
-  /**
    * 删除有害成分系数记录
    * @param id 系数ID
    */

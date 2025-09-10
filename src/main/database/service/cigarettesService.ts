@@ -27,55 +27,6 @@ export class CigarettesService {
   }
 
   /**
-   * 根据ID获取卷烟数据
-   * @param id 卷烟数据ID
-   * @returns 卷烟数据或undefined
-   */
-  public getCigarettesById(id: number): schema.Cigarettes | undefined {
-    const result = this.sqlite.prepare('SELECT * FROM cigarettes WHERE id = ?').get(id) as Record<
-      string,
-      unknown
-    >
-    if (!result) return undefined
-
-    return this.mapToCigarettes(result)
-  }
-
-  /**
-   * 创建新的卷烟数据记录
-   * @param obj 卷烟数据对象
-   * @returns 创建的卷烟数据
-   */
-  public async createCigarettes(obj: schema.Cigarettes): Promise<schema.Cigarettes> {
-    const now = new Date()
-    const result = this.sqlite
-      .prepare(
-        `
-      INSERT INTO cigarettes (
-            code, filter_ventilation, filter_pressure_drop, permeability, quantitative,
-            citrate, potassium_ratio, tar, nicotine, co, created_at, updated_at
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `
-      )
-      .run(
-        obj.code,
-        obj.filterVentilation,
-        obj.filterPressureDrop,
-        obj.permeability,
-        obj.quantitative,
-        obj.citrate,
-        obj.potassiumRatio,
-        obj.tar,
-        obj.nicotine,
-        obj.co,
-        now.getTime(),
-        now.getTime()
-      )
-
-    return this.getCigarettesById(result.lastInsertRowid as number)!
-  }
-
-  /**
    * 删除卷烟数据记录
    * @param id 卷烟数据ID
    */
