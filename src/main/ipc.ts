@@ -19,6 +19,7 @@ import { ipcMain } from 'electron'
 import { schema } from './database'
 import { cigarettesService } from './database/service/cigarettesService'
 import { harmfulService } from './database/service/harmfulService'
+import { simulationPredictionService } from './database/service/SimulationPredictionService'
 
 /**
  * 注册所有IPC处理程序
@@ -38,30 +39,6 @@ export function registerIPC(): void {
       return { success: true, data: cigarettesService.getCigarettes(query) }
     } catch (error) {
       console.error('[ipc] cigarettes:query failed:', error)
-      return { success: false, error: (error as Error).message }
-    }
-  })
-
-  /**
-   * 根据ID获取卷烟数据
-   */
-  ipcMain.handle('cigarettes:get-by-id', async (_evt, id: number) => {
-    try {
-      return { success: true, data: cigarettesService.getCigarettesById(id) }
-    } catch (error) {
-      console.error('[ipc] cigarettes:get-by-id failed:', error)
-      return { success: false, error: (error as Error).message }
-    }
-  })
-
-  /**
-   * 创建卷烟数据
-   */
-  ipcMain.handle('cigarettes:create', async (_evt, obj: schema.Cigarettes) => {
-    try {
-      return { success: true, data: await cigarettesService.createCigarettes(obj) }
-    } catch (error) {
-      console.error('[ipc] cigarettes:create failed:', error)
       return { success: false, error: (error as Error).message }
     }
   })
@@ -94,42 +71,6 @@ export function registerIPC(): void {
   })
 
   /**
-   * 根据批次号查询有害成分系数
-   */
-  ipcMain.handle('harmful:query-by-batch', async (_evt, batchNo: string) => {
-    try {
-      return { success: true, data: harmfulService.getHarmfulbatchNo(batchNo) }
-    } catch (error) {
-      console.error('[ipc] harmful:query-by-batch failed:', error)
-      return { success: false, error: (error as Error).message }
-    }
-  })
-
-  /**
-   * 根据ID获取有害成分系数
-   */
-  ipcMain.handle('harmful:get-by-id', async (_evt, id: number) => {
-    try {
-      return { success: true, data: harmfulService.getHarmfulById(id) }
-    } catch (error) {
-      console.error('[ipc] harmful:get-by-id failed:', error)
-      return { success: false, error: (error as Error).message }
-    }
-  })
-
-  /**
-   * 创建有害成分系数
-   */
-  ipcMain.handle('harmful:create', async (_evt, obj: schema.HarmfulConstants) => {
-    try {
-      return { success: true, data: await harmfulService.createHarmful(obj) }
-    } catch (error) {
-      console.error('[ipc] harmful:create failed:', error)
-      return { success: false, error: (error as Error).message }
-    }
-  })
-
-  /**
    * 删除有害成分系数
    */
   ipcMain.handle('harmful:delete', async (_evt, id: number) => {
@@ -157,19 +98,23 @@ export function registerIPC(): void {
     }
   })
 
+  /* -------------------- 仿真预测计算 -------------------- */
   /**
    * 仿真预测计算
    * 根据科学数据进行有害成分预测
    */
-  ipcMain.handle('harmful:predict', async (_evt, scientificData: schema.ScientificDataDto) => {
-    try {
-      const result = await harmfulService.findDerivation(scientificData)
-      return { success: true, data: result }
-    } catch (error) {
-      console.error('[ipc] harmful:predict failed:', error)
-      return { success: false, error: (error as Error).message }
+  ipcMain.handle(
+    'simulation:prediction',
+    async (_evt, scientificData: schema.ScientificDataDto) => {
+      try {
+        const result = await simulationPredictionService.calculatePredictions(scientificData)
+        return { success: true, data: result }
+      } catch (error) {
+        console.error('[ipc] simulation:predict failed:', error)
+        return { success: false, error: (error as Error).message }
+      }
     }
-  })
+  )
 
   console.log('[ipc] 所有IPC路由注册完成')
 }

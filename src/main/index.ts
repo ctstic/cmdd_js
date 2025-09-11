@@ -9,7 +9,7 @@
  *   5) 解决编码问题和重复关闭数据库的问题
  */
 
-import { app, BrowserWindow, shell } from 'electron'
+import { app, BrowserWindow } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
@@ -60,7 +60,7 @@ function createMainWindow(): BrowserWindow {
   if (is.dev && process.env.ELECTRON_RENDERER_URL) {
     win.loadURL(process.env.ELECTRON_RENDERER_URL)
     // 开发环境可自动打开 DevTools，提高调试效率（可按需注释）
-    // win.webContents.openDevTools({ mode: 'detach' })
+    win.webContents.openDevTools({ mode: 'detach' })
   } else {
     // 注意：此路径需与构建产物保持一致（electron-vite 默认输出到 ../renderer）
     win.loadFile(join(__dirname, '../renderer/index.html'))
