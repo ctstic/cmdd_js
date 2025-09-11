@@ -29,7 +29,7 @@ export const harmfulConstants = sqliteTable('harmful_constants', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   type: text('type').notNull(), // 有害成分类型
   batchNo: text('batch_no').notNull(), // 批次号
-  changliang: text('changliang').notNull(), //
+  changliang: text('changliang').notNull(), //常量
   filterVentCoef: text('filter_vent_coef').notNull(), // 滤嘴通风率系数
   filterPressureCoef: text('filter_pressure_coef').notNull(), // 滤棒压降(Pa)系数
   permeabilityCoef: text('permeability_coef').notNull(), // 透气度/CU 系数
@@ -46,28 +46,58 @@ export const harmfulConstants = sqliteTable('harmful_constants', {
     .$onUpdateFn(() => new Date())
 })
 
+export interface PredictionParams {
+  // x
+  key: string // 索引
+  filterVentilation: string // 滤嘴通风率预测参数
+  filterPressureDrop: string // 滤棒压降预测参数
+  permeability: string // 透气度预测参数
+  quantitative: string // 定量预测参数
+  citrate: string // 柠檬酸根预测参数
+}
+
+export interface PredictionResults {
+  // y
+  key: string // 索引
+  tar: string // 焦油预测参数
+  nicotine: string // 烟碱预测参数
+  co: string // CO预测参数
+}
+
+export interface StandardParams {
+  // x
+  filterVentilation: string // 滤嘴通风率基准参数
+  filterPressureDrop: string // 滤棒压降基准参数
+  permeability: string // 透气度基准参数
+  quantitative: string // 定量基准参数
+  citrate: string // 柠檬酸根基准参数
+  // y
+  tar: string // 焦油基准参数
+  nicotine: string // 烟碱基准参数
+  co: string // CO基准参数
+}
+
 // 科学数据DTO（用于前端传输）
 export class ScientificDataDto {
-  // 第一组数据
-  filterVentilation1: string = '' // 滤嘴通风率基准参数
-  filterPressureDrop1: string = '' // 滤棒压降基准参数
-  permeability1: string = '' // 透气度基准参数
-  quantitative1: string = '' // 定量基准参数
-  citrate1: string = '' // 柠檬酸根基准参数
-  // potassiumRatio1: string = '' // 钾盐占比基准参数
-  tar1: string = '' // 焦油基准参数
-  nicotine1: string = '' // 烟碱基准参数
-  co1: string = '' // CO基准参数
-
-  // 第二组数据
-  filterVentilation2: string[] = [] // 滤嘴通风率预测参数数组
-  filterPressureDrop2: string[] = [] // 滤棒压降预测参数数组
-  permeability2: string[] = [] // 透气度预测参数数组
-  quantitative2: string[] = [] // 定量预测参数数组
-  citrate2: string[] = [] // 柠檬酸根预测参数数组
-  // potassiumRatio2: string[] = [] // 钾盐占比预测参数数组
-
+  standardParams: StandardParams = {
+    filterVentilation: '',
+    filterPressureDrop: '',
+    permeability: '',
+    quantitative: '',
+    citrate: '',
+    tar: '',
+    nicotine: '',
+    co: ''
+  } // 基准参数x+y
+  predictionParams: PredictionParams[] = [] // 预测x参数数组
   constructor(data: Partial<ScientificDataDto> = {}) {
+    Object.assign(this, data)
+  }
+}
+
+export class ScientificDataVo {
+  PredictionResults: PredictionResults[] = [] // 预测结果y数组
+  constructor(data: Partial<ScientificDataVo> = {}) {
     Object.assign(this, data)
   }
 }

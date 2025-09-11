@@ -5,7 +5,7 @@
  */
 
 import { contextBridge, ipcRenderer } from 'electron'
-import { HarmfulAPI, CigarettesAPI, ExposedElectronAPI } from './types'
+import { HarmfulAPI, CigarettesAPI, SimulationAPI, ExposedElectronAPI } from './types'
 
 /** 开发模式下打印日志，生产环境保持安静 */
 const isDev = process.env.NODE_ENV === 'development' || !!process.env.VITE_DEV_SERVER_URL
@@ -31,12 +31,15 @@ const createAPI = <T>(channels: { [K in keyof T]: string }): T => {
 const electronAPI: ExposedElectronAPI = {
   harmful: createAPI<HarmfulAPI>({
     query: 'harmful:query',
+    generate: 'harmful:generate',
     delete: 'harmful:delete'
   }),
   cigarettes: createAPI<CigarettesAPI>({
     query: 'cigarettes:query',
-    delete: 'cigarettes:delete',
-    generate: 'cigarettes:generate'
+    delete: 'cigarettes:delete'
+  }),
+  simulation: createAPI<SimulationAPI>({
+    prediction: 'simulation:prediction'
   }),
   process: { versions: process.versions }
 }

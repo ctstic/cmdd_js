@@ -91,20 +91,6 @@ class DatabaseService {
    */
   private createTables(): void {
     try {
-      // 创建用户表
-      this.sqlite.exec(`
-        CREATE TABLE IF NOT EXISTS users (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          username TEXT NOT NULL UNIQUE,
-          email TEXT NOT NULL UNIQUE,
-          full_name TEXT,
-          avatar TEXT,
-          status TEXT DEFAULT 'active' CHECK (status IN ('active', 'inactive', 'pending')),
-          created_at INTEGER NOT NULL,
-          updated_at INTEGER NOT NULL
-        )
-      `)
-
       // 创建卷烟检测结果表
       this.sqlite.exec(`
         CREATE TABLE IF NOT EXISTS cigarettes (
@@ -154,11 +140,7 @@ class DatabaseService {
    */
   private async initializeDefaultData(): Promise<void> {
     try {
-      // 检查用户表数据
-      const userCount = this.sqlite.prepare('SELECT COUNT(*) as count FROM users').get() as {
-        count: number
-      }
-
+      const { harmfulService } = await import('./service/harmfulService')
       // 检查卷烟数据
       const cigarettesCount = this.sqlite
         .prepare('SELECT COUNT(*) as count FROM cigarettes')
@@ -207,30 +189,7 @@ class DatabaseService {
       if (harmfulCount.count === 0) {
         console.log('正在生成有害成分系数数据...')
         // 这里调用生成方法，具体实现在service层
-        // generate() 方法将在service层实现
-      }
-
-      // 初始化用户默认数据
-      if (userCount.count === 0) {
-        console.log('正在初始化默认的用户数据...')
-        const insertStmt = this.sqlite.prepare(`
-          INSERT INTO users (username, email, full_name, avatar, status, created_at, updated_at)
-          VALUES (?, ?, ?, ?, ?, ?, ?)
-        `)
-
-        const now = Date.now()
-        for (const user of schema.defaultUsers) {
-          insertStmt.run(
-            user.username,
-            user.email,
-            user.fullName,
-            user.avatar,
-            user.status,
-            now,
-            now
-          )
-        }
-        console.log('默认的用户数据初始化成功')
+        harmfulService.generate()
       }
     } catch (error) {
       console.error('初始化默认数据失败:', error)

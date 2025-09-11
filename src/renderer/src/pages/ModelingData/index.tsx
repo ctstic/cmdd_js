@@ -89,22 +89,11 @@ const ModelingData: React.FC = () => {
               cancelText="否"
               onConfirm={async () => {
                 try {
-<<<<<<< HEAD
-                  const res = await window.electronAPI.cigarettes.delete(record.id)
-                  if (res.success) {
-                    message.success('删除成功')
-                    setTableData((prevData) => prevData.filter((item) => item.id !== record.id))
-                  } else {
-                    message.error('删除失败，请重试')
-                  }
-                } catch (error) {
-=======
                   await window.electronAPI.cigarettes.delete(record.id)
                   loadUsers()
                   message.success('删除文献成功')
                   return true
                 } catch {
->>>>>>> d55d822 (添加登录页面)
                   message.error('删除文献失败，请重试')
                 }
               }}
