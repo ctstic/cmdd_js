@@ -1,31 +1,37 @@
 import React, { useState } from 'react'
-import {
-  Card,
-  Row,
-  Col,
-  Typography,
-  Input,
-  Form,
-  Button,
-  message,
-  Table,
-  Space,
-  InputNumber,
-  Popconfirm
-} from 'antd'
+import { Card, Row, Col, Typography, InputNumber, Form, Button, message, Space } from 'antd'
 import {
   CalculatorOutlined,
   ExperimentOutlined,
   SafetyCertificateOutlined,
-  EditOutlined,
-  DeleteOutlined,
-  SaveOutlined,
-  CloseOutlined,
-  PlusOutlined,
   LineChartOutlined
 } from '@ant-design/icons'
+import PredictionTable from './PredictionTable'
 
 const { Title, Text } = Typography
+
+interface DataSourceItem {
+  key: string
+  code?: string
+  filterVentilation: number
+  filterPressureDrop: number
+  permeability: number
+  quantitative: number
+  citrate: number
+  potassiumRatio: number
+  tar: number
+  nicotine: number
+  co: number
+}
+
+interface FormFieldConfig {
+  name: string
+  label: string
+  unit?: string
+}
+
+// 公共必填规则
+const requiredRule = (label: string) => [{ required: true, message: `请输入${label}` }]
 
 const styles = {
   headerGradient: {
@@ -36,50 +42,16 @@ const styles = {
     padding: '12px 16px',
     borderRadius: '12px 12px 0 0',
     borderBottom: '2px solid #a3dcff'
-  },
-  primaryButton: {
-    background: '#fa8c16',
-    borderColor: '#fa8c16',
-    fontWeight: '600'
-  },
-  secondaryButton: {
-    background: '#a3dcff',
-    borderColor: '#a3dcff',
-    color: '#262626',
-    fontWeight: '600'
-  },
-  tableHeader: {
-    background: '#f0f8ff',
-    fontWeight: '600'
   }
-  // editingRow: {
-  //   background: '#fff7e6'
-  // }
 }
 
 const SimulatingForecast: React.FC = () => {
   const [baseForm] = Form.useForm()
   const [harmfulForm] = Form.useForm()
-  const [dataSource, setDataSource] = useState([
-    {
-      key: '1',
-      code: 'M32',
-      filterVentilation: '0.793',
-      filterPressureDrop: 5313,
-      permeability: '81.3',
-      quantitative: '32.8',
-      citrate: '0.022000000000000002',
-      potassiumRatio: '0.7',
-      tar: '1.983006386758969',
-      nicotine: '0.245775244556189',
-      co: '0.956'
-    }
-  ])
-  const [editingKey, setEditingKey] = useState('')
-  const [editForm] = Form.useForm()
+  const [dataSource, setDataSource] = useState<DataSourceItem[]>([])
 
-  // 基准卷烟辅材参数数据
-  const baseMaterialFields = [
+  // 基准卷烟辅材参数
+  const baseMaterialFields: FormFieldConfig[] = [
     { name: 'filterVentilation', label: '滤嘴通风率', unit: '%' },
     { name: 'filterPressureDrop', label: '滤棒压降', unit: 'Pa' },
     { name: 'permeability', label: '透气度', unit: 'CU' },
@@ -88,264 +60,50 @@ const SimulatingForecast: React.FC = () => {
     { name: 'potassiumRatio', label: '钾盐占比', unit: '%' }
   ]
 
-  // 基准卷烟有害成分数据
-  const harmfulFields = [
+  // 基准卷烟有害成分
+  const harmfulFields: FormFieldConfig[] = [
     { name: 'tar', label: '焦油', unit: 'mg/支' },
     { name: 'nicotine', label: '烟碱', unit: 'mg/支' },
     { name: 'co', label: 'CO', unit: 'mg/支' }
   ]
 
-  const columns = [
-    {
-      title: '序号',
-      dataIndex: 'key',
-      width: 80,
-      align: 'center' as const,
-      render: (_, record, index) => (
-        <div
-          style={{
-            background: '#a3dcff',
-            borderRadius: '50%',
-            width: '28px',
-            height: '28px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            margin: '0 auto',
-            fontWeight: '600',
-            color: '#262626'
-          }}
-        >
-          {index + 1}
-        </div>
-      )
-    },
-    {
-      title: '滤嘴通风率（%）',
-      dataIndex: 'filterVentilation',
-      editable: true,
-      align: 'center' as const,
-      render: (text) => (
-        <Text strong style={{ color: '#389e0d' }}>
-          {text}
-        </Text>
-      )
-    },
-    {
-      title: '滤棒压降（Pa）',
-      dataIndex: 'filterPressureDrop',
-      editable: true,
-      align: 'center' as const,
-      render: (text) => (
-        <Text strong style={{ color: '#389e0d' }}>
-          {text}
-        </Text>
-      )
-    },
-    {
-      title: '透气度（CU）',
-      dataIndex: 'permeability',
-      editable: true,
-      align: 'center' as const,
-      render: (text) => (
-        <Text strong style={{ color: '#389e0d' }}>
-          {text}
-        </Text>
-      )
-    },
-
-    {
-      title: '定量（g/m²）',
-      dataIndex: 'quantitative',
-      editable: true,
-      align: 'center' as const,
-      render: (text) => (
-        <Text strong style={{ color: '#389e0d' }}>
-          {text}
-        </Text>
-      )
-    },
-    {
-      title: '柠檬酸根(设计值)（%）',
-      dataIndex: 'citrate',
-      editable: true,
-      align: 'center' as const,
-      render: (text) => (
-        <Text strong style={{ color: '#389e0d' }}>
-          {text}
-        </Text>
-      )
-    },
-    {
-      title: '钾盐占比（%）',
-      dataIndex: 'potassiumRatio',
-      editable: true,
-      align: 'center' as const,
-      render: (text) => (
-        <Text strong style={{ color: '#389e0d' }}>
-          {text}
-        </Text>
-      )
-    },
-    {
-      title: '操作',
-      dataIndex: 'operation',
-      width: 140,
-      align: 'center' as const,
-      render: (_, record) => {
-        const editable = isEditing(record)
-        return editable ? (
-          <Space>
-            <Button
-              type="primary"
-              icon={<SaveOutlined />}
-              onClick={() => save(record.key)}
-              size="small"
-              style={{ background: '#52c41a', borderColor: '#52c41a' }}
-            />
-            <Button icon={<CloseOutlined />} onClick={cancel} size="small" />
-          </Space>
-        ) : (
-          <Space>
-            <Button
-              type="primary"
-              icon={<EditOutlined />}
-              onClick={() => edit(record)}
-              disabled={editingKey !== ''}
-              size="small"
-              style={styles.secondaryButton}
-            />
-            <Popconfirm
-              title="确定要删除这行数据吗?"
-              onConfirm={() => handleDelete(record.key)}
-              okText="确定"
-              cancelText="取消"
-            >
-              <Button icon={<DeleteOutlined />} size="small" danger />
-            </Popconfirm>
-          </Space>
-        )
-      }
-    }
-  ]
-
-  const isEditing = (record) => record.key === editingKey
-
-  const edit = (record) => {
-    editForm.setFieldsValue({
-      tar: record.tar,
-      nicotine: record.nicotine,
-      co: record.co,
-      ...record
-    })
-    setEditingKey(record.key)
-  }
-
-  const cancel = () => {
-    setEditingKey('')
-  }
-
-  const save = async (key) => {
-    try {
-      const row = await editForm.validateFields()
-      const newData = [...dataSource]
-      const index = newData.findIndex((item) => key === item.key)
-
-      if (index > -1) {
-        const item = newData[index]
-        newData.splice(index, 1, { ...item, ...row })
-        setDataSource(newData)
-        setEditingKey('')
-        message.success('保存成功')
-      } else {
-        newData.push(row)
-        setDataSource(newData)
-        setEditingKey('')
-      }
-    } catch (errInfo) {
-      console.log('Validate Failed:', errInfo)
-    }
-  }
-
-  const handleAdd = () => {
-    const newKey = Date.now().toString()
-    const newData = {
-      key: newKey,
-      tar: 0,
-      nicotine: 0,
-      co: 0
-    }
-    setDataSource([...dataSource, newData])
-    edit(newData)
-  }
-
-  const handleDelete = (key) => {
-    const newData = dataSource.filter((item) => item.key !== key)
+  const handleDataChange = (newData: DataSourceItem[]): void => {
     setDataSource(newData)
-    message.success('删除成功')
   }
 
-  const mergedColumns = columns.map((col) => {
-    if (!col.editable) {
-      return col
-    }
+  const handleSubmit = async (): Promise<void> => {
+    try {
+      const baseValues = await baseForm.validateFields()
+      const harmfulValues = await harmfulForm.validateFields()
+      console.log('表格数据:', { ...baseValues, ...harmfulValues }, dataSource)
 
-    return {
-      ...col,
-      onCell: (record) => ({
-        record,
-        inputType: 'number',
-        dataIndex: col.dataIndex,
-        title: col.title,
-        editing: isEditing(record)
+      const res = await window.electronAPI.simulation.prediction({
+        standardParams: { ...baseValues, ...harmfulValues },
+        predictionParams: dataSource
       })
+
+      // 确保将返回的预测数据更新到表格中
+      const predictionData = res.data.map((item: any) => ({
+        ...item, // 返回的数据结构
+        key: item.key.toString() // 确保 key 为字符串类型
+      }))
+      setDataSource(predictionData) // 更新 dataSource
+
+      console.log(predictionData)
+    } catch (error) {
+      message.error('请先填写完整的表单')
     }
-  })
+  }
 
-  const EditableCell = ({
-    editing,
-    dataIndex,
-    title,
-    inputType,
-    record,
-    index,
-    children,
-    ...restProps
-  }) => {
-    const inputNode = <InputNumber min={0} step={0.01} precision={2} style={{ width: '100%' }} />
-
-    return (
-      <td {...restProps}>
-        {editing ? (
-          <Form.Item
-            name={dataIndex}
-            style={{ margin: 0 }}
-            rules={[
-              {
-                required: true,
-                message: `请输入${title}!`
-              },
-              {
-                pattern: /^\d+(\.\d{1,2})?$/,
-                message: '请输入有效的数字（最多两位小数）'
-              }
-            ]}
-          >
-            {inputNode}
-          </Form.Item>
-        ) : (
-          children
-        )}
-      </td>
-    )
+  const handleReset = (): void => {
+    baseForm.resetFields()
+    harmfulForm.resetFields()
+    setDataSource([])
+    message.success('已重置所有数据')
   }
 
   return (
-    <div
-      style={{
-        minHeight: '100vh'
-      }}
-    >
+    <div style={{ minHeight: '100vh' }}>
       {/* 标题 */}
       <Card
         style={{
@@ -376,8 +134,9 @@ const SimulatingForecast: React.FC = () => {
       </Card>
 
       <Row gutter={[24, 24]}>
-        {/* 左侧*/}
-        <Col xs={24} lg={10}>
+        {/* 左侧表单 */}
+        <Col xs={24} lg={8}>
+          {/* 辅材参数 */}
           <Card
             style={{
               marginBottom: 24,
@@ -396,20 +155,19 @@ const SimulatingForecast: React.FC = () => {
             <div style={{ padding: '20px 24px' }}>
               <Form form={baseForm} layout="vertical">
                 <Row gutter={16}>
-                  {baseMaterialFields.map((field, index) => (
+                  {baseMaterialFields.map((field) => (
                     <Col xs={24} sm={12} key={field.name}>
                       <Form.Item
                         name={field.name}
-                        label={
-                          <Text strong style={{ color: '#262626' }}>
-                            {field.label}
-                            {field.unit ? `(${field.unit})` : ''}
-                          </Text>
-                        }
+                        label={`${field.label}${field.unit ? ` (${field.unit})` : ''}`}
+                        rules={requiredRule(field.label)}
                       >
-                        <Input
+                        <InputNumber
+                          style={{ width: '100%' }}
+                          min={0}
+                          step={0.01}
+                          precision={2}
                           placeholder={`请输入${field.label}`}
-                          style={{ borderRadius: '6px' }}
                         />
                       </Form.Item>
                     </Col>
@@ -419,6 +177,7 @@ const SimulatingForecast: React.FC = () => {
             </div>
           </Card>
 
+          {/* 有害成分 */}
           <Card
             style={{
               borderRadius: 16,
@@ -445,15 +204,15 @@ const SimulatingForecast: React.FC = () => {
                     <Col xs={24} sm={8} key={field.name}>
                       <Form.Item
                         name={field.name}
-                        label={
-                          <Text strong style={{ color: '#262626' }}>
-                            {field.label}({field.unit})
-                          </Text>
-                        }
+                        label={`${field.label}${field.unit ? ` (${field.unit})` : ''}`}
+                        rules={requiredRule(field.label)}
                       >
-                        <Input
+                        <InputNumber
+                          style={{ width: '100%' }}
+                          min={0}
+                          step={0.01}
+                          precision={2}
                           placeholder={`请输入${field.label}`}
-                          style={{ borderRadius: '6px' }}
                         />
                       </Form.Item>
                     </Col>
@@ -464,98 +223,18 @@ const SimulatingForecast: React.FC = () => {
           </Card>
         </Col>
 
-        {/* 右侧 */}
-        <Col xs={24} lg={14}>
-          <Card
-            style={{
-              borderRadius: 16,
-              boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-              border: '1px solid #e8e8e8',
-              height: '100%'
-            }}
-            bodyStyle={{ padding: 0 }}
-          >
-            <div
-              style={{
-                ...styles.cardHeader,
-                background: 'linear-gradient(90deg, #f6ffed 0%, #ffffff 100%)'
-              }}
-            >
-              <LineChartOutlined style={{ marginRight: 8, color: '#52c41a' }} />
-              <Text strong style={{ fontSize: '16px' }}>
-                预测结果数据
-              </Text>
-            </div>
-            <div style={{ padding: '20px 24px' }}>
-              <Form form={editForm} component={false}>
-                <div
-                  style={{
-                    marginBottom: 16,
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center'
-                  }}
-                >
-                  <Text strong style={{ color: '#262626' }}>
-                    预测结果数据列表
-                  </Text>
-                  <Button
-                    type="primary"
-                    icon={<PlusOutlined />}
-                    onClick={handleAdd}
-                    disabled={editingKey !== ''}
-                    style={styles.primaryButton}
-                  >
-                    新增一行
-                  </Button>
-                </div>
-                <Table
-                  components={{
-                    body: {
-                      cell: EditableCell
-                    }
-                  }}
-                  expandable={{
-                    expandedRowRender: (record) => (
-                      <div>
-                        CO：{record.co}、烟碱：{record.nicotine}、焦油：{record.tar}
-                      </div>
-                    )
-                  }}
-                  bordered
-                  dataSource={dataSource}
-                  columns={mergedColumns}
-                  rowClassName={(record) => (isEditing(record) ? 'editing-row' : '')}
-                  pagination={false}
-                  style={{
-                    borderRadius: '8px'
-                  }}
-                />
-              </Form>
-            </div>
-          </Card>
+        {/* 右侧表格 */}
+        <Col xs={24} lg={16}>
+          <PredictionTable dataSource={dataSource} onDataChange={handleDataChange} />
         </Col>
       </Row>
 
+      {/* 底部按钮 */}
       <Space style={{ marginTop: '20px' }}>
-        <Button
-          type="primary"
-          onClick={() => {
-            console.log(dataSource, 'aaa')
-          }}
-        >
+        <Button type="primary" onClick={handleSubmit}>
           提交
         </Button>
-        <Button
-          type="dashed"
-          onClick={() => {
-            baseForm.resetFields()
-            harmfulForm.resetFields()
-            setDataSource([])
-            setEditingKey('')
-            message.success('已重置所有数据')
-          }}
-        >
+        <Button type="dashed" onClick={handleReset}>
           重置
         </Button>
       </Space>

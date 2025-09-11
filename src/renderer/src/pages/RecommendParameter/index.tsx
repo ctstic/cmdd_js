@@ -86,11 +86,17 @@ const FormFieldGroup = ({ fields, form, layout = 'vertical', cols = 2, showSlide
 
 // 第三步专用的滑块组件
 const RangeSliders = ({ fields, form }) => {
+  // 设置初始值
+  const initialValues = fields.reduce((acc, field) => {
+    acc[field.name] = field.defaultSection.split('-').map(Number) // 处理 defaultSection（如 '20-80'）
+    return acc
+  }, {})
+
   return (
-    <Form form={form} layout="vertical">
-      <Row gutter={[32, 16]}>
+    <Form form={form} layout="vertical" initialValues={initialValues}>
+      <Row gutter={[10, 10]}>
         {fields.map((field) => (
-          <Col xs={24} md={8} key={field.name}>
+          <Col xs={24} md={12} key={field.name}>
             <div
               style={{
                 padding: '16px',
@@ -112,16 +118,10 @@ const RangeSliders = ({ fields, form }) => {
               >
                 <Slider
                   range
-                  defaultValue={[30, 70]}
-                  min={0}
-                  max={100}
-                  marks={{
-                    0: '0',
-                    25: '25',
-                    50: '50',
-                    75: '75',
-                    100: '100'
-                  }}
+                  value={form.getFieldValue(field.name)} // 获取当前值
+                  onChange={(value) => form.setFieldsValue({ [field.name]: value })} // 更新表单值
+                  min={field.min}
+                  max={field.max}
                   tooltip={{
                     formatter: (value) => `${value}%`
                   }}
@@ -213,11 +213,51 @@ const RecommendParameter: React.FC = () => {
   ]
 
   const rangeFields = [
-    { name: 'ventilationRange', label: '滤嘴通风率',min:1,max:0.8,step:0.05,defaultSection:'20-80', unit: '%' },
-    { name: 'pressureRange', label: '滤棒压降', min:2600,max:5800,step:200,defaultSection:'3400-5800',unit: 'Pa' },
-    { name: 'permeabilityRange', label: '透气度', min:30,max:80,step:5,defaultSection:'40-80',unit: 'CU' },
-    { name: 'quantitative', label: '定量', min:24,max:36,step:2,defaultSection:'24-36',unit: 'g/m²' },
-    { name: 'citrate', label: '柠檬酸根(设计值)',min:1,max:0.8,step:0.05,defaultSection:'20-80', unit: '%' },
+    {
+      name: 'ventilationRange',
+      label: '滤嘴通风率',
+      min: 0.1,
+      max: 0.8,
+      step: 0.05,
+      defaultSection: '0.4-0.6',
+      unit: '%'
+    },
+    {
+      name: 'pressureRange',
+      label: '滤棒压降',
+      min: 2600,
+      max: 5800,
+      step: 200,
+      defaultSection: '3400-5800',
+      unit: 'Pa'
+    },
+    {
+      name: 'permeabilityRange',
+      label: '透气度',
+      min: 30,
+      max: 80,
+      step: 5,
+      defaultSection: '40-80',
+      unit: 'CU'
+    },
+    {
+      name: 'quantitative',
+      label: '定量',
+      min: 24,
+      max: 36,
+      step: 2,
+      defaultSection: '24-36',
+      unit: 'g/m²'
+    },
+    {
+      name: 'citrate',
+      label: '柠檬酸根(设计值)',
+      min: 0.1,
+      max: 0.8,
+      step: 0.05,
+      defaultSection: '0.4-0.6',
+      unit: '%'
+    }
     // { name: 'potassiumRatio', label: '钾盐占比', min:1,max:0.8,step:0.05,defaultSection:'20-80',unit: '%' }
   ]
 
@@ -230,8 +270,19 @@ const RecommendParameter: React.FC = () => {
   }
 
   const handleSubmit = () => {
-    // const result = await window.electronAPI.user.getAll()
-    // const result = await window.electronAPI.user.getAll()
+    // 获取每一步表单的所有值
+    const baseValues = baseForm.getFieldsValue(true) // true 表示获取所有表单字段（即使它们没有被渲染）
+    const targetValues = targetForm.getFieldsValue(true)
+    const weightValues = weightForm.getFieldsValue(true)
+    const rangeValues = rangeForm.getFieldsValue(true)
+
+    // 打印所有表单的值
+    console.log('基准卷烟辅材参数:', baseValues)
+    console.log('目标有害成分:', targetValues)
+    console.log('成分权重设置:', weightValues)
+    console.log('辅材参数个性化设计范围:', rangeValues)
+
+    // 模拟数据更新
     setTableData([
       {
         id: 1,
@@ -307,150 +358,165 @@ const RecommendParameter: React.FC = () => {
           boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
         }}
       />
+      <Row gutter={[24, 16]}>
+        {/* 表单在左侧 */}
+        <Col xs={24} md={8}>
+          {/* 第一步：基准参数 */}
+          {current === 0 && (
+            <>
+              <StyledCard
+                title="基准卷烟辅材参数"
+                icon={<ExperimentOutlined />}
+                color={currentStep.color}
+              >
+                <FormFieldGroup fields={baseMaterialFields} form={baseForm} cols={3} />
+              </StyledCard>
 
-      {/* 第一步：基准参数 */}
-      {current === 0 && (
-        <>
-          <StyledCard
-            title="基准卷烟辅材参数"
-            icon={<ExperimentOutlined />}
-            color={currentStep.color}
-          >
-            <FormFieldGroup fields={baseMaterialFields} form={baseForm} cols={3} />
-          </StyledCard>
+              <StyledCard
+                title="基准卷烟有害成分"
+                icon={<SafetyCertificateOutlined />}
+                color={currentStep.color}
+              >
+                <FormFieldGroup fields={harmfulFields} form={baseForm} cols={3} />
+              </StyledCard>
+            </>
+          )}
 
-          <StyledCard
-            title="基准卷烟有害成分"
-            icon={<SafetyCertificateOutlined />}
-            color={currentStep.color}
-          >
-            <FormFieldGroup fields={harmfulFields} form={baseForm} cols={3} />
-          </StyledCard>
-        </>
-      )}
+          {/* 第二步：目标设置 */}
+          {current === 1 && (
+            <>
+              <StyledCard
+                title="目标有害成分"
+                icon={<SafetyCertificateOutlined />}
+                color={currentStep.color}
+              >
+                <FormFieldGroup fields={harmfulFields} form={targetForm} cols={3} />
+              </StyledCard>
 
-      {/* 第二步：目标设置 */}
-      {current === 1 && (
-        <>
-          <StyledCard
-            title="目标有害成分"
-            icon={<SafetyCertificateOutlined />}
-            color={currentStep.color}
-          >
-            <FormFieldGroup fields={harmfulFields} form={targetForm} cols={3} />
-          </StyledCard>
+              <StyledCard
+                title="成分权重设置"
+                icon={<ExperimentOutlined />}
+                color={currentStep.color}
+              >
+                <FormFieldGroup fields={harmfulWeightFields} form={weightForm} cols={3} />
+              </StyledCard>
+            </>
+          )}
 
-          <StyledCard title="成分权重设置" icon={<ExperimentOutlined />} color={currentStep.color}>
-            <FormFieldGroup fields={harmfulWeightFields} form={weightForm} cols={3} />
-          </StyledCard>
-        </>
-      )}
+          {/* 第三步：参数范围 */}
+          {current === 2 && (
+            <StyledCard
+              title="辅材参数个性化设计范围"
+              icon={<SafetyCertificateOutlined />}
+              color={currentStep.color}
+              style={{ marginBottom: 12 }}
+            >
+              <FormFieldGroup
+                fields={[{ name: 'size', label: '生成有害成分数量', unit: '条' }]}
+                form={rangeForm}
+                cols={3}
+              />
 
-      {/* 第三步：参数范围 */}
-      {current === 2 && (
-        <StyledCard
-          title="辅材参数个性化设计范围"
-          icon={<SafetyCertificateOutlined />}
-          color={currentStep.color}
-          style={{ marginBottom: 12 }}
-        >
-          <RangeSliders fields={rangeFields} form={rangeForm} />
+              <RangeSliders fields={rangeFields} form={rangeForm} />
 
+              <div
+                style={{
+                  marginTop: 24,
+                  padding: 16,
+                  background: '#f6ffed',
+                  borderRadius: 8,
+                  border: '1px dashed #b7eb8f'
+                }}
+              >
+                <Text type="secondary">
+                  提示：拖动滑块设置各参数的可调整范围，系统将在此范围内为您推荐最优参数组合。
+                </Text>
+              </div>
+            </StyledCard>
+          )}
+
+          {/* 导航按钮 */}
           <div
             style={{
-              marginTop: 24,
-              padding: 16,
-              background: '#f6ffed',
-              borderRadius: 8,
-              border: '1px dashed #b7eb8f'
+              marginTop: 20,
+              textAlign: 'center',
+              padding: 20,
+              background: 'rgba(255, 255, 255, 0.9)',
+              borderRadius: 12,
+              boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
             }}
           >
-            <Text type="secondary">
-              提示：拖动滑块设置各参数的可调整范围，系统将在此范围内为您推荐最优参数组合。
-            </Text>
+            {current > 0 && (
+              <Button
+                icon={<ArrowLeftOutlined />}
+                onClick={prev}
+                style={{ marginRight: 16, minWidth: 100 }}
+                size="large"
+              >
+                上一步
+              </Button>
+            )}
+
+            {current < stepConfigs.length - 1 ? (
+              <Button
+                type="primary"
+                icon={<ArrowRightOutlined />}
+                onClick={next}
+                size="large"
+                style={{
+                  background: currentStep.color,
+                  borderColor: currentStep.color,
+                  minWidth: 100
+                }}
+              >
+                下一步
+              </Button>
+            ) : (
+              <Button
+                type="primary"
+                onClick={handleSubmit}
+                size="large"
+                style={{
+                  background: currentStep.color,
+                  borderColor: currentStep.color,
+                  minWidth: 140
+                }}
+              >
+                提交并生成推荐
+              </Button>
+            )}
           </div>
-        </StyledCard>
-      )}
-
-      {/* 导航按钮 */}
-      <div
-        style={{
-          marginTop: 20,
-          textAlign: 'center',
-          padding: 20,
-          background: 'rgba(255, 255, 255, 0.9)',
-          borderRadius: 12,
-          boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-        }}
-      >
-        {current > 0 && (
-          <Button
-            icon={<ArrowLeftOutlined />}
-            onClick={prev}
-            style={{ marginRight: 16, minWidth: 100 }}
-            size="large"
-          >
-            上一步
-          </Button>
-        )}
-
-        {current < stepConfigs.length - 1 ? (
-          <Button
-            type="primary"
-            icon={<ArrowRightOutlined />}
-            onClick={next}
-            size="large"
+        </Col>
+        <Col xs={24} md={16}>
+          <div
             style={{
-              background: currentStep.color,
-              borderColor: currentStep.color,
-              minWidth: 100
+              marginTop: 20,
+              textAlign: 'center',
+              padding: 20,
+              background: 'rgba(255, 255, 255, 0.9)',
+              borderRadius: 12,
+              boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
             }}
           >
-            下一步
-          </Button>
-        ) : (
-          <Button
-            type="primary"
-            onClick={handleSubmit}
-            size="large"
-            style={{
-              background: currentStep.color,
-              borderColor: currentStep.color,
-              minWidth: 140
-            }}
-          >
-            提交并生成推荐
-          </Button>
-        )}
-      </div>
-
-      <div
-        style={{
-          marginTop: 20,
-          textAlign: 'center',
-          padding: 20,
-          background: 'rgba(255, 255, 255, 0.9)',
-          borderRadius: 12,
-          boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-        }}
-      >
-        <Table
-          expandable={{
-            expandedRowRender: (record) => (
-              <div>
-                CO：{record.co}、烟碱：{record.nicotine}、焦油：{record.tar}
-              </div>
-            )
-          }}
-          bordered
-          dataSource={tableData}
-          columns={columns}
-          pagination={false}
-          style={{
-            borderRadius: '8px'
-          }}
-        />
-      </div>
+            <Table
+              expandable={{
+                expandedRowRender: (record) => (
+                  <div>
+                    CO：{record.co}、烟碱：{record.nicotine}、焦油：{record.tar}
+                  </div>
+                )
+              }}
+              bordered
+              dataSource={tableData}
+              columns={columns}
+              pagination={false}
+              style={{
+                borderRadius: '8px'
+              }}
+            />
+          </div>
+        </Col>
+      </Row>
     </div>
   )
 }
