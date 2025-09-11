@@ -77,7 +77,25 @@ export interface StandardParams {
   co: string // CO基准参数
 }
 
-// 科学数据DTO（用于前端传输）
+export interface TargetParams {
+  // y
+  tar: string // 焦油目标参数
+  nicotine: string // 烟碱目标参数
+  co: string // CO目标参数
+  tarWeight: string // 焦油预测参数权重
+  nicotineWeight: string // 烟碱预测参数权重
+  coWeight: string // CO预测参数权重
+}
+
+export interface StandardDesignRangeParams {
+  filterVentilation: [number, number] // [最小值, 最大值]
+  filterPressureDrop: [number, number]
+  permeability: [number, number]
+  quantitative: [number, number]
+  citrate: [number, number]
+}
+
+// --------------仿真预测--------------------
 export class ScientificDataDto {
   standardParams: StandardParams = {
     filterVentilation: '',
@@ -96,6 +114,47 @@ export class ScientificDataDto {
 }
 
 export class ScientificDataVo {
+  PredictionResults: PredictionResults[] = [] // 预测结果y数组
+  constructor(data: Partial<ScientificDataVo> = {}) {
+    Object.assign(this, data)
+  }
+}
+
+// --------------推荐辅材参数--------------------
+export class AuxMaterialsDto {
+  count: number = 100 // 生成数量
+  standardParams: StandardParams = {
+    filterVentilation: '',
+    filterPressureDrop: '',
+    permeability: '',
+    quantitative: '',
+    citrate: '',
+    tar: '',
+    nicotine: '',
+    co: ''
+  } // 基准参数x+y
+
+  targetParams: TargetParams = {
+    tar: '',
+    nicotine: '',
+    co: '',
+    tarWeight: '',
+    nicotineWeight: '',
+    coWeight: ''
+  } // 目标参数y和权重
+  standardDesignParams: StandardDesignRangeParams = {
+    filterVentilation: [0.2, 0.8],
+    filterPressureDrop: [3400, 5800],
+    permeability: [40, 80],
+    quantitative: [24, 36],
+    citrate: [0.6, 2.2]
+  } // 设计值范围
+  constructor(data: Partial<AuxMaterialsDto> = {}) {
+    Object.assign(this, data)
+  }
+}
+
+export class AuxMaterialsVo {
   PredictionResults: PredictionResults[] = [] // 预测结果y数组
   constructor(data: Partial<ScientificDataVo> = {}) {
     Object.assign(this, data)

@@ -76,7 +76,7 @@ export class SimulationPredictionService {
    * @param coefficients 系数数据
    * @returns 预测结果数组
    */
-  private predictBaseline(
+  public predictBaseline(
     standardParams: schema.StandardParams,
     coefficients: schema.HarmfulConstants[]
   ): number[] {
