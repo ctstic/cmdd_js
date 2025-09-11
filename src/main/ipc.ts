@@ -19,7 +19,8 @@ import { ipcMain } from 'electron'
 import { schema } from './database'
 import { cigarettesService } from './database/service/cigarettesService'
 import { harmfulService } from './database/service/harmfulService'
-import { simulationPredictionService } from './database/service/SimulationPredictionService'
+import { simulationPredictionService } from './database/service/simulationPredictionService'
+import { recAuxMaterials } from './database/service/recAuxMaterials'
 
 /**
  * 注册所有IPC处理程序
@@ -115,6 +116,21 @@ export function registerIPC(): void {
       }
     }
   )
+
+  /* -------------------- 辅材推荐计算 -------------------- */
+  /**
+   * 辅材推荐计算
+   * 根据输入参数进行辅材推荐
+   */
+  ipcMain.handle('rec:auxMaterials', async (_evt, dto: schema.AuxMaterialsDto) => {
+    try {
+      const result = await recAuxMaterials.findMaterialDesign(dto)
+      return { success: true, data: result }
+    } catch (error) {
+      console.error('[ipc] rec:auxMaterials failed:', error)
+      return { success: false, error: (error as Error).message }
+    }
+  })
 
   console.log('[ipc] 所有IPC路由注册完成')
 }

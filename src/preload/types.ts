@@ -32,6 +32,11 @@ export interface SimulationAPI {
   ) => Promise<APIResponse<{ result: schema.PredictionResults[] }>>
 }
 
+/** 辅材推荐模块 API 定义 */
+export interface RecAuxMaterialsAPI {
+  auxMaterials: (dto: schema.AuxMaterialsDto) => Promise<APIResponse<any>>
+}
+
 /**
  * preload 层最终暴露到 window 上的总对象接口。
  * 渲染进程只需要通过 window.electronAPI 来访问这些方法。
@@ -40,5 +45,6 @@ export interface ExposedElectronAPI {
   harmful: HarmfulAPI
   cigarettes: CigarettesAPI
   simulation: SimulationAPI
+  rec: RecAuxMaterialsAPI
   process: { versions: NodeJS.ProcessVersions } // Node.js 版本信息，可用于调试
 }
