@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import { Layout, Menu, theme, Button, Tooltip } from 'antd'
 import type { MenuProps } from 'antd'
-const { Header, Content, Footer } = Layout
-import { Link, Outlet, useNavigate, useLocation } from 'react-router-dom'
-import { PoweroffOutlined, UserOutlined } from '@ant-design/icons'
+const { Header, Content } = Layout
+import { Link, Outlet, useNavigate } from 'react-router-dom'
+import { PoweroffOutlined } from '@ant-design/icons'
 
 const BasicLayout: React.FC = () => {
   const navigate = useNavigate()
@@ -13,18 +13,6 @@ const BasicLayout: React.FC = () => {
   const {
     token: { colorBgContainer, borderRadiusLG, colorTextLightSolid }
   } = theme.useToken()
-
-  // useEffect(() => {
-  //   const path = location.pathname
-  //   if (path.includes('modelingData')) {
-  //     setSelectedKeys(['modelingData'])
-  //   } else if (path.includes('simulatingForecast')) {
-  //     setSelectedKeys(['simulatingForecast'])
-  //   } else if (path.includes('recommendParameter')) {
-  //     setSelectedKeys(['recommendParameter'])
-  //   } else {
-  //     setSelectedKeys([])
-  //   }
   // }, [location.pathname])
 
   // 处理菜单点击
