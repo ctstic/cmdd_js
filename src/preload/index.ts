@@ -5,7 +5,13 @@
  */
 
 import { contextBridge, ipcRenderer } from 'electron'
-import { HarmfulAPI, CigarettesAPI, SimulationAPI, RecAuxMaterialsAPI, ExposedElectronAPI } from './types'
+import {
+  HarmfulAPI,
+  CigarettesAPI,
+  SimulationAPI,
+  RecAuxMaterialsAPI,
+  ExposedElectronAPI
+} from './types'
 
 /** 开发模式下打印日志，生产环境保持安静 */
 const isDev = process.env.NODE_ENV === 'development' || !!process.env.VITE_DEV_SERVER_URL
@@ -36,7 +42,8 @@ const electronAPI: ExposedElectronAPI = {
   }),
   cigarettes: createAPI<CigarettesAPI>({
     query: 'cigarettes:query',
-    delete: 'cigarettes:delete'
+    delete: 'cigarettes:delete',
+    importFromWebFile: 'cigarettes:importFromWebFile'
   }),
   simulation: createAPI<SimulationAPI>({
     prediction: 'simulation:prediction'

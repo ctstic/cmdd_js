@@ -23,6 +23,10 @@ export interface HarmfulAPI {
 export interface CigarettesAPI {
   query: (query: string) => Promise<APIResponse<{ result: schema.Cigarettes[] }>>
   delete: (id: number) => Promise<APIResponse<void>>
+  importFromWebFile: (fileObj: {
+    name: string
+    buffer: Uint8Array
+  }) => Promise<APIResponse<schema.ImportResult>>
 }
 
 /** 预测模块 API 定义 */

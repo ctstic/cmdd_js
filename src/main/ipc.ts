@@ -57,6 +57,21 @@ export function registerIPC(): void {
     }
   })
 
+  /**
+   * 从Web文件导入卷烟数据
+   */
+  ipcMain.handle('cigarettes:importFromWebFile', async (_evt, fileObj) => {
+    try {
+      const { name, buffer } = fileObj
+      const nodeBuffer = Buffer.from(buffer) // ✅ 转成 Node Buffer
+      const result = await cigarettesService.importFromWebFile({ name, buffer: nodeBuffer })
+      return { success: true, data: result }
+    } catch (error) {
+      console.error('[ipc] cigarettes:importFromWebFile failed:', error)
+      return { success: false, error: (error as Error).message }
+    }
+  })
+
   /* -------------------- 有害成分系数管理 -------------------- */
 
   /**

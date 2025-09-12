@@ -5,6 +5,7 @@
  */
 
 import { db, schema } from '..'
+import * as XLSX from 'xlsx'
 
 /**
  * 卷烟数据业务逻辑服务类
@@ -35,6 +36,198 @@ export class CigarettesService {
     if (result.changes === 0) {
       throw new Error('卷烟数据不存在')
     }
+  }
+
+  /* 创建新的卷烟数据记录
+   * @param obj 卷烟数据对象
+   * @returns 创建的卷烟数据
+   */
+  public async createCigarettes(obj: schema.Cigarettes): Promise<void> {
+    const now = new Date()
+    this.sqlite
+      .prepare(
+        `
+      INSERT INTO cigarettes (
+            code, filter_ventilation, filter_pressure_drop, permeability, quantitative,
+            citrate, potassium_ratio, tar, nicotine, co, created_at, updated_at
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `
+      )
+      .run(
+        obj.code,
+        obj.filterVentilation,
+        obj.filterPressureDrop,
+        obj.permeability,
+        obj.quantitative,
+        obj.citrate,
+        obj.potassiumRatio,
+        obj.tar,
+        obj.nicotine,
+        obj.co,
+        now.getTime(),
+        now.getTime()
+      )
+  }
+
+  /**
+   * 从Web File对象或Blob导入Excel数据的便捷方法
+   * @param file Web File对象或Blob
+   * @returns 导入结果
+   */
+  public async importFromWebFile(fileObj: {
+    name: string
+    buffer: Uint8Array
+  }): Promise<schema.ImportResult> {
+    const fileName = fileObj.name
+
+    try {
+      // 将File/Blob转换为ArrayBuffer
+      const buffer = Buffer.from(fileObj.buffer)
+
+      // 调用主要的导入方法
+      return await this.importFromExcel(buffer)
+    } catch (error) {
+      return {
+        success: false,
+        totalRows: 0,
+        successRows: 0,
+        failedRows: 0,
+        errors: [
+          `${fileName}: File reading failed - ${error instanceof Error ? error.message : String(error)}`
+        ]
+      }
+    }
+  }
+
+  /**
+   * 从Excel文件导入数据并生成有害成分系数
+   * @param filePath Excel文件路径或Buffer
+   * @returns 导入结果
+   */
+  public async importFromExcel(filePath: Buffer): Promise<schema.ImportResult> {
+    const result: schema.ImportResult = {
+      success: false,
+      totalRows: 0,
+      successRows: 0,
+      failedRows: 0,
+      errors: []
+    }
+
+    try {
+      // 读取Excel文件
+      const workbook = XLSX.read(filePath, { type: 'buffer' })
+      const sheetName = workbook.SheetNames[0]
+      const worksheet = workbook.Sheets[sheetName]
+
+      // 将Excel数据转换为JSON
+      const rawData = XLSX.utils.sheet_to_json(worksheet, {
+        header: 1,
+        defval: ''
+      }) as string[][]
+
+      if (rawData.length < 2) {
+        result.errors.push('Excel文件为空或只有标题行')
+        return result
+      }
+      console.log(rawData.length)
+      // 获取标题行
+      const headers = rawData[0] as string[]
+      console.log(headers)
+      const dataRows = rawData.slice(1)
+      console.log(dataRows)
+      result.totalRows = dataRows.length
+
+      // 验证必需的列是否存在
+      const requiredColumns = [
+        '编号',
+        '滤嘴通风率',
+        '滤棒压降(Pa)',
+        '透气度/CU',
+        '定量g/m2',
+        '柠檬酸根(设计值）',
+        '钾盐占比',
+        '焦油mg/支',
+        '烟碱mg/支',
+        'CO(mg/支)'
+      ]
+
+      const columnIndexes: { [key: string]: number } = {}
+
+      for (const col of requiredColumns) {
+        const index = headers.findIndex(
+          (h) =>
+            (h.includes('编号') && col.includes('编号')) ||
+            (h.includes('滤嘴通风') && col.includes('滤嘴通风')) ||
+            (h.includes('滤棒压降') && col.includes('滤棒压降')) ||
+            (h.includes('透气度') && col.includes('透气度')) ||
+            (h.includes('定量') && col.includes('定量')) ||
+            (h.includes('柠檬酸') && col.includes('柠檬酸')) ||
+            (h.includes('钾盐') && col.includes('钾盐')) ||
+            (h.includes('焦油') && col.includes('焦油')) ||
+            (h.includes('烟碱') && col.includes('烟碱')) ||
+            (h.includes('CO') && col.includes('CO'))
+        )
+
+        if (index === -1) {
+          result.errors.push(`The required column cannot be found: ${col}`)
+          return result
+        }
+        columnIndexes[col] = index
+      }
+
+      // 解析数据行
+      const validRows: schema.ExcelRowData[] = []
+
+      for (let i = 0; i < dataRows.length; i++) {
+        const row = dataRows[i]
+        const rowNum = i + 2 // Excel行号（从1开始，加上标题行）
+
+        try {
+          const rowData: schema.Cigarettes = {
+            id: 0,
+            code: String(row[columnIndexes['编号']] || '').trim(),
+            filterVentilation: String(row[columnIndexes['滤嘴通风率']] || '').trim(),
+            filterPressureDrop: Number(row[columnIndexes['滤棒压降(Pa)']] || ''),
+            permeability: String(row[columnIndexes['透气度/CU']] || '').trim(),
+            quantitative: String(row[columnIndexes['定量g/m2']] || '').trim(),
+            citrate: String(row[columnIndexes['柠檬酸根(设计值）']] || '').trim(),
+            potassiumRatio: String(row[columnIndexes['钾盐占比']] || '').trim(),
+            tar: String(row[columnIndexes['焦油mg/支']] || '').trim(),
+            nicotine: String(row[columnIndexes['烟碱mg/支']] || '').trim(),
+            co: String(row[columnIndexes['CO(mg/支)']] || '').trim(),
+            createdAt: new Date(),
+            updatedAt: new Date()
+          }
+          console.log(rowData)
+          // 验证数据完整性
+          if (!rowData.code) {
+            result.errors.push(`${rowNum}row：code not null`)
+            result.failedRows++
+            continue
+          }
+
+          // 插入数据库
+          this.createCigarettes(rowData)
+          result.successRows++
+        } catch (error) {
+          result.errors.push(
+            `${rowNum}：row import error: ${error instanceof Error ? error.message : String(error)}`
+          )
+          result.failedRows++
+        }
+      }
+
+      if (validRows.length === 0) {
+        result.errors.push('There are no valid data rows.')
+        return result
+      }
+    } catch (error) {
+      result.errors.push(
+        `Excel file processing failed.: ${error instanceof Error ? error.message : String(error)}`
+      )
+    }
+
+    return result
   }
 
   /**
