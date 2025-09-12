@@ -48,7 +48,7 @@ export class HarmfulService {
    */
   public getLatestBatchCoefficients(): schema.HarmfulConstants[] {
     const maxBatchResult = this.sqlite
-      .prepare('SELECT MAX(batch_no) as batchNo FROM harmful_constants')
+      .prepare('SELECT MAX(batch_no) as batchNo FROM harmful_constants ORDER BY created_at DESC')
       .get() as { batchNo: string }
 
     if (!maxBatchResult.batchNo) {
