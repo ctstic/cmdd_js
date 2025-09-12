@@ -55,8 +55,8 @@ const stepConfigs = [
   }
 ]
 
-// 可复用的表单字段组件
-const FormFieldGroup = ({ fields, form, layout = 'vertical', cols = 2, showSlider = false }) => {
+// 第一  二步输入框
+const FormFieldGroup = ({ fields, form, layout = 'vertical', cols = 2 }) => {
   return (
     <Form form={form} layout={layout}>
       <Row gutter={[24, 16]}>
@@ -71,11 +71,7 @@ const FormFieldGroup = ({ fields, form, layout = 'vertical', cols = 2, showSlide
                 </Text>
               }
             >
-              {showSlider ? (
-                <Slider range defaultValue={[20, 50]} style={{ marginTop: 8 }} />
-              ) : (
-                <Input placeholder={`请输入${field.label}`} style={{ borderRadius: '6px' }} />
-              )}
+              <Input placeholder={`请输入${field.label}`} style={{ borderRadius: '6px' }} />
             </Form.Item>
           </Col>
         ))}
@@ -84,11 +80,10 @@ const FormFieldGroup = ({ fields, form, layout = 'vertical', cols = 2, showSlide
   )
 }
 
-// 第三步专用的滑块组件
+// 第三步滑块组件
 const RangeSliders = ({ fields, form }) => {
-  // 设置初始值
   const initialValues = fields.reduce((acc, field) => {
-    acc[field.name] = field.defaultSection.split('-').map(Number) // 处理 defaultSection（如 '20-80'）
+    acc[field.name] = field.defaultSection
     return acc
   }, {})
 
@@ -122,8 +117,10 @@ const RangeSliders = ({ fields, form }) => {
                   onChange={(value) => form.setFieldsValue({ [field.name]: value })} // 更新表单值
                   min={field.min}
                   max={field.max}
+                  defaultValue={field.defaultSection}
+                  step={field.step}
                   tooltip={{
-                    formatter: (value) => `${value}%`
+                    formatter: (value) => `${value}` + `${field.unit ? `(${field.unit})` : ''} `
                   }}
                   style={{ marginTop: 12 }}
                 />
@@ -195,8 +192,8 @@ const RecommendParameter: React.FC = () => {
     { name: 'filterPressureDrop', label: '滤棒压降', unit: 'Pa' },
     { name: 'permeability', label: '透气度', unit: 'CU' },
     { name: 'quantitative', label: '定量', unit: 'g/m²' },
-    { name: 'citrate', label: '柠檬酸根(设计值)', unit: '%' },
-    { name: 'potassiumRatio', label: '钾盐占比', unit: '%' }
+    { name: 'citrate', label: '柠檬酸根(设计值)', unit: '%' }
+    // { name: 'potassiumRatio', label: '钾盐占比', unit: '%' }
   ]
 
   // 基准卷烟有害成分数据
@@ -214,30 +211,30 @@ const RecommendParameter: React.FC = () => {
 
   const rangeFields = [
     {
-      name: 'ventilationRange',
+      name: 'filterVentilation',
       label: '滤嘴通风率',
       min: 0.1,
       max: 0.8,
       step: 0.05,
-      defaultSection: '0.4-0.6',
+      defaultSection: [0.4, 0.6],
       unit: '%'
     },
     {
-      name: 'pressureRange',
+      name: 'filterPressureDrop',
       label: '滤棒压降',
       min: 2600,
       max: 5800,
       step: 200,
-      defaultSection: '3400-5800',
+      defaultSection: [3400, 5800],
       unit: 'Pa'
     },
     {
-      name: 'permeabilityRange',
+      name: 'permeability',
       label: '透气度',
       min: 30,
       max: 80,
       step: 5,
-      defaultSection: '40-80',
+      defaultSection: [40, 80],
       unit: 'CU'
     },
     {
@@ -246,7 +243,7 @@ const RecommendParameter: React.FC = () => {
       min: 24,
       max: 36,
       step: 2,
-      defaultSection: '24-36',
+      defaultSection: [24, 36],
       unit: 'g/m²'
     },
     {
@@ -255,7 +252,7 @@ const RecommendParameter: React.FC = () => {
       min: 0.1,
       max: 0.8,
       step: 0.05,
-      defaultSection: '0.4-0.6',
+      defaultSection: [0.4, 0.6],
       unit: '%'
     }
     // { name: 'potassiumRatio', label: '钾盐占比', min:1,max:0.8,step:0.05,defaultSection:'20-80',unit: '%' }
@@ -269,7 +266,7 @@ const RecommendParameter: React.FC = () => {
     setCurrent(current - 1)
   }
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     // 获取每一步表单的所有值
     const baseValues = baseForm.getFieldsValue(true) // true 表示获取所有表单字段（即使它们没有被渲染）
     const targetValues = targetForm.getFieldsValue(true)
@@ -282,22 +279,17 @@ const RecommendParameter: React.FC = () => {
     console.log('成分权重设置:', weightValues)
     console.log('辅材参数个性化设计范围:', rangeValues)
 
+    const res = await window.electronAPI.rec.auxMaterials({
+      count: rangeValues.size,
+      standardParams: baseValues,
+      targetParams: { ...targetValues, ...weightValues },
+      standardDesignParams: rangeValues
+    })
+
+    console.log(res, 'resres')
+
     // 模拟数据更新
-    setTableData([
-      {
-        id: 1,
-        code: 'M32',
-        filterVentilation: '0.793',
-        filterPressureDrop: 5313,
-        permeability: '81.3',
-        quantitative: '32.8',
-        citrate: '0.022000000000000002',
-        potassiumRatio: '0.7',
-        tar: '1.983006386758969',
-        nicotine: '0.245775244556189',
-        co: '0.956'
-      }
-    ])
+    setTableData(res.data)
     message.success('参数推荐完成！')
   }
 

@@ -1,6 +1,7 @@
-import React, { useState } from 'react'
-import { Button, Modal, Table, Popconfirm, message } from 'antd'
+import React from 'react'
+import { Button, Modal, Table, Popconfirm, message, Input, Select, Space } from 'antd'
 import type { TableProps } from 'antd'
+import { SearchOutlined } from '@ant-design/icons'
 
 interface DataType {
   id: number
@@ -27,15 +28,72 @@ const CalculationModal: React.FC<CalculationModalProps> = ({
   setModalData,
   onCancel
 }) => {
-  const columns: TableProps<DataType>['columns'] = [
+
+  const getColumnSearchProps = (dataIndex) => ({
+    filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters, close }) => (
+      <div style={{ padding: 8 }} onKeyDown={(e) => e.stopPropagation()}>
+        <Input
+          ref={searchInput}
+          placeholder={`搜索批次号`}
+          value={selectedKeys[0]}
+          onChange={(e) => setSelectedKeys(e.target.value ? [e.target.value] : [])}
+          onPressEnter={() => confirm()}
+          style={{ marginBottom: 8, display: 'block' }}
+        />
+        <Space>
+          <Button
+            type="primary"
+            onClick={() => confirm()}
+            icon={<SearchOutlined />}
+            size="small"
+            style={{ width: 90 }}
+          >
+            搜索
+          </Button>
+          <Button
+            onClick={() => {
+              clearFilters()
+              confirm()
+            }}
+            size="small"
+            style={{ width: 90 }}
+          >
+            重置
+          </Button>
+        </Space>
+      </div>
+    ),
+    filterIcon: (filtered) => (
+      <SearchOutlined style={{ color: filtered ? '#1890ff' : undefined }} />
+    ),
+    onFilter: (value, record) => {
+      return record[dataIndex]
+        ? record[dataIndex].toString().toLowerCase().includes(value.toLowerCase())
+        : false
+    },
+    onFilterDropdownOpenChange: (visible) => {
+      if (visible && dataIndex === 'batchNo') {
+        setTimeout(() => searchInput.current?.select(), 100)
+      }
+    }
+  })
+
+  const columns: TableProps<DataType> = [
     {
       title: '批次号',
       dataIndex: 'batchNo',
-      render: (text) => <a>{text}</a>
+      render: (text) => <a>{text}</a>,
+      ...getColumnSearchProps('batchNo')
     },
     {
       title: '有害成分类型',
-      dataIndex: 'type'
+      dataIndex: 'type',
+      filters: [
+        { text: 'tar', value: 'tar' },
+        { text: 'nicotine', value: 'nicotine' },
+        { text: 'co', value: 'co' }
+      ],
+      onFilter: (value, record) => record.type === value
     },
     {
       title: '滤嘴通风率系数',
@@ -57,10 +115,10 @@ const CalculationModal: React.FC<CalculationModalProps> = ({
       title: '柠檬酸根 (设计值) 系数',
       dataIndex: 'citrateCoef'
     },
-    {
-      title: '钾盐占比系数',
-      dataIndex: 'potassiumCoef'
-    },
+    // {
+    //   title: '钾盐占比系数',
+    //   dataIndex: 'potassiumCoef'
+    // },
     {
       title: '操作',
       key: 'option',
@@ -102,7 +160,6 @@ const CalculationModal: React.FC<CalculationModalProps> = ({
         width="80%"
         title="计算系数表格"
         open={modalOpen}
-        // onOk={handleOk}
         footer={
           <Button type="primary" onClick={onCancel}>
             关闭
@@ -115,18 +172,19 @@ const CalculationModal: React.FC<CalculationModalProps> = ({
           onClick={async () => {
             try {
               const res = await window.electronAPI.harmful.generate()
-              message.success('删除文献成功')
+              message.success('生成计算系数成功')
               console.log(res, 'aaaaaa')
               return true
             } catch {
-              message.error('删除文献失败，请重试')
+              message.error('生成计算系数失败，请重试')
               return false
             }
           }}
+          style={{ marginBottom: 16 }}
         >
-          生成系数管理
+          生成计算系数
         </Button>
-        <Table<DataType> rowKey="id" columns={columns} dataSource={modalData} />
+        <Table<DataType> scroll={{ x: 800 }} rowKey="id" columns={columns} dataSource={modalData} />
       </Modal>
     </>
   )
