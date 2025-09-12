@@ -16,7 +16,9 @@ import {
   ExperimentOutlined,
   SafetyCertificateOutlined,
   ArrowLeftOutlined,
-  ArrowRightOutlined
+  ArrowRightOutlined,
+  ArrowUpOutlined,
+  ArrowDownOutlined
 } from '@ant-design/icons'
 import type { TableProps } from 'antd'
 
@@ -193,7 +195,6 @@ const RecommendParameter: React.FC = () => {
     { name: 'permeability', label: '透气度', unit: 'CU' },
     { name: 'quantitative', label: '定量', unit: 'g/m²' },
     { name: 'citrate', label: '柠檬酸根(设计值)', unit: '%' }
-    // { name: 'potassiumRatio', label: '钾盐占比', unit: '%' }
   ]
 
   // 基准卷烟有害成分数据
@@ -255,7 +256,6 @@ const RecommendParameter: React.FC = () => {
       defaultSection: [0.4, 0.6],
       unit: '%'
     }
-    // { name: 'potassiumRatio', label: '钾盐占比', min:1,max:0.8,step:0.05,defaultSection:'20-80',unit: '%' }
   ]
 
   const next = () => {
@@ -288,8 +288,20 @@ const RecommendParameter: React.FC = () => {
 
     console.log(res, 'resres')
 
-    // 模拟数据更新
-    setTableData(res.data)
+    // 数据更新
+    const transformedData = res.data.map((item) => ({
+      filterVentilation: item.designParams.filterVentilation,
+      filterPressureDrop: item.designParams.filterPressureDrop,
+      permeability: item.designParams.permeability,
+      quantitative: item.designParams.quantitative,
+      citrate: item.designParams.citrate,
+      tar: item.designParams.tar,
+      nicotine: item.designParams.nicotine,
+      co: item.designParams.co,
+      prediction: item.prediction
+    }))
+
+    setTableData(transformedData)
     message.success('参数推荐完成！')
   }
 
@@ -317,13 +329,28 @@ const RecommendParameter: React.FC = () => {
       title: '柠檬酸根 (设计值)',
       dataIndex: 'citrate',
       render: (text) => <span>{Number(text) * 100}%</span>
-    },
-    {
-      title: '钾盐占比',
-      dataIndex: 'potassiumRatio'
     }
   ]
 
+  // 用来计算百分比变化的函数
+  const calculatePercentageChange = (prediction: number, originalValue: number) => {
+    const diff = ((prediction / originalValue - 1) * 100).toFixed(2)
+    return parseFloat(diff)
+  }
+
+  // 渲染箭头和百分比
+  const renderArrow = (percentageChange: number) => {
+    if (isNaN(percentageChange)) return null
+    return percentageChange > 0 ? (
+      <span style={{ color: 'green' }}>
+        <ArrowUpOutlined /> {Math.abs(percentageChange)}%
+      </span>
+    ) : (
+      <span style={{ color: 'red' }}>
+        <ArrowDownOutlined /> {Math.abs(percentageChange)}%
+      </span>
+    )
+  }
   return (
     <div
       style={{
@@ -492,11 +519,44 @@ const RecommendParameter: React.FC = () => {
           >
             <Table
               expandable={{
-                expandedRowRender: (record) => (
-                  <div>
-                    CO：{record.co}、烟碱：{record.nicotine}、焦油：{record.tar}
-                  </div>
-                )
+                expandedRowRender: (record) => {
+                  // 计算每个项的百分比变化
+                  const coPercentageChange = calculatePercentageChange(
+                    record.prediction[0],
+                    record.co
+                  )
+                  const nicotinePercentageChange = calculatePercentageChange(
+                    record.prediction[1],
+                    record.nicotine
+                  )
+                  const tarPercentageChange = calculatePercentageChange(
+                    record.prediction[2],
+                    record.tar
+                  )
+
+                  return (
+                    <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
+                      <div style={{ fontWeight: 'bold', marginRight: '10px' }}>CO:</div>
+                      <div>
+                        {record.prediction[0].toFixed(2)} {renderArrow(coPercentageChange)}
+                      </div>
+
+                      <div style={{ fontWeight: 'bold', marginLeft: '20px', marginRight: '10px' }}>
+                        烟碱:
+                      </div>
+                      <div>
+                        {record.prediction[1].toFixed(2)} {renderArrow(nicotinePercentageChange)}
+                      </div>
+
+                      <div style={{ fontWeight: 'bold', marginLeft: '20px', marginRight: '10px' }}>
+                        焦油:
+                      </div>
+                      <div>
+                        {record.prediction[2].toFixed(2)} {renderArrow(tarPercentageChange)}
+                      </div>
+                    </div>
+                  )
+                }
               }}
               bordered
               dataSource={tableData}

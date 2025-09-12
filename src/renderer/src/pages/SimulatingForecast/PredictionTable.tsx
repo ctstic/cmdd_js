@@ -56,10 +56,10 @@ const PredictionTable: React.FC<PredictionTableProps> = ({ actionRef }) => {
       title: '柠檬酸根(设计值)（%）',
       dataIndex: 'citrate'
     },
-    {
-      title: '钾盐占比（%）',
-      dataIndex: 'potassiumRatio'
-    },
+    // {
+    //   title: '钾盐占比（%）',
+    //   dataIndex: 'potassiumRatio'
+    // },
     {
       title: '操作',
       valueType: 'option',

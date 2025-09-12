@@ -28,12 +28,11 @@ const CalculationModal: React.FC<CalculationModalProps> = ({
   setModalData,
   onCancel
 }) => {
-
   const getColumnSearchProps = (dataIndex) => ({
     filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters, close }) => (
       <div style={{ padding: 8 }} onKeyDown={(e) => e.stopPropagation()}>
         <Input
-          ref={searchInput}
+          // ref={searchInput}
           placeholder={`搜索批次号`}
           value={selectedKeys[0]}
           onChange={(e) => setSelectedKeys(e.target.value ? [e.target.value] : [])}
@@ -70,12 +69,12 @@ const CalculationModal: React.FC<CalculationModalProps> = ({
       return record[dataIndex]
         ? record[dataIndex].toString().toLowerCase().includes(value.toLowerCase())
         : false
-    },
-    onFilterDropdownOpenChange: (visible) => {
-      if (visible && dataIndex === 'batchNo') {
-        setTimeout(() => searchInput.current?.select(), 100)
-      }
     }
+    // onFilterDropdownOpenChange: (visible) => {
+    //   if (visible && dataIndex === 'batchNo') {
+    //     setTimeout(() => searchInput.current?.select(), 100)
+    //   }
+    // }
   })
 
   const columns: TableProps<DataType> = [

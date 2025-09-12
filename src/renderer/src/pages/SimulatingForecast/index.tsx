@@ -47,8 +47,8 @@ const baseMaterialFields: FormFieldConfig[] = [
   { name: 'filterPressureDrop', label: '滤棒压降', unit: 'Pa' },
   { name: 'permeability', label: '透气度', unit: 'CU' },
   { name: 'quantitative', label: '定量', unit: 'g/m²' },
-  { name: 'citrate', label: '柠檬酸根(设计值)', unit: '%' },
-  { name: 'potassiumRatio', label: '钾盐占比', unit: '%' }
+  { name: 'citrate', label: '柠檬酸根(设计值)', unit: '%' }
+  // { name: 'potassiumRatio', label: '钾盐占比', unit: '%' }
 ]
 
 // 基准卷烟有害成分

@@ -17,8 +17,8 @@ const BasicLayout: React.FC = () => {
   const menuItems: { key: string; label: string }[] = [
     { key: '/modelingData', label: '科研建模数据' },
     { key: '/simulatingForecast', label: '仿真预测' },
-    { key: '/recommendParameter', label: '推荐辅材参数' },
-    { key: '/home', label: 'Home' }
+    { key: '/recommendParameter', label: '推荐辅材参数' }
+    // { key: '/home', label: 'Home' }
   ]
 
   const handleLogout = (): void => {
