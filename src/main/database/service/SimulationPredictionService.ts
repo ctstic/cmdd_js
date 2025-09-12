@@ -18,8 +18,6 @@ export class SimulationPredictionService {
     // 获取最新批次的系数
     const harmfulConstants = harmfulService.getLatestBatchCoefficients()
 
-    console.log('Latest Batch Harmful Constants:', harmfulConstants[0].type)
-
     if (!harmfulConstants || harmfulConstants.length === 0) {
       throw new Error('未找到最新批次的有害成分系数数据')
     }
@@ -148,9 +146,9 @@ export class SimulationPredictionService {
       return denominator === 0 ? 0 : numerator / denominator
     }
 
-    // 计算一氧化碳含量 (索引2对应co)
+    // 计算一氧化碳含量 (索引0对应co)
     processedData.co = formatNumber(
-      safeDivision(baselineCo, baselinePredictions[2]) * targetPredictions[2]
+      safeDivision(baselineCo, baselinePredictions[0]) * targetPredictions[0]
     ).toString()
 
     // 计算尼古丁含量 (索引1对应nicotine)
@@ -158,9 +156,9 @@ export class SimulationPredictionService {
       safeDivision(baselineNicotine, baselinePredictions[1]) * targetPredictions[1]
     ).toString()
 
-    // 计算焦油含量 (索引0对应tar)
+    // 计算焦油含量 (索引2对应tar)
     processedData.tar = formatNumber(
-      safeDivision(baselineTar, baselinePredictions[0]) * targetPredictions[0]
+      safeDivision(baselineTar, baselinePredictions[2]) * targetPredictions[2]
     ).toString()
     return processedData
   }

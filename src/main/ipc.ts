@@ -19,7 +19,7 @@ import { ipcMain } from 'electron'
 import { schema } from './database'
 import { cigarettesService } from './database/service/cigarettesService'
 import { harmfulService } from './database/service/harmfulService'
-import { simulationPredictionService } from './database/service/simulationPredictionService'
+import { simulationPredictionService } from './database/service/SimulationPredictionService'
 import { recAuxMaterials } from './database/service/recAuxMaterials'
 
 /**

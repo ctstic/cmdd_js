@@ -30,8 +30,6 @@ export class RecAuxMaterials {
     // 获取最新批次的系数
     const harmfulConstants = harmfulService.getLatestBatchCoefficients()
 
-    console.log('Latest Batch Harmful Constants:', harmfulConstants[0].type)
-
     if (!harmfulConstants || harmfulConstants.length === 0) {
       throw new Error('未找到最新批次的有害成分系数数据')
     }
@@ -68,7 +66,6 @@ export class RecAuxMaterials {
       standardDesignParams.citrate[1],
       this.stepParams.citrate
     )
-
     // 3️⃣ 预测基准有害成分
     const prediction = await simulationPredictionService.predictBaseline(
       standardParams,
@@ -77,11 +74,10 @@ export class RecAuxMaterials {
 
     // 4️⃣ 计算基准比例
     const scaledPrediction = {
-      tar: Number(standardParams.tar) / Number(prediction[0]),
+      tar: Number(standardParams.co) / Number(prediction[0]),
       nicotine: Number(standardParams.nicotine) / Number(prediction[1]),
-      co: Number(standardParams.co) / Number(prediction[2])
+      co: Number(standardParams.tar) / Number(prediction[2])
     }
-
     // 穷举所有组合
     for (const fv of fvList) {
       for (const fp of fpList) {
