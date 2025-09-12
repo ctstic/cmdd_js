@@ -46,6 +46,46 @@ export const harmfulConstants = sqliteTable('harmful_constants', {
     .$onUpdateFn(() => new Date())
 })
 
+/**
+ * Excel列名映射配置
+ */
+export interface ExcelColumnMapping {
+  编号: string
+  滤嘴通风率: string
+  滤棒压降: string
+  透气度: string
+  定量: string
+  柠檬酸根: string
+  钾盐占比: string
+  焦油: string
+  烟碱: string
+  CO: string
+}
+
+export interface ExcelRowData {
+  编号: string
+  滤嘴通风率: string
+  滤棒压降: string
+  透气度: string
+  定量: string
+  柠檬酸根: string
+  钾盐占比: string
+  焦油: string
+  烟碱: string
+  CO: string
+}
+/**
+ * 导入结果统计
+ */
+export interface ImportResult {
+  success: boolean
+  totalRows: number
+  successRows: number
+  failedRows: number
+  errors: string[]
+  batchNo?: string
+}
+
 export interface PredictionParams {
   // x
   key: string // 索引
