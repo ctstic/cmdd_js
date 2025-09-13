@@ -1,20 +1,3 @@
-// const TokenKey = 'token';
-
-// export function getToken() {
-//   const token = localStorage.getItem(TokenKey);
-//   if (token === null) {
-//     window.location.replace('/login');
-//   }
-//   return 'Bearer ' + token;
-// }
-
-// export function setToken(token: string) {
-//   localStorage.setItem(TokenKey, token);
-// }
-
-// export function removeToken() {
-//   localStorage.removeItem(TokenKey);
-// }
 const TokenKey = 'token'
 
 export function getToken(): string {

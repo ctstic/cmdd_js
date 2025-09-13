@@ -1,5 +1,5 @@
-appId: com.electron.app
-productName: cmdd_js
+appId: com.cmdd.app
+productName: 材料设计
 directories:
   buildResources: build
 files:
@@ -11,8 +11,12 @@ files:
   - '!{tsconfig.json,tsconfig.node.json,tsconfig.web.json}'
 asarUnpack:
   - resources/**
+
+# 仅保留英语语言包的清理脚本
+afterPack: ./scripts/afterPack-prune-locales.js
+
 win:
-  executableName: cmdd_js
+  executableName: cmdd
 nsis:
   artifactName: ${name}-${version}-setup.${ext}
   shortcutName: ${productName}

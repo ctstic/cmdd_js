@@ -5,7 +5,7 @@ import {
   ProFormCheckbox,
   ProFormText
 } from '@ant-design/pro-components'
-import { Button, Divider, Space, Tabs, message, theme } from 'antd'
+import { message, theme } from 'antd'
 import { useNavigate } from 'react-router-dom'
 
 const Page = () => {
@@ -24,8 +24,8 @@ const Page = () => {
         backgroundImageUrl="../../../public/login-img.png"
         // logo="https://github.githubassets.com/favicons/favicon.png"
         // backgroundVideoUrl="https://gw.alipayobjects.com/v/huamei_gcee1x/afts/video/jXRBRK_VAwoAAAAAAAAAAAAAK4eUAQBr"
-        title="Github"
-        onFinish={(a) => {
+        title="材料设计"
+        onFinish={() => {
           navigate('/modelingData')
           message.success('登录成功！')
         }}
@@ -33,31 +33,7 @@ const Page = () => {
           backgroundColor: 'rgba(0, 0, 0, 0.154)',
           backdropFilter: 'blur(4px)'
         }}
-        subTitle="全球最大的代码托管平台"
-        // activityConfig={{
-        //   style: {
-        //     boxShadow: '0px 0px 8px rgba(0, 0, 0, 0.2)',
-        //     color: token.colorTextHeading,
-        //     borderRadius: 8,
-        //     backgroundColor: 'rgba(255,255,255,0.25)',
-        //     backdropFilter: 'blur(4px)'
-        //   },
-        //   title: '活动标题，可配置图片',
-        //   subTitle: '活动介绍说明文字',
-        //   action: (
-        //     <Button
-        //       size="large"
-        //       style={{
-        //         borderRadius: 20,
-        //         background: token.colorBgElevated,
-        //         color: token.colorPrimary,
-        //         width: 120
-        //       }}
-        //     >
-        //       去看看
-        //     </Button>
-        //   )
-        // }}
+        subTitle="用户登录"
         actions={
           <div
             style={{
@@ -83,7 +59,7 @@ const Page = () => {
                 />
               )
             }}
-            placeholder={'用户名: admin or user'}
+            placeholder={'用户名'}
             rules={[
               {
                 required: true,
@@ -104,7 +80,7 @@ const Page = () => {
                 />
               )
             }}
-            placeholder={'密码: ant.design'}
+            placeholder={'密码'}
             rules={[
               {
                 required: true,
@@ -121,13 +97,6 @@ const Page = () => {
           <ProFormCheckbox noStyle name="autoLogin">
             自动登录
           </ProFormCheckbox>
-          <a
-            style={{
-              float: 'right'
-            }}
-          >
-            忘记密码
-          </a>
         </div>
       </LoginFormPage>
     </div>
