@@ -111,10 +111,6 @@ export class RecAuxMaterials {
                 designParams,
                 coefficients
               )
-              console.log('Prediction:', prediction[0], prediction[1], prediction[2])
-              console.log(
-                Math.abs((scaledPrediction.tar * prediction[2]) / Number(targetParams.tar) - 1)
-              )
               // 计算与目标的加权误差
               const diff =
                 Number(targetParams.tarWeight) *
@@ -125,7 +121,6 @@ export class RecAuxMaterials {
                   ) +
                 Number(targetParams.coWeight) *
                   Math.abs((scaledPrediction.co * prediction[0]) / Number(targetParams.co) - 1)
-
               results.push({ designParams, prediction, diff })
             }
           }
