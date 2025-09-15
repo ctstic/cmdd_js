@@ -6,7 +6,7 @@ import {
   ExperimentOutlined,
 } from '@ant-design/icons'
 
-const { Title, Text } = Typography
+const {  Text } = Typography
 
 export type TestResultModalProps = {
   data: any

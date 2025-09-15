@@ -28,18 +28,18 @@ interface FormFieldConfig {
   unit?: string
 }
 
-interface DataSourceItem {
-  key: string
-  filterVentilation: string | number
-  filterPressureDrop: string | number
-  permeability: string | number
-  quantitative: string | number
-  citrate: string | number
-  potassiumRatio: string | number
-  tar: string | number
-  nicotine: string | number
-  co: string | number
-}
+// interface DataSourceItem {
+//   key: string
+//   filterVentilation: string | number
+//   filterPressureDrop: string | number
+//   permeability: string | number
+//   quantitative: string | number
+//   citrate: string | number
+//   potassiumRatio: string | number
+//   tar: string | number
+//   nicotine: string | number
+//   co: string | number
+// }
 
 // 基准卷烟辅材参数
 const baseMaterialFields: FormFieldConfig[] = [
@@ -53,9 +53,9 @@ const baseMaterialFields: FormFieldConfig[] = [
 
 // 基准卷烟有害成分
 const harmfulFields: FormFieldConfig[] = [
-  { name: 'tar', label: '焦油', unit: 'mg/支' },
+  { name: 'co', label: 'CO', unit: 'mg/支' },
   { name: 'nicotine', label: '烟碱', unit: 'mg/支' },
-  { name: 'co', label: 'CO', unit: 'mg/支' }
+  { name: 'tar', label: '焦油', unit: 'mg/支' },
 ]
 
 // 公共必填规则
@@ -65,6 +65,7 @@ const SimulatingForecast: React.FC = () => {
   const [notificationApi, contextHolder] = notification.useNotification()
   const [form] = Form.useForm()
   const actionRef = useRef<any>(null)
+  const [expandedRowKeys, setExpandedRowKeys] = useState<React.Key[]>([])
 
   const handleSubmit = async (): Promise<void> => {
     try {
@@ -77,48 +78,56 @@ const SimulatingForecast: React.FC = () => {
         // 过滤数据，只传递输入参数，不传递预测结果
         const inputParams = dataSource.map((item) => ({
           key: item.key,
-          filterVentilation: Number(item.filterVentilation) || 0,
-          filterPressureDrop: Number(item.filterPressureDrop) || 0,
-          permeability: Number(item.permeability) || 0,
-          quantitative: Number(item.quantitative) || 0,
-          citrate: Number(item.citrate) || 0,
-          potassiumRatio: Number(item.potassiumRatio) || 0
+          filterVentilation: Number(item.filterVentilation),
+          filterPressureDrop: Number(item.filterPressureDrop),
+          permeability: Number(item.permeability),
+          quantitative: Number(item.quantitative),
+          citrate: Number(item.citrate)
+          // potassiumRatio: Number(item.potassiumRatio) //钾盐占比
           // 不传递 tar, nicotine, co 字段
         }))
+        const jsonString = JSON.stringify(inputParams)
+        const isNaN = jsonString.includes('null')
         console.log('🚀 ~ 传递给API的输入参数:', inputParams)
-
-        // 调用接口
-        const res = await window.electronAPI.simulation.prediction({
-          standardParams: formValues,
-          predictionParams: inputParams // 只传递输入参数
-        })
-
-        // 判断返回数据是否存在
-        console.log('🚀 ~ handleSubmit ~ res.data:', res.data)
-        if (res.data && Array.isArray(res.data) && res.data.length > 0) {
-          notificationApi.success({
-            message: '计算成功'
-          })
-          // 确保将返回的预测数据更新到表格中
-          const predictionData = res.data.map((item: any) => ({
-            ...item, // 返回的数据结构
-            key: item.key.toString(), // 确保 key 为字符串类型
-            // 确保数值类型正确
-            filterVentilation: Number(item.filterVentilation) || 0,
-            filterPressureDrop: Number(item.filterPressureDrop) || 0,
-            permeability: Number(item.permeability) || 0,
-            quantitative: Number(item.quantitative) || 0,
-            citrate: Number(item.citrate) || 0,
-            potassiumRatio: Number(item.potassiumRatio) || 0,
-            tar: Number(item.tar) || 0,
-            nicotine: Number(item.nicotine) || 0,
-            co: Number(item.co) || 0
-          }))
-          actionRef.current.setData(predictionData) // 更新 dataSource
-        } else {
+        if (inputParams.length === 0 || isNaN) {
           notificationApi.error({
-            message: '计算异常，未返回数据，请检查表单填写'
+            message: '请正确填写预测结果数据表格'
           })
+        } else {
+          // 调用接口
+          const res = await window.electronAPI.simulation.prediction({
+            standardParams: formValues,
+            predictionParams: inputParams // 只传递输入参数
+          })
+
+          // 判断返回数据是否存在
+          console.log('🚀 ~ handleSubmit ~ res.data:', res.data)
+          if (res.data && Array.isArray(res.data) && res.data.length > 0) {
+            notificationApi.success({
+              message: '计算成功'
+            })
+            // 确保将返回的预测数据更新到表格中
+            const predictionData = res.data.map((item: any) => ({
+              ...item, // 返回的数据结构
+              key: item.key.toString(), // 确保 key 为字符串类型
+              // 确保数值类型正确
+              filterVentilation: Number(item.filterVentilation) || 0,
+              filterPressureDrop: Number(item.filterPressureDrop) || 0,
+              permeability: Number(item.permeability) || 0,
+              quantitative: Number(item.quantitative) || 0,
+              citrate: Number(item.citrate) || 0,
+              potassiumRatio: Number(item.potassiumRatio) || 0,
+              tar: Number(item.tar) || 0,
+              nicotine: Number(item.nicotine) || 0,
+              co: Number(item.co) || 0
+            }))
+            actionRef.current.setData(predictionData) // 更新 dataSource
+            setExpandedRowKeys(predictionData.map((item) => item.key))
+          } else {
+            notificationApi.error({
+              message: '计算异常，未返回数据，请检查表单填写'
+            })
+          }
         }
       }
     } catch (error) {
@@ -135,6 +144,7 @@ const SimulatingForecast: React.FC = () => {
   return (
     <div style={{ minHeight: 'calc(100vh - 145px)' }}>
       {contextHolder}
+      {/* {msgContextHolder} */}
       {/* 标题 */}
       <Card
         style={{
@@ -185,7 +195,6 @@ const SimulatingForecast: React.FC = () => {
                 </Text>
               </div>
               <div style={{ padding: '20px 24px' }}>
-                {' '}
                 <Row gutter={16}>
                   {baseMaterialFields.map((field) => (
                     <Col xs={24} sm={12} key={field.name}>
@@ -261,12 +270,31 @@ const SimulatingForecast: React.FC = () => {
             }}
             bodyStyle={{ padding: 0 }}
           >
-            <div style={{ padding: '20px 24px' }}>
+            <div style={{ padding: '20px 24px', textAlign: 'center' }}>
               <Space>
-                <Button type="primary" onClick={handleSubmit}>
+                <Button
+                  size="large"
+                  type="primary"
+                  onClick={handleSubmit}
+                  style={{
+                    background: '#2597ff',
+                    borderColor: '#2597ff',
+                    minWidth: 100
+                  }}
+                >
                   提交
                 </Button>
-                <Button type="dashed" onClick={handleReset}>
+                <Button
+                  size="large"
+                  type="dashed"
+                  onClick={handleReset}
+                  style={{
+                    background: '#ffdd8e',
+                    borderColor: '#ffdd8e',
+                    minWidth: 100,
+                    color: 'white'
+                  }}
+                >
                   重置
                 </Button>
               </Space>
@@ -276,7 +304,7 @@ const SimulatingForecast: React.FC = () => {
 
         {/* 右侧表格 */}
         <Col xs={24} lg={16}>
-          <PredictionTable actionRef={actionRef} />
+          <PredictionTable actionRef={actionRef} expandedRowKeys={expandedRowKeys} />
         </Col>
       </Row>
     </div>

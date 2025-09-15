@@ -10,7 +10,9 @@ import {
   message,
   Slider,
   Steps,
-  Table
+  Table,
+  InputNumber,
+  Empty
 } from 'antd'
 import {
   ExperimentOutlined,
@@ -22,7 +24,7 @@ import {
 } from '@ant-design/icons'
 import type { TableProps } from 'antd'
 
-const { Title, Text } = Typography
+const { Text } = Typography
 
 interface DataType {
   id: number
@@ -60,7 +62,7 @@ const stepConfigs = [
 // 第一  二步输入框
 const FormFieldGroup = ({ fields, form, layout = 'vertical', cols = 2 }) => {
   return (
-    <Form form={form} layout={layout}>
+    <Form form={form} layout={layout} initialValues={{ size: 30 }}>
       <Row gutter={[24, 16]}>
         {fields.map((field) => (
           <Col xs={24} sm={24} md={24 / cols} key={field.name}>
@@ -73,7 +75,14 @@ const FormFieldGroup = ({ fields, form, layout = 'vertical', cols = 2 }) => {
                 </Text>
               }
             >
-              <Input placeholder={`请输入${field.label}`} style={{ borderRadius: '6px' }} />
+              <InputNumber
+                style={{ width: '100%' }}
+                min={0}
+                max={field.unit === '%' ? 100 : undefined}
+                step={field.name === 'size' ? 1 : 0.01}
+                precision={field.name === 'size' ? 0 : 2}
+                placeholder={`请输入${field.label}`}
+              />
             </Form.Item>
           </Col>
         ))}
@@ -148,14 +157,22 @@ const RangeSliders = ({ fields, form }) => {
 }
 
 // 可复用的卡片组件
-const StyledCard = ({ title, icon, children, color = '#1890ff', style = {} }) => {
+const StyledCard = ({ title, icon, children, color = '#1890ff', style = {}, mark = '' }) => {
   const cardHeaderStyle = {
     background: `linear-gradient(90deg, ${color}20 0%, #ffffff 100%)`,
     padding: '16px 24px',
     borderRadius: '12px 12px 0 0',
     borderBottom: `2px solid ${color}40`
   }
-
+  const markStyle = {
+    background: `${color}15`,
+    color: 'red',
+    fontSize: '12px',
+    fontWeight: '600',
+    padding: '4px 8px',
+    borderRadius: '4px',
+    marginLeft: '8px'
+  }
   return (
     <Card
       style={{
@@ -174,6 +191,7 @@ const StyledCard = ({ title, icon, children, color = '#1890ff', style = {} }) =>
         <Text strong style={{ fontSize: '18px', color: color }}>
           {title}
         </Text>
+        {mark && <span style={markStyle}>{mark}</span>}
       </div>
       <div style={{ padding: '24px' }}>{children}</div>
     </Card>
@@ -187,6 +205,14 @@ const RecommendParameter: React.FC = () => {
   const [weightForm] = Form.useForm()
   const [rangeForm] = Form.useForm()
   const [tableData, setTableData] = useState<DataType[]>([])
+  const [messageApi, contextHolder] = message.useMessage()
+
+  const info = (type: 'info' | 'success' | 'error' | 'warning' | 'loading', msg: string) => {
+    messageApi.open({
+      type,
+      content: msg
+    })
+  }
 
   // 基准卷烟辅材参数数据
   const baseMaterialFields = [
@@ -199,9 +225,9 @@ const RecommendParameter: React.FC = () => {
 
   // 基准卷烟有害成分数据
   const harmfulFields = [
-    { name: 'tar', label: '焦油', unit: 'mg/支' },
+    { name: 'co', label: 'CO', unit: 'mg/支' },
     { name: 'nicotine', label: '烟碱', unit: 'mg/支' },
-    { name: 'co', label: 'CO', unit: 'mg/支' }
+    { name: 'tar', label: '焦油', unit: 'mg/支' }
   ]
 
   const harmfulWeightFields = [
@@ -214,10 +240,10 @@ const RecommendParameter: React.FC = () => {
     {
       name: 'filterVentilation',
       label: '滤嘴通风率',
-      min: 0.1,
-      max: 0.8,
-      step: 0.05,
-      defaultSection: [0.4, 0.6],
+      min: 0,
+      max: 100,
+      step: 5,
+      defaultSection: [40, 60],
       unit: '%'
     },
     {
@@ -250,16 +276,26 @@ const RecommendParameter: React.FC = () => {
     {
       name: 'citrate',
       label: '柠檬酸根(设计值)',
-      min: 0.1,
-      max: 0.8,
-      step: 0.05,
-      defaultSection: [0.4, 0.6],
+      min: 0.2,
+      max: 3,
+      step: 0.4,
+      defaultSection: [0.6, 2.2],
       unit: '%'
     }
   ]
 
   const next = () => {
-    setCurrent(current + 1)
+    if (
+      current === 1 &&
+      weightForm.getFieldValue('coWeight') +
+        weightForm.getFieldValue('nicotineWeight') +
+        weightForm.getFieldValue('tarWeight') >
+        1
+    ) {
+      info('warning', '权重不能大于1')
+    } else {
+      setCurrent(current + 1)
+    }
   }
 
   const prev = () => {
@@ -360,6 +396,7 @@ const RecommendParameter: React.FC = () => {
         borderRadius: 8
       }}
     >
+      {contextHolder}
       {/* 步骤指示器 */}
       <Steps
         current={current}
@@ -413,9 +450,10 @@ const RecommendParameter: React.FC = () => {
               </StyledCard>
 
               <StyledCard
-                title="成分权重设置"
+                title="有害成分权重设置"
                 icon={<ExperimentOutlined />}
                 color={currentStep.color}
+                mark="有害成分权重之和不大于1"
               >
                 <FormFieldGroup fields={harmfulWeightFields} form={weightForm} cols={3} />
               </StyledCard>
@@ -433,9 +471,8 @@ const RecommendParameter: React.FC = () => {
               <FormFieldGroup
                 fields={[{ name: 'size', label: '生成有害成分数量', unit: '条' }]}
                 form={rangeForm}
-                cols={3}
+                cols={5}
               />
-
               <RangeSliders fields={rangeFields} form={rangeForm} />
 
               <div
@@ -518,6 +555,9 @@ const RecommendParameter: React.FC = () => {
             }}
           >
             <Table
+              locale={{
+                emptyText: <Empty description="暂无数据" image={Empty.PRESENTED_IMAGE_SIMPLE} />
+              }}
               expandable={{
                 expandedRowRender: (record) => {
                   // 计算每个项的百分比变化
@@ -533,26 +573,41 @@ const RecommendParameter: React.FC = () => {
                     record.prediction[2],
                     record.tar
                   )
-
                   return (
-                    <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
-                      <div style={{ fontWeight: 'bold', marginRight: '10px' }}>CO:</div>
-                      <div>
-                        {record.prediction[0].toFixed(2)} {renderArrow(coPercentageChange)}
+                    <div
+                      style={{
+                        display: 'flex',
+                        width: '100%',
+                        padding: '10px',
+                        fontFamily: 'Arial, sans-serif',
+                        backgroundColor: '#f5f5f5',
+                        borderRadius: '4px'
+                      }}
+                    >
+                      <div style={{ textAlign: 'left', width: '200px' }}>
+                        <p style={{ margin: 0, fontSize: '16px' }}>
+                          <strong>CO:</strong>
+                          <span style={{ color: prediction?.co ? '#52c41a' : 'gray' }}>
+                            {record.prediction[0].toFixed(2)} {renderArrow(coPercentageChange)}
+                          </span>
+                        </p>
                       </div>
-
-                      <div style={{ fontWeight: 'bold', marginLeft: '20px', marginRight: '10px' }}>
-                        烟碱:
+                      <div style={{ textAlign: 'left', width: '200px' }}>
+                        <p style={{ margin: 0, fontSize: '16px' }}>
+                          <strong>烟碱:</strong>
+                          <span style={{ color: prediction?.nicotine ? '#52c41a' : 'gray' }}>
+                            {record.prediction[1].toFixed(2)}{' '}
+                            {renderArrow(nicotinePercentageChange)}
+                          </span>
+                        </p>
                       </div>
-                      <div>
-                        {record.prediction[1].toFixed(2)} {renderArrow(nicotinePercentageChange)}
-                      </div>
-
-                      <div style={{ fontWeight: 'bold', marginLeft: '20px', marginRight: '10px' }}>
-                        焦油:
-                      </div>
-                      <div>
-                        {record.prediction[2].toFixed(2)} {renderArrow(tarPercentageChange)}
+                      <div style={{ textAlign: 'left', width: '200px' }}>
+                        <p style={{ margin: 0, fontSize: '16px' }}>
+                          <strong>焦油:</strong>
+                          <span style={{ color: prediction?.tar ? '#52c41a' : 'gray' }}>
+                            {record.prediction[2].toFixed(2)} {renderArrow(tarPercentageChange)}
+                          </span>
+                        </p>
                       </div>
                     </div>
                   )

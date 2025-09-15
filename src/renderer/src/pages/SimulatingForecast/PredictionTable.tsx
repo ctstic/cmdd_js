@@ -21,13 +21,16 @@ interface DataSourceType {
 
 interface PredictionTableProps {
   actionRef?: React.Ref<any>
+  expandedRowKeys: React.Key[]
 }
 
-const PredictionTable: React.FC<PredictionTableProps> = ({ actionRef }) => {
+const PredictionTable: React.FC<PredictionTableProps> = ({ actionRef, expandedRowKeys }) => {
   const [editableKeys, setEditableRowKeys] = useState<React.Key[]>([])
   const [dataSource, setDataSource] = useState<readonly DataSourceType[]>([])
+  // const [expandedRowKeys, setExpandedRowKeys] = useState<React.Key[]>([])
 
   const editableTableRef = useRef<any>(null)
+  console.log(dataSource, 'dataSource')
 
   // Expose methods to the parent component via actionRef
   useImperativeHandle(actionRef, () => ({
@@ -82,16 +85,18 @@ const PredictionTable: React.FC<PredictionTableProps> = ({ actionRef }) => {
       </div>
       <div style={{ padding: '20px 24px' }}>
         <EditableProTable<DataSourceType>
-          ref={editableTableRef}
+          expandedRowKeys={expandedRowKeys}
+          actionRef={editableTableRef}
           columns={columns}
+          recordCreatorProps={{
+            // position:'top',
+            newRecordType: 'dataSource',
+            record: () => ({ key: Date.now() })
+          }}
           rowKey="key"
           scroll={{ x: 960 }}
           value={dataSource}
           onChange={setDataSource}
-          recordCreatorProps={{
-            newRecordType: 'dataSource',
-            record: () => ({ key: Date.now() })
-          }}
           editable={{
             type: 'multiple',
             editableKeys,
@@ -121,7 +126,7 @@ const PredictionTable: React.FC<PredictionTableProps> = ({ actionRef }) => {
                 >
                   <div style={{ textAlign: 'left', width: '200px' }}>
                     <p style={{ margin: 0, fontSize: '16px' }}>
-                      <strong>CO:</strong>{' '}
+                      <strong>CO:</strong>
                       <span style={{ color: prediction?.co ? '#52c41a' : 'gray' }}>
                         {prediction?.co || '未计算'}
                       </span>
@@ -129,7 +134,7 @@ const PredictionTable: React.FC<PredictionTableProps> = ({ actionRef }) => {
                   </div>
                   <div style={{ textAlign: 'left', width: '200px' }}>
                     <p style={{ margin: 0, fontSize: '16px' }}>
-                      <strong>烟碱:</strong>{' '}
+                      <strong>烟碱:</strong>
                       <span style={{ color: prediction?.nicotine ? '#52c41a' : 'gray' }}>
                         {prediction?.nicotine || '未计算'}
                       </span>
@@ -137,7 +142,7 @@ const PredictionTable: React.FC<PredictionTableProps> = ({ actionRef }) => {
                   </div>
                   <div style={{ textAlign: 'left', width: '200px' }}>
                     <p style={{ margin: 0, fontSize: '16px' }}>
-                      <strong>焦油:</strong>{' '}
+                      <strong>焦油:</strong>
                       <span style={{ color: prediction?.tar ? '#52c41a' : 'gray' }}>
                         {prediction?.tar || '未计算'}
                       </span>
