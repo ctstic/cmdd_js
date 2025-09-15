@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import {
   HashRouter as Router, // ✅ 用 HashRouter
   Routes,
@@ -34,8 +34,20 @@ const BasicLayout: React.FC = () => {
     { key: 'recommendParameter', label: '推荐辅材参数' }
   ]
 
+  useEffect(() => {
+    const authedLocal = localStorage.getItem('isAuthenticated') === 'true'
+    const authedSession = sessionStorage.getItem('isAuthenticated') === 'true'
+    if (!authedLocal && !authedSession) {
+      // 没有登录信息才跳回 login
+      navigate('/login', { replace: true })
+    }
+  }, [navigate])
+
   const handleLogout = (): void => {
     localStorage.removeItem('isAuthenticated')
+    localStorage.removeItem('username')
+    sessionStorage.removeItem('isAuthenticated')
+    sessionStorage.removeItem('username')
     navigate('/login')
   }
 
