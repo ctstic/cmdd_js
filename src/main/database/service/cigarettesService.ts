@@ -24,7 +24,15 @@ export class CigarettesService {
       .prepare('SELECT * FROM cigarettes WHERE code like ? ORDER BY created_at DESC')
       .all(`%${code}%`) as Record<string, unknown>[]
 
-    return results.map((result) => this.mapToCigarettes(result))
+    return results.map((result) => {
+      result.tar = Number.parseFloat((result.tar as string).trim()).toFixed(2)
+
+      result.nicotine = Number.parseFloat((result.nicotine as string).trim()).toFixed(2)
+
+      result.co = Number.parseFloat((result.co as string).trim()).toFixed(2)
+
+      return this.mapToCigarettes(result)
+    })
   }
 
   /**
@@ -121,6 +129,7 @@ export class CigarettesService {
 
       // 将Excel数据转换为JSON
       const rawData = XLSX.utils.sheet_to_json(worksheet, {
+        raw: true, // 获取原始数值，不受格式影响
         header: 1,
         defval: ''
       }) as string[][]
@@ -132,7 +141,6 @@ export class CigarettesService {
       console.log(rawData.length)
       // 获取标题行
       const headers = rawData[0] as string[]
-      console.log(headers)
       const dataRows = rawData.slice(1)
       console.log(dataRows)
       result.totalRows = dataRows.length

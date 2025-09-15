@@ -15,6 +15,21 @@ export class SimulationPredictionService {
   public async calculatePredictions(
     scientificData: schema.ScientificDataDto
   ): Promise<schema.PredictionResults[]> {
+    scientificData.standardParams.filterVentilation = (
+      Number(scientificData.standardParams.filterVentilation) / 100
+    )
+      .toFixed(3)
+      .toString()
+    scientificData.standardParams.citrate = (Number(scientificData.standardParams.citrate) / 100)
+      .toFixed(3)
+      .toString()
+
+    for (const param of scientificData.predictionParams) {
+      param.filterVentilation = (Number(param.filterVentilation) / 100).toFixed(3).toString()
+      param.citrate = (Number(param.citrate) / 100).toFixed(3).toString()
+    }
+
+    console.log('🚀 ~ scientificData:', scientificData)
     // 获取最新批次的系数
     const harmfulConstants = harmfulService.getLatestBatchCoefficients()
 

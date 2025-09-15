@@ -27,7 +27,19 @@ export class RecAuxMaterials {
    * @param dto 输入参数（基准 + 目标 + 范围）
    */
   async findMaterialDesign(dto: schema.AuxMaterialsDto): Promise<any[]> {
-    // 获取最新批次的系数
+    dto.standardParams.filterVentilation = (Number(dto.standardParams.filterVentilation) / 100)
+      .toFixed(3)
+      .toString()
+    dto.standardParams.citrate = (Number(dto.standardParams.citrate) / 100).toFixed(3).toString()
+
+    dto.standardDesignParams.filterVentilation = dto.standardDesignParams.filterVentilation.map(
+      (v) => parseFloat((v / 100).toFixed(3))
+    ) as [number, number]
+    dto.standardDesignParams.citrate = dto.standardDesignParams.citrate.map((v) =>
+      parseFloat((v / 100).toFixed(3))
+    ) as [number, number]
+    console.log('------------------Standard Design Params:', dto)
+    // 1️⃣ 获取最新批次的有害成分系数
     const harmfulConstants = harmfulService.getLatestBatchCoefficients()
 
     if (!harmfulConstants || harmfulConstants.length === 0) {
@@ -74,10 +86,11 @@ export class RecAuxMaterials {
 
     // 4️⃣ 计算基准比例
     const scaledPrediction = {
-      tar: Number(standardParams.co) / Number(prediction[0]),
+      co: Number(standardParams.co) / Number(prediction[0]),
       nicotine: Number(standardParams.nicotine) / Number(prediction[1]),
-      co: Number(standardParams.tar) / Number(prediction[2])
+      tar: Number(standardParams.tar) / Number(prediction[2])
     }
+    console.log('Scaled Prediction:', scaledPrediction)
     // 穷举所有组合
     for (const fv of fvList) {
       for (const fp of fpList) {
@@ -85,31 +98,33 @@ export class RecAuxMaterials {
           for (const qt of qtList) {
             for (const ct of ctList) {
               const designParams = {
-                ...standardParams,
+                ...targetParams,
                 filterVentilation: fv.toString(),
                 filterPressureDrop: fp.toString(),
                 permeability: pm.toString(),
                 quantitative: qt.toString(),
                 citrate: ct.toString()
               }
-              console.log('Evaluating Design Params:', designParams)
+              // console.log('Evaluating Design Params:', designParams)
               // 调用预测服务
               const prediction = await simulationPredictionService.predictBaseline(
                 designParams,
                 coefficients
               )
-
+              console.log('Prediction:', prediction[0], prediction[1], prediction[2])
+              console.log(
+                Math.abs((scaledPrediction.tar * prediction[2]) / Number(targetParams.tar) - 1)
+              )
               // 计算与目标的加权误差
               const diff =
                 Number(targetParams.tarWeight) *
-                  (Math.abs((scaledPrediction.tar * prediction[0]) / Number(targetParams.tar)) -
-                    1) +
+                  Math.abs((scaledPrediction.tar * prediction[2]) / Number(targetParams.tar) - 1) +
                 Number(targetParams.nicotineWeight) *
                   Math.abs(
                     (scaledPrediction.nicotine * prediction[1]) / Number(targetParams.nicotine) - 1
                   ) +
                 Number(targetParams.coWeight) *
-                  Math.abs((scaledPrediction.co * prediction[2]) / Number(targetParams.co) - 1)
+                  Math.abs((scaledPrediction.co * prediction[0]) / Number(targetParams.co) - 1)
 
               results.push({ designParams, prediction, diff })
             }
