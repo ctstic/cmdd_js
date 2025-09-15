@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { Table, Popconfirm, Button, message, Upload, Space } from 'antd'
 import CalculationModal from './components/CalculationModal'
 import TestResultModal from './components/TestResultModal'
-import type { TableProps,UploadProps, UploadFile } from 'antd'
+import type { TableProps, UploadProps, UploadFile } from 'antd'
 interface DataType {
   id: number
   code: string
@@ -25,6 +25,14 @@ const ModelingData: React.FC = () => {
   const [currentRow, setCurrentRow] = useState<Partial<DataType[]> | undefined>(undefined)
   const [importing, setImporting] = useState(false)
   const [fileList, setFileList] = useState<UploadFile[]>([])
+  const [messageApi, contextHolder] = message.useMessage()
+
+  const info = (type: 'info' | 'success' | 'error' | 'warning' | 'loading', msg: string) => {
+    messageApi.open({
+      type,
+      content: msg
+    })
+  }
 
   // 加载所有
   const loadUsers = async (): Promise<void> => {
@@ -49,18 +57,18 @@ const ModelingData: React.FC = () => {
       ]
 
       if (!allowedTypes.includes(file.type) && !file.name.match(/\.(xlsx|xls)$/i)) {
-        message.error('请上传Excel文件(.xlsx或.xls格式)')
+        // message.error('请上传Excel文件(.xlsx或.xls格式)')
+        info('error', '请上传Excel文件(.xlsx或.xls格式)')
         return
       }
 
       // 验证文件大小 (限制为10MB)
       if (file.size > 10 * 1024 * 1024) {
-        message.error('文件大小不能超过10MB')
+        info('error', '文件大小不能超过10MB')
         return
       }
-      console.log(file.size)
-      message.info('正在导入数据，请稍候...')
-
+      // console.log(file.size)
+      info('warning', '正在导入数据，请稍候...')
       // 调用导入服务
       const arrayBuffer = await file.arrayBuffer()
       const uint8Array = new Uint8Array(arrayBuffer)
@@ -103,7 +111,8 @@ const ModelingData: React.FC = () => {
       // }
     } catch (error) {
       console.error('导入过程中发生错误:', error)
-      message.error(`导入过程中发生错误: ${error instanceof Error ? error.message : '未知错误'}`)
+      // message.error(`导入过程中发生错误: ${error instanceof Error ? error.message : '未知错误'}`)
+      info('error', `导入过程中发生错误: ${error instanceof Error ? error.message : '未知错误'}`)
     } finally {
       setImporting(false)
     }
@@ -150,7 +159,7 @@ const ModelingData: React.FC = () => {
     {
       title: '滤嘴通风率',
       dataIndex: 'filterVentilation',
-      render: (text) => <span>{Number(text) * 100}%</span>
+      render: (text) => <span>{(Number(text) * 100).toFixed(2)}%</span>
     },
     {
       title: '滤棒压降 (Pa)',
@@ -167,7 +176,7 @@ const ModelingData: React.FC = () => {
     {
       title: '柠檬酸根 (设计值)',
       dataIndex: 'citrate',
-      render: (text) => <span>{Number(text) * 100}%</span>
+      render: (text) => <span>{(Number(text) * 100).toFixed(2)}%</span>
     },
     {
       title: '钾盐占比',
@@ -188,13 +197,13 @@ const ModelingData: React.FC = () => {
                 try {
                   const res = await window.electronAPI.cigarettes.delete(record.id)
                   if (res.success) {
-                    message.success('删除成功')
+                    info('success', '删除成功')
                     setTableData((prevData) => prevData.filter((item) => item.id !== record.id))
                   } else {
-                    message.error('删除失败，请重试')
+                    info('error', '删除失败，请重试')
                   }
                 } catch {
-                  message.error('删除文献失败，请重试')
+                  info('error', '删除失败，请重试')
                 }
               }}
             >
@@ -210,19 +219,19 @@ const ModelingData: React.FC = () => {
 
   return (
     <>
-      <Space>
+      {contextHolder}
+      <Space style={{ marginBottom: '15px' }}>
         <Button
           type="primary"
           onClick={async () => {
             setCalculationModal(true)
             try {
               const res = await window.electronAPI.harmful.query('')
-              message.success('删除文献成功')
               setModalData(res.data)
               setCalculationModal(true)
               return true
             } catch {
-              message.error('删除文献失败，请重试')
+              info('error', '网络错误')
               return false
             }
           }}

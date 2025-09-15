@@ -1,5 +1,5 @@
 import React from 'react'
-import { Button, Modal, Table, Popconfirm, message, Input, Select, Space } from 'antd'
+import { Button, Modal, Table, Popconfirm, message, Input, Space } from 'antd'
 import type { TableProps } from 'antd'
 import { SearchOutlined } from '@ant-design/icons'
 
@@ -28,6 +28,15 @@ const CalculationModal: React.FC<CalculationModalProps> = ({
   setModalData,
   onCancel
 }) => {
+  const [messageApi, contextHolder] = message.useMessage()
+
+  const info = (type: 'info' | 'success' | 'error' | 'warning' | 'loading', msg: string) => {
+    messageApi.open({
+      type,
+      content: msg
+    })
+  }
+
   const getColumnSearchProps = (dataIndex) => ({
     filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters, close }) => (
       <div style={{ padding: 8 }} onKeyDown={(e) => e.stopPropagation()}>
@@ -132,13 +141,12 @@ const CalculationModal: React.FC<CalculationModalProps> = ({
               onConfirm={async () => {
                 try {
                   await window.electronAPI.harmful.delete(record.id)
-
                   const res = await window.electronAPI.harmful.query('')
-                  message.success('删除文献成功')
+                  info('success', '删除成功')
                   setModalData(res.data)
                   return true
                 } catch {
-                  message.error('删除文献失败，请重试')
+                  info('error', '删除失败，请重试')
                   return false
                 }
               }}
@@ -155,6 +163,7 @@ const CalculationModal: React.FC<CalculationModalProps> = ({
 
   return (
     <>
+      {contextHolder}
       <Modal
         width="80%"
         title="计算系数表格"
@@ -171,11 +180,11 @@ const CalculationModal: React.FC<CalculationModalProps> = ({
           onClick={async () => {
             try {
               const res = await window.electronAPI.harmful.generate()
-              message.success('生成计算系数成功')
-              console.log(res, 'aaaaaa')
+              info('success', '生成计算系数成功')
+              // console.log(res, 'aaaaaa')
               return true
             } catch {
-              message.error('生成计算系数失败，请重试')
+              info('error', '生成计算系数失败，请重试')
               return false
             }
           }}
