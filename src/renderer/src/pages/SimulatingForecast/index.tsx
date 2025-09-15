@@ -53,9 +53,9 @@ const baseMaterialFields: FormFieldConfig[] = [
 
 // 基准卷烟有害成分
 const harmfulFields: FormFieldConfig[] = [
-  { name: 'co', label: 'CO', unit: 'mg/支' },
-  { name: 'nicotine', label: '烟碱', unit: 'mg/支' },
   { name: 'tar', label: '焦油', unit: 'mg/支' },
+  { name: 'nicotine', label: '烟碱', unit: 'mg/支' },
+  { name: 'co', label: 'CO', unit: 'mg/支' }
 ]
 
 // 公共必填规则
@@ -282,7 +282,7 @@ const SimulatingForecast: React.FC = () => {
                     minWidth: 100
                   }}
                 >
-                  提交
+                计算
                 </Button>
                 <Button
                   size="large"

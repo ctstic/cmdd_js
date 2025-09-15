@@ -67,6 +67,7 @@ const FormFieldGroup = ({ fields, form, layout = 'vertical', cols = 2 }) => {
         {fields.map((field) => (
           <Col xs={24} sm={24} md={24 / cols} key={field.name}>
             <Form.Item
+              required={true}
               name={field.name}
               label={
                 <Text strong style={{ color: '#262626', marginBottom: 8, display: 'block' }}>
@@ -225,9 +226,9 @@ const RecommendParameter: React.FC = () => {
 
   // 基准卷烟有害成分数据
   const harmfulFields = [
-    { name: 'co', label: 'CO', unit: 'mg/支' },
+    { name: 'tar', label: '焦油', unit: 'mg/支' },
     { name: 'nicotine', label: '烟碱', unit: 'mg/支' },
-    { name: 'tar', label: '焦油', unit: 'mg/支' }
+    { name: 'co', label: 'CO', unit: 'mg/支' }
   ]
 
   const harmfulWeightFields = [
@@ -243,7 +244,7 @@ const RecommendParameter: React.FC = () => {
       min: 0,
       max: 100,
       step: 5,
-      defaultSection: [40, 60],
+      defaultSection: [20, 80],
       unit: '%'
     },
     {
@@ -322,10 +323,9 @@ const RecommendParameter: React.FC = () => {
       standardDesignParams: rangeValues
     })
 
-    console.log(res, 'resres')
-
     // 数据更新
-    const transformedData = res.data.map((item) => ({
+    const transformedData = res.data.map((item,index) => ({
+      id: index,
       filterVentilation: item.designParams.filterVentilation,
       filterPressureDrop: item.designParams.filterPressureDrop,
       permeability: item.designParams.permeability,
@@ -336,7 +336,7 @@ const RecommendParameter: React.FC = () => {
       co: item.designParams.co,
       prediction: item.prediction
     }))
-
+    console.log(transformedData, 'resrestransformedData')
     setTableData(transformedData)
     message.success('参数推荐完成！')
   }
@@ -555,6 +555,7 @@ const RecommendParameter: React.FC = () => {
             }}
           >
             <Table
+            rowKey='id'
               locale={{
                 emptyText: <Empty description="暂无数据" image={Empty.PRESENTED_IMAGE_SIMPLE} />
               }}
@@ -586,16 +587,16 @@ const RecommendParameter: React.FC = () => {
                     >
                       <div style={{ textAlign: 'left', width: '200px' }}>
                         <p style={{ margin: 0, fontSize: '16px' }}>
-                          <strong>CO:</strong>
-                          <span style={{ color: prediction?.co ? '#52c41a' : 'gray' }}>
-                            {record.prediction[0].toFixed(2)} {renderArrow(coPercentageChange)}
+                          <strong>焦油:</strong>
+                          <span style={{ color: record?.tar ? '#52c41a' : 'gray' }}>
+                            {record.prediction[2].toFixed(2)} {renderArrow(tarPercentageChange)}
                           </span>
                         </p>
                       </div>
                       <div style={{ textAlign: 'left', width: '200px' }}>
                         <p style={{ margin: 0, fontSize: '16px' }}>
                           <strong>烟碱:</strong>
-                          <span style={{ color: prediction?.nicotine ? '#52c41a' : 'gray' }}>
+                          <span style={{ color: record?.nicotine ? '#52c41a' : 'gray' }}>
                             {record.prediction[1].toFixed(2)}{' '}
                             {renderArrow(nicotinePercentageChange)}
                           </span>
@@ -603,9 +604,9 @@ const RecommendParameter: React.FC = () => {
                       </div>
                       <div style={{ textAlign: 'left', width: '200px' }}>
                         <p style={{ margin: 0, fontSize: '16px' }}>
-                          <strong>焦油:</strong>
-                          <span style={{ color: prediction?.tar ? '#52c41a' : 'gray' }}>
-                            {record.prediction[2].toFixed(2)} {renderArrow(tarPercentageChange)}
+                          <strong>CO:</strong>
+                          <span style={{ color: record?.co ? '#52c41a' : 'gray' }}>
+                            {record.prediction[0].toFixed(2)} {renderArrow(coPercentageChange)}
                           </span>
                         </p>
                       </div>
