@@ -35,6 +35,16 @@ export class CigarettesService {
     })
   }
 
+  public getCigarettesAll(): schema.Cigarettes[] {
+    const results = this.sqlite
+      .prepare('SELECT * FROM cigarettes ORDER BY created_at DESC')
+      .all() as Record<string, unknown>[]
+
+    return results.map((result) => {
+      return this.mapToCigarettes(result)
+    })
+  }
+
   /**
    * 删除卷烟数据记录
    * @param id 卷烟数据ID
@@ -138,21 +148,19 @@ export class CigarettesService {
         result.errors.push('Excel文件为空或只有标题行')
         return result
       }
-      console.log(rawData.length)
       // 获取标题行
       const headers = rawData[0] as string[]
       const dataRows = rawData.slice(1)
-      console.log(dataRows)
       result.totalRows = dataRows.length
 
       // 验证必需的列是否存在
       const requiredColumns = [
         '编号',
-        '滤嘴通风率',
+        '滤嘴通风率%',
         '滤棒压降(Pa)',
         '透气度/CU',
         '定量g/m2',
-        '柠檬酸根(设计值）',
+        '柠檬酸根(设计值）%',
         '钾盐占比',
         '焦油mg/支',
         '烟碱mg/支',
@@ -182,59 +190,52 @@ export class CigarettesService {
         }
         columnIndexes[col] = index
       }
-
+      const data: schema.Cigarettes[] = []
       // 解析数据行
-      const validRows: schema.ExcelRowData[] = []
-
       for (let i = 0; i < dataRows.length; i++) {
         const row = dataRows[i]
-        const rowNum = i + 2 // Excel行号（从1开始，加上标题行）
-
-        try {
-          const rowData: schema.Cigarettes = {
-            id: 0,
-            code: String(row[columnIndexes['编号']] || '').trim(),
-            filterVentilation: String(row[columnIndexes['滤嘴通风率']] || '').trim(),
-            filterPressureDrop: Number(row[columnIndexes['滤棒压降(Pa)']] || ''),
-            permeability: String(row[columnIndexes['透气度/CU']] || '').trim(),
-            quantitative: String(row[columnIndexes['定量g/m2']] || '').trim(),
-            citrate: String(row[columnIndexes['柠檬酸根(设计值）']] || '').trim(),
-            potassiumRatio: String(row[columnIndexes['钾盐占比']] || '').trim(),
-            tar: String(row[columnIndexes['焦油mg/支']] || '').trim(),
-            nicotine: String(row[columnIndexes['烟碱mg/支']] || '').trim(),
-            co: String(row[columnIndexes['CO(mg/支)']] || '').trim(),
-            createdAt: new Date(),
-            updatedAt: new Date()
-          }
-          console.log(rowData)
-          // 验证数据完整性
-          if (!rowData.code) {
-            result.errors.push(`${rowNum}row：code not null`)
-            result.failedRows++
-            continue
-          }
-
-          // 插入数据库
-          this.createCigarettes(rowData)
-          result.successRows++
-        } catch (error) {
-          result.errors.push(
-            `${rowNum}：row import error: ${error instanceof Error ? error.message : String(error)}`
-          )
-          result.failedRows++
+        console.log(row)
+        const rowData: schema.Cigarettes ={
+          id: 0,
+          code: String(row[columnIndexes['编号']] || '').trim(),
+          filterVentilation: String(
+            Number(row[columnIndexes['滤嘴通风率%']]).toFixed(3) || ''
+          ).trim(),
+          filterPressureDrop: Number(row[columnIndexes['滤棒压降(Pa)']] || ''),
+          permeability: String(row[columnIndexes['透气度/CU']] || '').trim(),
+          quantitative: String(row[columnIndexes['定量g/m2']] || '').trim(),
+          citrate: String(Number(row[columnIndexes['柠檬酸根(设计值）%']]).toFixed(3) || '').trim(),
+          potassiumRatio: String(row[columnIndexes['钾盐占比']] || '').trim(),
+          tar: String(row[columnIndexes['焦油mg/支']] || '').trim(),
+          nicotine: String(row[columnIndexes['烟碱mg/支']] || '').trim(),
+          co: String(row[columnIndexes['CO(mg/支)']] || '').trim(),
+          createdAt: new Date(),
+          updatedAt: new Date()
         }
-      }
 
-      if (validRows.length === 0) {
-        result.errors.push('There are no valid data rows.')
-        return result
+
+        // 验证数据完整性
+        if (!rowData.code) {
+          result.errors.push(`${rowData.code}编号不能为空`)
+          return result
+        }
+        if (this.getCigarettes(rowData.code).length > 0) {
+          result.errors.push(`${rowData.code}编号已存在`)
+          return result
+        }
+        data.push(rowData)
+      }
+      if (result.errors.length == 0) {
+        for (const key in data) {
+          console.log(data[key])
+          this.createCigarettes(data[key])
+        }
       }
     } catch (error) {
       result.errors.push(
-        `Excel file processing failed.: ${error instanceof Error ? error.message : String(error)}`
+        `Excel文件处理失败：${error instanceof Error ? error.message : String(error)}`
       )
     }
-
     return result
   }
 
