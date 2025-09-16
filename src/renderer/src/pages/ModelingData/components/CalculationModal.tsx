@@ -37,8 +37,8 @@ const CalculationModal: React.FC<CalculationModalProps> = ({
     })
   }
 
-  const getColumnSearchProps = (dataIndex) => ({
-    filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters, close }) => (
+  const getColumnSearchProps = () => ({
+    filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) => (
       <div style={{ padding: 8 }} onKeyDown={(e) => e.stopPropagation()}>
         <Input
           // ref={searchInput}
@@ -75,23 +75,15 @@ const CalculationModal: React.FC<CalculationModalProps> = ({
       <SearchOutlined style={{ color: filtered ? '#1890ff' : undefined }} />
     ),
     onFilter: (value, record) => {
-      return record[dataIndex]
-        ? record[dataIndex].toString().toLowerCase().includes(value.toLowerCase())
-        : false
+      return record.batchNo ? record.batchNo.includes(value) : false
     }
-    // onFilterDropdownOpenChange: (visible) => {
-    //   if (visible && dataIndex === 'batchNo') {
-    //     setTimeout(() => searchInput.current?.select(), 100)
-    //   }
-    // }
   })
 
   const columns: TableProps<DataType> = [
     {
       title: '批次号',
       dataIndex: 'batchNo',
-      render: (text) => <a>{text}</a>,
-      ...getColumnSearchProps('batchNo')
+      ...getColumnSearchProps()
     },
     {
       title: '有害成分类型',
@@ -102,6 +94,10 @@ const CalculationModal: React.FC<CalculationModalProps> = ({
         { text: 'co', value: 'co' }
       ],
       onFilter: (value, record) => record.type === value
+    },
+    {
+      title: '常量',
+      dataIndex: 'changliang'
     },
     {
       title: '滤嘴通风率系数',
@@ -179,9 +175,10 @@ const CalculationModal: React.FC<CalculationModalProps> = ({
           type="primary"
           onClick={async () => {
             try {
-              const res = await window.electronAPI.harmful.generate()
+              await window.electronAPI.harmful.generate()
               info('success', '生成计算系数成功')
-              // console.log(res, 'aaaaaa')
+              const res = await window.electronAPI.harmful.query('')
+              setModalData(res.data)
               return true
             } catch {
               info('error', '生成计算系数失败，请重试')

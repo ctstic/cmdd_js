@@ -42,7 +42,6 @@ const Page: React.FC = () => {
   return (
     <div style={{ height: '98vh' }}>
       <LoginFormPage
-        // ✅ 保留你的背景图（不用动）
         backgroundImageUrl={new URL('../../assets/login-img.jpg', import.meta.url).href}
         title={<span style={{ color: '#fff', fontSize: 32 }}>江苏中烟卷烟辅材数字化设计平台</span>}
         subTitle={<span style={{ color: 'rgba(255,255,255,0.85)' }}>用户登录</span>}

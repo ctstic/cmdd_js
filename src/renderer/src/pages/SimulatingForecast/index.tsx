@@ -54,6 +54,37 @@ const SimulatingForecast: React.FC = () => {
   const actionRef = useRef<any>(null)
   const [expandedRowKeys, setExpandedRowKeys] = useState<React.Key[]>([])
 
+  // 可复用的卡片组件
+  const StyledCard = ({ title, icon, children, color = '#1890ff' }) => {
+    const cardHeaderStyle = {
+      background: `linear-gradient(90deg, ${color}20 0%, #ffffff 100%)`,
+      padding: '16px 24px',
+      borderRadius: '12px 12px 0 0',
+      borderBottom: `2px solid ${color}40`
+    }
+    return (
+      <Card
+        style={{
+          marginBottom: 20,
+          borderRadius: 16,
+          boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+          border: `1px solid ${color}30`
+        }}
+        bodyStyle={{ padding: 0 }}
+      >
+        <div style={cardHeaderStyle}>
+          {React.cloneElement(icon, {
+            style: { marginRight: 12, color: color, fontSize: '18px' }
+          })}
+          <Text strong style={{ fontSize: '18px', color: color }}>
+            {title}
+          </Text>
+        </div>
+        <div style={{ padding: '24px' }}>{children}</div>
+      </Card>
+    )
+  }
+
   const handleSubmit = async (): Promise<void> => {
     try {
       const formValues = await form.validateFields()
@@ -144,7 +175,6 @@ const SimulatingForecast: React.FC = () => {
   return (
     <div style={{ minHeight: 'calc(100vh - 145px)' }}>
       {contextHolder}
-      {/* {msgContextHolder} */}
       {/* 标题 */}
       <Card
         style={{
@@ -174,92 +204,59 @@ const SimulatingForecast: React.FC = () => {
         </Text>
       </Card>
 
-      <Row gutter={[24, 24]}>
+      <Row gutter={[24, 16]}>
         {/* 左侧表单 */}
         <Col xs={24} lg={8}>
           <Form form={form} layout="vertical">
             {/* 辅材参数 */}
-            <Card
-              style={{
-                marginBottom: 24,
-                borderRadius: 16,
-                boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-                border: '1px solid #e8e8e8'
-              }}
-              bodyStyle={{ padding: 0 }}
-            >
-              <div style={styles.cardHeader}>
-                <ExperimentOutlined style={{ marginRight: 8, color: '#1890ff' }} />
-                <Text strong style={{ fontSize: '16px' }}>
-                  基准卷烟辅材参数
-                </Text>
-              </div>
-              <div style={{ padding: '20px 24px' }}>
-                <Row gutter={16}>
-                  {baseMaterialFields.map((field) => (
-                    <Col xs={24} sm={12} key={field.name}>
-                      <Form.Item
-                        name={field.name}
-                        label={`${field.label}${field.unit ? ` (${field.unit})` : ''}`}
-                        rules={requiredRule(field.label)}
-                      >
-                        <InputNumber
-                          style={{ width: '100%' }}
-                          min={0}
-                          step={0.01}
-                          precision={2}
-                          placeholder={`请输入${field.label}`}
-                        />
-                      </Form.Item>
-                    </Col>
-                  ))}
-                </Row>
-              </div>
-            </Card>
+            <StyledCard title="基准卷烟辅材参数" icon={<ExperimentOutlined />}>
+              <Row gutter={16}>
+                {baseMaterialFields.map((field) => (
+                  <Col xs={24} sm={12} key={field.name}>
+                    <Form.Item
+                      name={field.name}
+                      label={`${field.label}${field.unit ? ` (${field.unit})` : ''}`}
+                      rules={requiredRule(field.label)}
+                    >
+                      <InputNumber
+                        style={{ width: '100%' }}
+                        min={0}
+                        step={0.01}
+                        precision={2}
+                        placeholder={`请输入${field.label}`}
+                      />
+                    </Form.Item>
+                  </Col>
+                ))}
+              </Row>
+            </StyledCard>
 
             {/* 有害成分 */}
-            <Card
-              style={{
-                borderRadius: 16,
-                marginBottom: 24,
-                boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-                border: '1px solid #e8e8e8'
-              }}
-              bodyStyle={{ padding: 0 }}
+            <StyledCard
+              title="基准卷烟有害成分"
+              icon={<SafetyCertificateOutlined />}
+              color="#fa8c16"
             >
-              <div
-                style={{
-                  ...styles.cardHeader,
-                  background: 'linear-gradient(90deg, #fff7e6 0%, #ffffff 100%)'
-                }}
-              >
-                <SafetyCertificateOutlined style={{ marginRight: 8, color: '#fa8c16' }} />
-                <Text strong style={{ fontSize: '16px' }}>
-                  基准卷烟有害成分
-                </Text>
-              </div>
-              <div style={{ padding: '20px 24px' }}>
-                <Row gutter={16}>
-                  {harmfulFields.map((field) => (
-                    <Col xs={24} sm={8} key={field.name}>
-                      <Form.Item
-                        name={field.name}
-                        label={`${field.label}${field.unit ? ` (${field.unit})` : ''}`}
-                        rules={requiredRule(field.label)}
-                      >
-                        <InputNumber
-                          style={{ width: '100%' }}
-                          min={0}
-                          step={0.01}
-                          precision={2}
-                          placeholder={`请输入${field.label}`}
-                        />
-                      </Form.Item>
-                    </Col>
-                  ))}
-                </Row>
-              </div>
-            </Card>
+              <Row gutter={16}>
+                {harmfulFields.map((field) => (
+                  <Col xs={24} sm={8} key={field.name}>
+                    <Form.Item
+                      name={field.name}
+                      label={`${field.label}${field.unit ? ` (${field.unit})` : ''}`}
+                      rules={requiredRule(field.label)}
+                    >
+                      <InputNumber
+                        style={{ width: '100%' }}
+                        min={0}
+                        step={0.01}
+                        precision={2}
+                        placeholder={`请输入${field.label}`}
+                      />
+                    </Form.Item>
+                  </Col>
+                ))}
+              </Row>
+            </StyledCard>
           </Form>
           {/* 底部按钮 */}
           <Card
@@ -304,7 +301,9 @@ const SimulatingForecast: React.FC = () => {
 
         {/* 右侧表格 */}
         <Col xs={24} lg={16}>
-          <PredictionTable actionRef={actionRef} expandedRowKeys={expandedRowKeys} />
+          <StyledCard title="预测结果数据" icon={<LineChartOutlined />} color="#52c41a">
+            <PredictionTable actionRef={actionRef} expandedRowKeys={expandedRowKeys} />
+          </StyledCard>
         </Col>
       </Row>
     </div>
