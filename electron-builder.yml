@@ -1,5 +1,5 @@
 appId: com.cmdd.app
-productName: 材料设计
+productName: 江苏中烟卷烟辅材数字化设计平台
 directories:
   buildResources: build
 files:

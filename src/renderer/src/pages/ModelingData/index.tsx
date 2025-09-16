@@ -114,6 +114,24 @@ const ModelingData: React.FC = () => {
     }
   }
 
+  const handleDownload = async () => {
+    // 1) 取出打包资源（Vite 的 import.meta.url 可生成正确路径）
+    const url = new URL('../../assets/软件数据模板.xlsx', import.meta.url).href
+    const res = await fetch(url)
+    if (!res.ok) throw new Error('资源读取失败')
+    const blob = await res.blob()
+
+    // 2) 生成临时下载链接并触发保存（落到系统默认“下载”目录）
+    const objectUrl = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = objectUrl
+    a.download = '模板文件.xlsx' // 你想要的文件名
+    document.body.appendChild(a)
+    a.click()
+    a.remove()
+    URL.revokeObjectURL(objectUrl)
+  }
+
   const columns: TableProps<DataType>['columns'] = [
     {
       title: '编号',
@@ -228,9 +246,14 @@ const ModelingData: React.FC = () => {
             {importing ? '导入中...' : '导入Excel数据'}
           </Button>
         </Upload>
-        <a type="link" download="模板文件.xls" href="../../../../../resources/软件数据模板.xlsx">
+        <a
+          type="link"
+          download="模板文件.xls"
+          href={new URL('../../assets/软件数据模板.xlsx', import.meta.url).href}
+        >
           下载模板
         </a>
+        <button onClick={handleDownload}>下载模板</button>
       </Space>
       <Table<DataType> rowKey="id" columns={columns} dataSource={tableData} />
       <CalculationModal
