@@ -78,41 +78,14 @@ const ModelingData: React.FC = () => {
         name: file.name,
         buffer: uint8Array
       })
-
       console.log(result)
-      // if (result.success) {
-      //   message.success(
-      //     `导入成功！共处理${result.totalRows}行数据，成功${result.successRows}行，生成批次号：${result.batchNo}`
-      //   )
-
-      //   // 显示详细结果
-      //   if (result.failedRows > 0) {
-      //     message.warning(
-      //       `有${result.failedRows}行数据导入失败，请检查数据格式`
-      //     )
-      //   }
-
-      //   // 调用成功回调
-      //   onImportSuccess?.(result)
-
-      //   // 清空文件列表
-      //   setFileList([])
-
-      // } else {
-      //   // 显示错误信息
-      //   const errorMsg = result.errors.length > 0
-      //     ? result.errors.slice(0, 3).join('; ') + (result.errors.length > 3 ? '...' : '')
-      //     : '导入失败'
-
-      //   message.error(`导入失败：${errorMsg}`)
-
-      //   // 在控制台输出详细错误信息，便于调试
-      //   console.error('导入失败详情:', result.errors)
-      // }
+      if (result.error?.length === 0) {
+        info('success', `导入成功`)
+      } else {
+        info('error', `导入失败，${result.error[0]}`)
+      }
     } catch (error) {
-      console.error('导入过程中发生错误:', error)
-      // message.error(`导入过程中发生错误: ${error instanceof Error ? error.message : '未知错误'}`)
-      info('error', `导入过程中发生错误: ${error instanceof Error ? error.message : '未知错误'}`)
+      info('error', '导入失败')
     } finally {
       setImporting(false)
     }
@@ -183,6 +156,18 @@ const ModelingData: React.FC = () => {
       dataIndex: 'potassiumRatio'
     },
     {
+      title: '焦油（mg/支）',
+      dataIndex: 'tar'
+    },
+    {
+      title: '烟碱（mg/支）',
+      dataIndex: 'nicotine'
+    },
+    {
+      title: 'CO（mg/支）',
+      dataIndex: 'co'
+    },
+    {
       title: '操作',
       key: 'option',
       render: (_, record) => {
@@ -243,6 +228,9 @@ const ModelingData: React.FC = () => {
             {importing ? '导入中...' : '导入Excel数据'}
           </Button>
         </Upload>
+        <a type="link" download="模板文件.xls" href="../../../../../resources/软件数据模板.xlsx">
+          下载模板
+        </a>
       </Space>
       <Table<DataType> rowKey="id" columns={columns} dataSource={tableData} />
       <CalculationModal

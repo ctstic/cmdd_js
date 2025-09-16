@@ -27,10 +27,7 @@ interface PredictionTableProps {
 const PredictionTable: React.FC<PredictionTableProps> = ({ actionRef, expandedRowKeys }) => {
   const [editableKeys, setEditableRowKeys] = useState<React.Key[]>([])
   const [dataSource, setDataSource] = useState<readonly DataSourceType[]>([])
-  // const [expandedRowKeys, setExpandedRowKeys] = useState<React.Key[]>([])
-
   const editableTableRef = useRef<any>(null)
-  console.log(dataSource, 'dataSource')
 
   // Expose methods to the parent component via actionRef
   useImperativeHandle(actionRef, () => ({
@@ -126,9 +123,9 @@ const PredictionTable: React.FC<PredictionTableProps> = ({ actionRef, expandedRo
                 >
                   <div style={{ textAlign: 'left', width: '200px' }}>
                     <p style={{ margin: 0, fontSize: '16px' }}>
-                      <strong>CO:</strong>
-                      <span style={{ color: prediction?.co ? '#52c41a' : 'gray' }}>
-                        {prediction?.co || '未计算'}
+                      <strong>焦油:</strong>
+                      <span style={{ color: prediction?.tar ? '#52c41a' : 'gray' }}>
+                        {prediction?.tar || '未计算'}
                       </span>
                     </p>
                   </div>
@@ -142,9 +139,9 @@ const PredictionTable: React.FC<PredictionTableProps> = ({ actionRef, expandedRo
                   </div>
                   <div style={{ textAlign: 'left', width: '200px' }}>
                     <p style={{ margin: 0, fontSize: '16px' }}>
-                      <strong>焦油:</strong>
-                      <span style={{ color: prediction?.tar ? '#52c41a' : 'gray' }}>
-                        {prediction?.tar || '未计算'}
+                      <strong>CO:</strong>
+                      <span style={{ color: prediction?.co ? '#52c41a' : 'gray' }}>
+                        {prediction?.co || '未计算'}
                       </span>
                     </p>
                   </div>

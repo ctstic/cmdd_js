@@ -28,19 +28,6 @@ interface FormFieldConfig {
   unit?: string
 }
 
-// interface DataSourceItem {
-//   key: string
-//   filterVentilation: string | number
-//   filterPressureDrop: string | number
-//   permeability: string | number
-//   quantitative: string | number
-//   citrate: string | number
-//   potassiumRatio: string | number
-//   tar: string | number
-//   nicotine: string | number
-//   co: string | number
-// }
-
 // 基准卷烟辅材参数
 const baseMaterialFields: FormFieldConfig[] = [
   { name: 'filterVentilation', label: '滤嘴通风率', unit: '%' },
@@ -53,9 +40,9 @@ const baseMaterialFields: FormFieldConfig[] = [
 
 // 基准卷烟有害成分
 const harmfulFields: FormFieldConfig[] = [
-  { name: 'co', label: 'CO', unit: 'mg/支' },
-  { name: 'nicotine', label: '烟碱', unit: 'mg/支' },
   { name: 'tar', label: '焦油', unit: 'mg/支' },
+  { name: 'nicotine', label: '烟碱', unit: 'mg/支' },
+  { name: 'co', label: 'CO', unit: 'mg/支' }
 ]
 
 // 公共必填规则
@@ -88,7 +75,6 @@ const SimulatingForecast: React.FC = () => {
         }))
         const jsonString = JSON.stringify(inputParams)
         const isNaN = jsonString.includes('null')
-        console.log('🚀 ~ 传递给API的输入参数:', inputParams)
         if (inputParams.length === 0 || isNaN) {
           notificationApi.error({
             message: '请正确填写预测结果数据表格'
@@ -97,7 +83,7 @@ const SimulatingForecast: React.FC = () => {
           // 调用接口
           const res = await window.electronAPI.simulation.prediction({
             standardParams: formValues,
-            predictionParams: inputParams // 只传递输入参数
+            predictionParams: inputParams
           })
 
           // 判断返回数据是否存在
@@ -107,21 +93,25 @@ const SimulatingForecast: React.FC = () => {
               message: '计算成功'
             })
             // 确保将返回的预测数据更新到表格中
-            const predictionData = res.data.map((item: any) => ({
-              ...item, // 返回的数据结构
-              key: item.key.toString(), // 确保 key 为字符串类型
-              // 确保数值类型正确
-              filterVentilation: Number(item.filterVentilation) || 0,
-              filterPressureDrop: Number(item.filterPressureDrop) || 0,
-              permeability: Number(item.permeability) || 0,
-              quantitative: Number(item.quantitative) || 0,
-              citrate: Number(item.citrate) || 0,
-              potassiumRatio: Number(item.potassiumRatio) || 0,
-              tar: Number(item.tar) || 0,
-              nicotine: Number(item.nicotine) || 0,
-              co: Number(item.co) || 0
-            }))
-            actionRef.current.setData(predictionData) // 更新 dataSource
+            const predictionData = res.data.map((item: any) => {
+              const params = inputParams.find((params) => params.key === item.key)
+
+              return {
+                ...item,
+                key: item.key.toString(),
+                filterVentilation: Number(params?.filterVentilation) || 0,
+                filterPressureDrop: Number(params?.filterPressureDrop) || 0,
+                permeability: Number(params?.permeability) || 0,
+                quantitative: Number(params?.quantitative) || 0,
+                citrate: Number(params?.citrate) || 0,
+                potassiumRatio: Number(params?.potassiumRatio) || 0,
+                tar: Number(item.tar) || 0,
+                nicotine: Number(item.nicotine) || 0,
+                co: Number(item.co) || 0
+              }
+            })
+
+            actionRef.current.setData(predictionData)
             setExpandedRowKeys(predictionData.map((item) => item.key))
           } else {
             notificationApi.error({
@@ -139,7 +129,17 @@ const SimulatingForecast: React.FC = () => {
     }
   }
 
-  const handleReset = (): void => {}
+  const handleReset = (): void => {
+    form.resetFields()
+    if (actionRef.current) {
+      actionRef.current.setData([])
+    }
+    setExpandedRowKeys([])
+    notificationApi.success({
+      message: '重置成功',
+      description: '表单和表格数据已重置'
+    })
+  }
 
   return (
     <div style={{ minHeight: 'calc(100vh - 145px)' }}>
@@ -282,7 +282,7 @@ const SimulatingForecast: React.FC = () => {
                     minWidth: 100
                   }}
                 >
-                  提交
+                  计算
                 </Button>
                 <Button
                   size="large"

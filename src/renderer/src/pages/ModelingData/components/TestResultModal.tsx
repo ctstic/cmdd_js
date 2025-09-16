@@ -1,12 +1,8 @@
 import React from 'react'
 import { Modal, Card, Row, Col, Typography, Button } from 'antd'
-import {
-  LineChartOutlined,
-  BarChartOutlined,
-  ExperimentOutlined,
-} from '@ant-design/icons'
+import { LineChartOutlined, BarChartOutlined, ExperimentOutlined } from '@ant-design/icons'
 
-const {  Text } = Typography
+const { Text } = Typography
 
 export type TestResultModalProps = {
   data: any
@@ -19,7 +15,7 @@ const TestResultModal: React.FC<TestResultModalProps> = ({ data, modalOpen, onCa
 
   // 将数据分类为X轴和Y轴数据
   const xDataItems = [
-    { name: '滤嘴通风率', value: data.filterVentilation, unit: '' },
+    { name: '滤嘴通风率', value: data.filterVentilation, unit: '%' },
     { name: '滤棒压降', value: data.filterPressureDrop, unit: 'Pa' },
     { name: '透气度', value: data.permeability, unit: 'CU' },
     { name: '定量', value: data.quantitative, unit: 'g/m²' },
@@ -30,13 +26,13 @@ const TestResultModal: React.FC<TestResultModalProps> = ({ data, modalOpen, onCa
   const yDataItems = [
     { name: '焦油', value: data.tar, unit: 'mg/支' },
     { name: '烟碱', value: data.nicotine, unit: 'mg/支' },
-    { name: '一氧化碳', value: data.co, unit: 'mg/支' }
+    { name: 'CO', value: data.co, unit: 'mg/支' }
   ]
 
   return (
     <Modal
       width="90%"
-    //   style={{ maxWidth: 1000 }}
+      //   style={{ maxWidth: 1000 }}
       title={
         <div style={{ display: 'flex', alignItems: 'center' }}>
           <ExperimentOutlined style={{ marginRight: 12, color: '#1890ff' }} />
@@ -86,7 +82,9 @@ const TestResultModal: React.FC<TestResultModalProps> = ({ data, modalOpen, onCa
                       marginTop: 8
                     }}
                   >
-                    {item.value}
+                    {item.unit === '%' || item.unit === '%'
+                      ? (Number(item.value) * 100).toFixed(2)
+                      : item.value}
                   </div>
                 </div>
               </Col>
