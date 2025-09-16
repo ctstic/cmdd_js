@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react'
-import { Table, Popconfirm, Button, message, Upload, Space } from 'antd'
+import { Table, Popconfirm, Button, message, Upload, Space, Input } from 'antd'
 import CalculationModal from './components/CalculationModal'
 import TestResultModal from './components/TestResultModal'
 import type { TableProps, UploadProps, UploadFile } from 'antd'
+import { SearchOutlined } from '@ant-design/icons'
 interface DataType {
   id: number
   code: string
@@ -81,6 +82,7 @@ const ModelingData: React.FC = () => {
       console.log(result)
       if (result.error?.length === 0) {
         info('success', `导入成功`)
+        loadUsers()
       } else {
         info('error', `导入失败，${result.error[0]}`)
       }
@@ -127,7 +129,46 @@ const ModelingData: React.FC = () => {
         >
           {text}
         </a>
-      )
+      ),
+      filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) => (
+        <div style={{ padding: 8 }} onKeyDown={(e) => e.stopPropagation()}>
+          <Input
+            // ref={searchInput}
+            placeholder={`搜索批次号`}
+            value={selectedKeys[0]}
+            onChange={(e) => setSelectedKeys(e.target.value ? [e.target.value] : [])}
+            onPressEnter={() => confirm()}
+            style={{ marginBottom: 8, display: 'block' }}
+          />
+          <Space>
+            <Button
+              type="primary"
+              onClick={() => confirm()}
+              icon={<SearchOutlined />}
+              size="small"
+              style={{ width: 90 }}
+            >
+              搜索
+            </Button>
+            <Button
+              onClick={() => {
+                clearFilters()
+                confirm()
+              }}
+              size="small"
+              style={{ width: 90 }}
+            >
+              重置
+            </Button>
+          </Space>
+        </div>
+      ),
+      filterIcon: (filtered) => (
+        <SearchOutlined style={{ color: filtered ? '#1890ff' : undefined }} />
+      ),
+      onFilter: (value, record) => {
+        return record.code ? record.code.includes(value) : false
+      }
     },
     {
       title: '滤嘴通风率',
@@ -228,7 +269,11 @@ const ModelingData: React.FC = () => {
             {importing ? '导入中...' : '导入Excel数据'}
           </Button>
         </Upload>
-        <a type="link" download="模板文件.xls" href="../../../../../resources/软件数据模板.xlsx">
+        <a
+          type="link"
+          download="软件数据模板.xlsx"
+          href="../../../../../resources/软件数据模板.xlsx"
+        >
           下载模板
         </a>
       </Space>

@@ -324,7 +324,7 @@ const RecommendParameter: React.FC = () => {
     })
 
     // 数据更新
-    const transformedData = res.data.map((item,index) => ({
+    const transformedData = res.data.map((item, index) => ({
       id: index,
       filterVentilation: item.designParams.filterVentilation,
       filterPressureDrop: item.designParams.filterPressureDrop,
@@ -347,7 +347,7 @@ const RecommendParameter: React.FC = () => {
     {
       title: '滤嘴通风率',
       dataIndex: 'filterVentilation',
-      render: (text) => <span>{Number(text) * 100}%</span>
+      render: (text) => <span>{(Number(text) * 100).toFixed(2)}%</span>
     },
     {
       title: '滤棒压降 (Pa)',
@@ -364,7 +364,7 @@ const RecommendParameter: React.FC = () => {
     {
       title: '柠檬酸根 (设计值)',
       dataIndex: 'citrate',
-      render: (text) => <span>{Number(text) * 100}%</span>
+      render: (text) => <span>{(Number(text) * 100).toFixed(2)}%</span>
     }
   ]
 
@@ -555,7 +555,7 @@ const RecommendParameter: React.FC = () => {
             }}
           >
             <Table
-            rowKey='id'
+              rowKey="id"
               locale={{
                 emptyText: <Empty description="暂无数据" image={Empty.PRESENTED_IMAGE_SIMPLE} />
               }}
