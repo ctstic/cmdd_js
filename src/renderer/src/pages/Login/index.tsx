@@ -46,10 +46,14 @@ const Page = () => {
     <div style={{ backgroundColor: 'white', height: '100vh' }}>
       <LoginFormPage
         backgroundImageUrl="../../../public/login-img.png"
-        title="材料设计"
+        title="江苏中烟卷烟辅材数字化设计平台"
         subTitle="用户登录"
         onFinish={handleFinish}
-        containerStyle={{ backgroundColor: 'rgba(0, 0, 0, 0.154)', backdropFilter: 'blur(4px)' }}
+        containerStyle={{
+          backgroundColor: 'rgba(0, 0, 0, 0.154)',
+          backdropFilter: 'blur(4px)'
+          // width: '400px'
+        }}
       >
         <>
           <ProFormText

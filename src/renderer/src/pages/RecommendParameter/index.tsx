@@ -4,12 +4,10 @@ import {
   Row,
   Col,
   Typography,
-  Input,
   Form,
   Button,
   message,
   Slider,
-  Steps,
   Table,
   InputNumber,
   Empty
@@ -17,14 +15,26 @@ import {
 import {
   ExperimentOutlined,
   SafetyCertificateOutlined,
-  ArrowLeftOutlined,
-  ArrowRightOutlined,
   ArrowUpOutlined,
-  ArrowDownOutlined
+  ArrowDownOutlined,
+  CalculatorOutlined,
+  LineChartOutlined
 } from '@ant-design/icons'
 import type { TableProps } from 'antd'
 
-const { Text } = Typography
+const { Title, Text } = Typography
+
+const styles = {
+  headerGradient: {
+    background: 'linear-gradient(135deg, #1890ff 0%, #a3dcff 100%)'
+  },
+  cardHeader: {
+    background: 'linear-gradient(90deg, #a3dcff 0%, #ffffff 100%)',
+    padding: '12px 16px',
+    borderRadius: '12px 12px 0 0',
+    borderBottom: '2px solid #a3dcff'
+  }
+}
 
 interface DataType {
   id: number
@@ -39,25 +49,6 @@ interface DataType {
   nicotine: string
   tar: string
 }
-
-// 步骤配置
-const stepConfigs = [
-  {
-    title: '基准参数',
-    color: '#1890ff',
-    icon: <ExperimentOutlined />
-  },
-  {
-    title: '目标设置',
-    color: '#fa8c16',
-    icon: <SafetyCertificateOutlined />
-  },
-  {
-    title: '参数范围',
-    color: '#52c41a',
-    icon: <ExperimentOutlined />
-  }
-]
 
 // 第一  二步输入框
 const FormFieldGroup = ({ fields, form, layout = 'vertical', cols = 2 }) => {
@@ -118,7 +109,7 @@ const RangeSliders = ({ fields, form }) => {
                 label={
                   <Text strong style={{ color: '#262626', marginBottom: 12 }}>
                     {field.label}
-                    {field.unit ? `(${field.unit})` : ''}
+                    {field.unit ? `(${field.unit})` : ''}&nbsp;&nbsp; 步长值{field.step}
                   </Text>
                 }
                 style={{ marginBottom: 0 }}
@@ -200,7 +191,6 @@ const StyledCard = ({ title, icon, children, color = '#1890ff', style = {}, mark
 }
 
 const RecommendParameter: React.FC = () => {
-  const [current, setCurrent] = useState(0)
   const [baseForm] = Form.useForm()
   const [targetForm] = Form.useForm()
   const [weightForm] = Form.useForm()
@@ -285,63 +275,54 @@ const RecommendParameter: React.FC = () => {
     }
   ]
 
-  const next = () => {
-    if (
-      current === 1 &&
-      weightForm.getFieldValue('coWeight') +
-        weightForm.getFieldValue('nicotineWeight') +
-        weightForm.getFieldValue('tarWeight') >
-        1
-    ) {
-      info('warning', '权重不能大于1')
-    } else {
-      setCurrent(current + 1)
-    }
-  }
-
-  const prev = () => {
-    setCurrent(current - 1)
-  }
-
   const handleSubmit = async () => {
     // 获取每一步表单的所有值
-    const baseValues = baseForm.getFieldsValue(true) // true 表示获取所有表单字段（即使它们没有被渲染）
+    const baseValues = baseForm.getFieldsValue(true)
     const targetValues = targetForm.getFieldsValue(true)
     const weightValues = weightForm.getFieldsValue(true)
     const rangeValues = rangeForm.getFieldsValue(true)
 
-    // 打印所有表单的值
-    console.log('基准卷烟辅材参数:', baseValues)
-    console.log('目标有害成分:', targetValues)
-    console.log('成分权重设置:', weightValues)
-    console.log('辅材参数个性化设计范围:', rangeValues)
+    // // 打印所有表单的值
+    // console.log('基准卷烟辅材参数:', baseValues)
+    // console.log('目标有害成分:', targetValues)
+    // console.log('成分权重设置:', weightValues)
+    // console.log('辅材参数个性化设计范围:', rangeValues)
 
-    const res = await window.electronAPI.rec.auxMaterials({
-      count: rangeValues.size,
-      standardParams: baseValues,
-      targetParams: { ...targetValues, ...weightValues },
-      standardDesignParams: rangeValues
-    })
+    if (
+      weightForm.getFieldValue('coWeight') +
+        weightForm.getFieldValue('nicotineWeight') +
+        weightForm.getFieldValue('tarWeight') >
+      1
+    ) {
+      info('warning', '有害成分权重之和不大于1')
+      return false
+    } else {
+      const res = await window.electronAPI.rec.auxMaterials({
+        count: rangeValues.size,
+        standardParams: baseValues,
+        targetParams: { ...targetValues, ...weightValues },
+        standardDesignParams: rangeValues
+      })
 
-    // 数据更新
-    const transformedData = res.data.map((item, index) => ({
-      id: index,
-      filterVentilation: item.designParams.filterVentilation,
-      filterPressureDrop: item.designParams.filterPressureDrop,
-      permeability: item.designParams.permeability,
-      quantitative: item.designParams.quantitative,
-      citrate: item.designParams.citrate,
-      tar: item.designParams.tar,
-      nicotine: item.designParams.nicotine,
-      co: item.designParams.co,
-      prediction: item.prediction
-    }))
-    console.log(transformedData, 'resrestransformedData')
-    setTableData(transformedData)
-    message.success('参数推荐完成！')
+      // 数据更新
+      const transformedData = res.data.map((item, index) => ({
+        id: index,
+        filterVentilation: item.designParams.filterVentilation,
+        filterPressureDrop: item.designParams.filterPressureDrop,
+        permeability: item.designParams.permeability,
+        quantitative: item.designParams.quantitative,
+        citrate: item.designParams.citrate,
+        tar: item.designParams.tar,
+        nicotine: item.designParams.nicotine,
+        co: item.designParams.co,
+        prediction: item.prediction
+      }))
+      // console.log(transformedData, 'resrestransformedData')
+      setTableData(transformedData)
+      message.success('参数推荐完成！')
+      return true
+    }
   }
-
-  const currentStep = stepConfigs[current]
 
   const columns: TableProps<DataType>['columns'] = [
     {
@@ -387,172 +368,116 @@ const RecommendParameter: React.FC = () => {
       </span>
     )
   }
+
   return (
-    <div
-      style={{
-        padding: 24,
-        //   background: currentStep.gradient.replace('135deg', '0deg').replace('100%)', '20%)'),
-        minHeight: '100vh',
-        borderRadius: 8
-      }}
-    >
+    <div style={{ minHeight: 'calc(100vh - 145px)' }}>
       {contextHolder}
-      {/* 步骤指示器 */}
-      <Steps
-        current={current}
-        items={stepConfigs.map((config, index) => ({
-          title: config.title,
-          icon: React.cloneElement(config.icon, {
-            style: { color: index === current ? config.color : '#bfbfbf' }
-          })
-        }))}
+      <Card
         style={{
-          marginBottom: 20,
-          padding: 20,
-          background: 'rgba(255, 255, 255, 0.9)',
-          borderRadius: 12,
-          boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+          marginBottom: 24,
+          ...styles.headerGradient,
+          color: 'white',
+          borderRadius: 16,
+          boxShadow: '0 8px 20px rgba(24, 144, 255, 0.3)',
+          border: 'none'
         }}
-      />
+        bodyStyle={{ padding: '28px 32px' }}
+      >
+        <Title level={2} style={{ color: 'white', margin: 0, fontWeight: 700 }}>
+          <CalculatorOutlined style={{ marginRight: 16, fontSize: '32px' }} />
+          卷烟焦油和烟碱推荐辅材参数
+        </Title>
+        <Text
+          style={{
+            color: 'rgba(255,255,255,0.9)',
+            fontSize: '18px',
+            display: 'block',
+            marginTop: '8px'
+          }}
+        >
+          <LineChartOutlined style={{ marginRight: 8 }} />
+          基于多维数据的智能化推荐辅材参数
+        </Text>
+      </Card>
       <Row gutter={[24, 16]}>
-        {/* 表单在左侧 */}
-        <Col xs={24} md={8}>
-          {/* 第一步：基准参数 */}
-          {current === 0 && (
-            <>
-              <StyledCard
-                title="基准卷烟辅材参数"
-                icon={<ExperimentOutlined />}
-                color={currentStep.color}
-              >
-                <FormFieldGroup fields={baseMaterialFields} form={baseForm} cols={3} />
-              </StyledCard>
+        <Col xs={24} md={10} style={{ maxHeight: 'calc(100vh - 320px)', overflowY: 'scroll' }}>
+          <StyledCard title="基准卷烟辅材参数" icon={<ExperimentOutlined />}>
+            <FormFieldGroup fields={baseMaterialFields} form={baseForm} cols={3} />
+          </StyledCard>
+          <StyledCard title="基准卷烟有害成分" icon={<SafetyCertificateOutlined />}>
+            <FormFieldGroup fields={harmfulFields} form={baseForm} cols={3} />
+          </StyledCard>
+          <StyledCard title="目标有害成分" icon={<SafetyCertificateOutlined />} color="#fa8c16">
+            <FormFieldGroup fields={harmfulFields} form={targetForm} cols={3} />
+          </StyledCard>
+          <StyledCard
+            title="有害成分权重设置"
+            icon={<ExperimentOutlined />}
+            mark="有害成分权重之和不大于1"
+            color="#fa8c16"
+          >
+            <FormFieldGroup fields={harmfulWeightFields} form={weightForm} cols={3} />
+          </StyledCard>
+          <StyledCard
+            title="辅材参数个性化设计范围"
+            icon={<SafetyCertificateOutlined />}
+            style={{ marginBottom: 12 }}
+            color="#52c41a"
+          >
+            <FormFieldGroup
+              fields={[{ name: 'size', label: '生成有害成分数量', unit: '条' }]}
+              form={rangeForm}
+              cols={5}
+            />
+            <RangeSliders fields={rangeFields} form={rangeForm} />
 
-              <StyledCard
-                title="基准卷烟有害成分"
-                icon={<SafetyCertificateOutlined />}
-                color={currentStep.color}
-              >
-                <FormFieldGroup fields={harmfulFields} form={baseForm} cols={3} />
-              </StyledCard>
-            </>
-          )}
-
-          {/* 第二步：目标设置 */}
-          {current === 1 && (
-            <>
-              <StyledCard
-                title="目标有害成分"
-                icon={<SafetyCertificateOutlined />}
-                color={currentStep.color}
-              >
-                <FormFieldGroup fields={harmfulFields} form={targetForm} cols={3} />
-              </StyledCard>
-
-              <StyledCard
-                title="有害成分权重设置"
-                icon={<ExperimentOutlined />}
-                color={currentStep.color}
-                mark="有害成分权重之和不大于1"
-              >
-                <FormFieldGroup fields={harmfulWeightFields} form={weightForm} cols={3} />
-              </StyledCard>
-            </>
-          )}
-
-          {/* 第三步：参数范围 */}
-          {current === 2 && (
-            <StyledCard
-              title="辅材参数个性化设计范围"
-              icon={<SafetyCertificateOutlined />}
-              color={currentStep.color}
-              style={{ marginBottom: 12 }}
+            <div
+              style={{
+                marginTop: 24,
+                padding: 16,
+                background: '#f6ffed',
+                borderRadius: 8,
+                border: '1px dashed #b7eb8f'
+              }}
             >
-              <FormFieldGroup
-                fields={[{ name: 'size', label: '生成有害成分数量', unit: '条' }]}
-                form={rangeForm}
-                cols={5}
-              />
-              <RangeSliders fields={rangeFields} form={rangeForm} />
-
-              <div
-                style={{
-                  marginTop: 24,
-                  padding: 16,
-                  background: '#f6ffed',
-                  borderRadius: 8,
-                  border: '1px dashed #b7eb8f'
-                }}
-              >
-                <Text type="secondary">
-                  提示：拖动滑块设置各参数的可调整范围，系统将在此范围内为您推荐最优参数组合。
-                </Text>
-              </div>
-            </StyledCard>
-          )}
-
+              <Text type="secondary">
+                提示：拖动滑块设置各参数的可调整范围，系统将在此范围内为您推荐最优参数组合。
+              </Text>
+            </div>
+          </StyledCard>
           {/* 导航按钮 */}
           <div
             style={{
-              marginTop: 20,
+              marginBottom: 12,
+              paddingBlock: 20,
               textAlign: 'center',
-              padding: 20,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
               background: 'rgba(255, 255, 255, 0.9)',
               borderRadius: 12,
-              boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+              boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
             }}
           >
-            {current > 0 && (
-              <Button
-                icon={<ArrowLeftOutlined />}
-                onClick={prev}
-                style={{ marginRight: 16, minWidth: 100 }}
-                size="large"
-              >
-                上一步
-              </Button>
-            )}
-
-            {current < stepConfigs.length - 1 ? (
-              <Button
-                type="primary"
-                icon={<ArrowRightOutlined />}
-                onClick={next}
-                size="large"
-                style={{
-                  background: currentStep.color,
-                  borderColor: currentStep.color,
-                  minWidth: 100
-                }}
-              >
-                下一步
-              </Button>
-            ) : (
-              <Button
-                type="primary"
-                onClick={handleSubmit}
-                size="large"
-                style={{
-                  background: currentStep.color,
-                  borderColor: currentStep.color,
-                  minWidth: 140
-                }}
-              >
-                提交并生成推荐
-              </Button>
-            )}
+            <Button
+              type="primary"
+              onClick={handleSubmit}
+              size="large"
+              style={{
+                minWidth: 140,
+                margin: 0
+              }}
+            >
+              提交并生成推荐
+            </Button>
           </div>
         </Col>
-        <Col xs={24} md={16}>
-          <div
-            style={{
-              marginTop: 20,
-              textAlign: 'center',
-              padding: 20,
-              background: 'rgba(255, 255, 255, 0.9)',
-              borderRadius: 12,
-              boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-            }}
+        <Col xs={24} md={14}>
+          <StyledCard
+            title="推荐辅材参数表格"
+            icon={<SafetyCertificateOutlined />}
+            style={{ marginBottom: 12 }}
+            color="#52c41a"
           >
             <Table
               rowKey="id"
@@ -622,7 +547,7 @@ const RecommendParameter: React.FC = () => {
                 borderRadius: '8px'
               }}
             />
-          </div>
+          </StyledCard>
         </Col>
       </Row>
     </div>

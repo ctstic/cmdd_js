@@ -72,61 +72,62 @@ const BasicLayout: React.FC = () => {
         style={{
           position: 'sticky',
           top: 0,
-          zIndex: 1000, // 稍微调高，避免被内容覆盖；不影响点击
+          zIndex: 1000,
           width: '100%',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
           padding: '16px 24px',
           backgroundColor: '#001529',
           boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
           borderBottom: '1px solid #0b1e2e',
-          pointerEvents: 'auto' // 明确保证可点击
+          pointerEvents: 'auto'
         }}
       >
-        {/* Left: title + nav */}
-        <div style={{ display: 'flex', alignItems: 'center' }}>
+        <div
+          style={{
+            width: '100%',
+            display: 'grid',
+            gridTemplateColumns: '1fr auto 1fr',
+            alignItems: 'center'
+          }}
+        >
           <div
             style={{
               color: '#fff',
               fontWeight: 'bold',
               fontSize: 20,
-              marginRight: 32
+              justifySelf: 'start'
             }}
           >
-            科研数据分析平台
+            江苏中烟卷烟辅材数字化设计平台
           </div>
 
-          <nav aria-label="主导航" style={{ display: 'flex', gap: 24 }}>
+          <nav aria-label="主导航" style={{ display: 'flex', gap: 24, justifySelf: 'center' }}>
             {menuItems.map((item) => (
-              // ✅ 相对路径，避免在嵌套路由下搞出双斜杠或重复基路径
               <NavLink key={item.key} to={item.key} style={navLinkStyle}>
                 {item.label}
               </NavLink>
             ))}
           </nav>
-        </div>
 
-        {/* Right: username + logout */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-          <div style={{ color: '#fff', fontWeight: 500, fontSize: 20 }}>{username}</div>
-          <Tooltip title="退出登录">
-            <Button
-              type="text"
-              icon={<PoweroffOutlined />}
-              onClick={handleLogout}
-              aria-label="退出登录"
-              style={{
-                color: '#fff',
-                fontSize: 18,
-                display: 'flex',
-                alignItems: 'center',
-                border: 'none',
-                padding: 0,
-                backgroundColor: 'transparent'
-              }}
-            />
-          </Tooltip>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16, justifySelf: 'end' }}>
+            <div style={{ color: '#fff', fontWeight: 500, fontSize: 20 }}>{username}</div>
+            <Tooltip title="退出登录">
+              <Button
+                type="text"
+                icon={<PoweroffOutlined />}
+                onClick={handleLogout}
+                aria-label="退出登录"
+                style={{
+                  color: '#fff',
+                  fontSize: 18,
+                  display: 'flex',
+                  alignItems: 'center',
+                  border: 'none',
+                  padding: 0,
+                  backgroundColor: 'transparent'
+                }}
+              />
+            </Tooltip>
+          </div>
         </div>
       </div>
 
