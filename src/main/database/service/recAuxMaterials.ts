@@ -20,13 +20,18 @@ export class RecAuxMaterials {
     filterPressureDrop: 200, // 滤棒压降步长
     permeability: 5, // 透气度步长
     quantitative: 2, // 定量步长
-    citrate: 0.4 // 柠檬酸根步长
+    citrate: 0.004 // 柠檬酸根步长
   }
   /**
    * 查找推荐辅材设计
    * @param dto 输入参数（基准 + 目标 + 范围）
    */
   async findMaterialDesign(dto: schema.AuxMaterialsDto): Promise<any[]> {
+    const result: any = {
+      success: false,
+      errors: '',
+      data: []
+    }
     dto.standardParams.filterVentilation = (Number(dto.standardParams.filterVentilation) / 100)
       .toFixed(3)
       .toString()
@@ -38,12 +43,12 @@ export class RecAuxMaterials {
     dto.standardDesignParams.citrate = dto.standardDesignParams.citrate.map((v) =>
       parseFloat((v / 100).toFixed(3))
     ) as [number, number]
-    console.log('------------------Standard Design Params:', dto)
     // 1️⃣ 获取最新批次的有害成分系数
     const harmfulConstants = harmfulService.getLatestBatchCoefficients()
 
     if (!harmfulConstants || harmfulConstants.length === 0) {
-      throw new Error('未找到最新批次的有害成分系数数据')
+      result.errors = '未找到最新批次的有害成分系数数据'
+      return result
     }
 
     // 转换系数数据结构
@@ -90,7 +95,6 @@ export class RecAuxMaterials {
       nicotine: Number(standardParams.nicotine) / Number(prediction[1]),
       tar: Number(standardParams.tar) / Number(prediction[2])
     }
-    console.log('Scaled Prediction:', scaledPrediction)
     // 穷举所有组合
     for (const fv of fvList) {
       for (const fp of fpList) {
@@ -105,7 +109,6 @@ export class RecAuxMaterials {
                 quantitative: qt.toString(),
                 citrate: ct.toString()
               }
-              // console.log('Evaluating Design Params:', designParams)
               // 调用预测服务
               const prediction = await simulationPredictionService.predictBaseline(
                 designParams,
@@ -121,6 +124,7 @@ export class RecAuxMaterials {
                   ) +
                 Number(targetParams.coWeight) *
                   Math.abs((scaledPrediction.co * prediction[0]) / Number(targetParams.co) - 1)
+              // 存储结果
               results.push({ designParams, prediction, diff })
             }
           }
@@ -131,7 +135,9 @@ export class RecAuxMaterials {
     // 按 diff 从小到大排序（绝对值最小的最优）
     results.sort((a, b) => a.diff - b.diff)
     const topResults = results.slice(0, dto.count || 100)
-    return topResults
+    result.success = true
+    result.data = topResults
+    return result
   }
 }
 
