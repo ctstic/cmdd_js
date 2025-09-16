@@ -89,7 +89,7 @@ export class HarmfulService {
     }
 
     // 获取所有卷烟数据进行回归分析
-    const cigarettes = cigarettesService.getCigarettes('')
+    const cigarettes = cigarettesService.getCigarettesAll()
 
     // 构建自变量矩阵 X: [滤嘴通风度, 滤嘴压降, 透气度, 定量, 柠檬酸盐]
     const X: number[][] = cigarettes.map((c: schema.Cigarettes) => [

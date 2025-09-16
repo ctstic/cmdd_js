@@ -35,6 +35,16 @@ export class CigarettesService {
     })
   }
 
+  public getCigarettesAll(): schema.Cigarettes[] {
+    const results = this.sqlite
+      .prepare('SELECT * FROM cigarettes ORDER BY created_at DESC')
+      .all() as Record<string, unknown>[]
+
+    return results.map((result) => {
+      return this.mapToCigarettes(result)
+    })
+  }
+
   /**
    * 删除卷烟数据记录
    * @param id 卷烟数据ID
