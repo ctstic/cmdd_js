@@ -70,75 +70,88 @@ const PredictionTable: React.FC<PredictionTableProps> = ({ actionRef, expandedRo
   ]
 
   return (
-    <EditableProTable<DataSourceType>
-      expandedRowKeys={expandedRowKeys}
-      actionRef={editableTableRef}
-      columns={columns}
-      recordCreatorProps={{
-        // position:'top',
-        newRecordType: 'dataSource',
-        record: () => ({ key: Date.now() })
-      }}
-      rowKey="key"
-      scroll={{ x: 960 }}
-      value={dataSource}
-      onChange={setDataSource}
-      editable={{
-        type: 'multiple',
-        editableKeys,
-        actionRender: (row, config, defaultDoms) => {
-          return [defaultDoms.delete]
-        },
-        onValuesChange: (record, recordList) => {
-          setDataSource(recordList)
-        },
-        onChange: setEditableRowKeys
-      }}
-      expandable={{
-        expandedRowRender: (record) => {
-          // 找到对应的预测数据
-          const prediction = dataSource.find((item) => item.key === record.key)
+    <Card
+      style={{ borderRadius: 16, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+      bodyStyle={{ padding: 0 }}
+    >
+      <div style={{ padding: '12px 16px', borderBottom: '2px solid #52c41a' }}>
+        <LineChartOutlined style={{ marginRight: 8, color: '#52c41a' }} />
+        <Text strong style={{ fontSize: '16px' }}>
+          预测结果数据
+        </Text>
+      </div>
+      <div style={{ padding: '20px 24px' }}>
+        <EditableProTable<DataSourceType>
+          expandedRowKeys={expandedRowKeys}
+          actionRef={editableTableRef}
+          columns={columns}
+          recordCreatorProps={{
+            // position:'top',
+            newRecordType: 'dataSource',
+            record: () => ({ key: Date.now() })
+          }}
+          rowKey="key"
+          scroll={{ x: 960 }}
+          value={dataSource}
+          onChange={setDataSource}
+          editable={{
+            type: 'multiple',
+            editableKeys,
+            actionRender: (row, config, defaultDoms) => {
+              return [defaultDoms.delete]
+            },
+            onValuesChange: (record, recordList) => {
+              setDataSource(recordList)
+            },
+            onChange: setEditableRowKeys
+          }}
+          expandable={{
+            expandedRowRender: (record) => {
+              // 找到对应的预测数据
+              const prediction = dataSource.find((item) => item.key === record.key)
 
-          return (
-            <div
-              style={{
-                display: 'flex',
-                width: '100%',
-                padding: '10px',
-                fontFamily: 'Arial, sans-serif',
-                backgroundColor: '#f5f5f5',
-                borderRadius: '4px'
-              }}
-            >
-              <div style={{ textAlign: 'left', width: '200px' }}>
-                <p style={{ margin: 0, fontSize: '16px' }}>
-                  <strong>焦油:</strong>
-                  <span style={{ color: prediction?.tar ? '#52c41a' : 'gray' }}>
-                    {prediction?.tar || '未计算'}
-                  </span>
-                </p>
-              </div>
-              <div style={{ textAlign: 'left', width: '200px' }}>
-                <p style={{ margin: 0, fontSize: '16px' }}>
-                  <strong>烟碱:</strong>
-                  <span style={{ color: prediction?.nicotine ? '#52c41a' : 'gray' }}>
-                    {prediction?.nicotine || '未计算'}
-                  </span>
-                </p>
-              </div>
-              <div style={{ textAlign: 'left', width: '200px' }}>
-                <p style={{ margin: 0, fontSize: '16px' }}>
-                  <strong>CO:</strong>
-                  <span style={{ color: prediction?.co ? '#52c41a' : 'gray' }}>
-                    {prediction?.co || '未计算'}
-                  </span>
-                </p>
-              </div>
-            </div>
-          )
-        }
-      }}
-    />
+              return (
+                <div
+                  style={{
+                    display: 'flex',
+                    width: '100%',
+                    padding: '10px',
+                    fontFamily: 'Arial, sans-serif',
+                    backgroundColor: '#f5f5f5',
+                    borderRadius: '4px'
+                  }}
+                >
+                  <div style={{ textAlign: 'left', width: '200px' }}>
+                    <p style={{ margin: 0, fontSize: '16px' }}>
+                      <strong>焦油:</strong>
+                      <span style={{ color: prediction?.tar ? '#52c41a' : 'gray' }}>
+                        {prediction?.tar || '未计算'}
+                      </span>
+                    </p>
+                  </div>
+                  <div style={{ textAlign: 'left', width: '200px' }}>
+                    <p style={{ margin: 0, fontSize: '16px' }}>
+                      <strong>烟碱:</strong>
+                      <span style={{ color: prediction?.nicotine ? '#52c41a' : 'gray' }}>
+                        {prediction?.nicotine || '未计算'}
+                      </span>
+                    </p>
+                  </div>
+                  <div style={{ textAlign: 'left', width: '200px' }}>
+                    <p style={{ margin: 0, fontSize: '16px' }}>
+                      <strong>CO:</strong>
+                      <span style={{ color: prediction?.co ? '#52c41a' : 'gray' }}>
+                        {prediction?.co || '未计算'}
+                      </span>
+                    </p>
+                  </div>
+                </div>
+              )
+            }
+          }}
+        />
+      </div>
+    </Card>
   )
 }
 

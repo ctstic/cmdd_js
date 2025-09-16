@@ -304,23 +304,26 @@ const RecommendParameter: React.FC = () => {
         standardDesignParams: rangeValues
       })
 
-      // 数据更新
-      const transformedData = res.data.map((item, index) => ({
-        id: index,
-        filterVentilation: item.designParams.filterVentilation,
-        filterPressureDrop: item.designParams.filterPressureDrop,
-        permeability: item.designParams.permeability,
-        quantitative: item.designParams.quantitative,
-        citrate: item.designParams.citrate,
-        tar: item.designParams.tar,
-        nicotine: item.designParams.nicotine,
-        co: item.designParams.co,
-        prediction: item.prediction
-      }))
-      // console.log(transformedData, 'resrestransformedData')
-      setTableData(transformedData)
-      message.success('参数推荐完成！')
-      return true
+      if (res.data.data && Array.isArray(res.data.data) && res.data.data.length > 0) {
+        // 数据更新
+        const transformedData = res.data.data.map((item, index) => ({
+          id: index,
+          filterVentilation: item.designParams.filterVentilation,
+          filterPressureDrop: item.designParams.filterPressureDrop,
+          permeability: item.designParams.permeability,
+          quantitative: item.designParams.quantitative,
+          citrate: item.designParams.citrate,
+          tar: item.designParams.tar,
+          nicotine: item.designParams.nicotine,
+          co: item.designParams.co,
+          prediction: item.prediction
+        }))
+        // console.log(transformedData, 'resrestransformedData')
+        setTableData(transformedData)
+        message.success('参数推荐完成！')
+      } else {
+        message.error(`${res.data.errors}`)
+      }
     }
   }
 

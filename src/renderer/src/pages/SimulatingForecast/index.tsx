@@ -118,13 +118,13 @@ const SimulatingForecast: React.FC = () => {
           })
 
           // 判断返回数据是否存在
-          console.log('🚀 ~ handleSubmit ~ res.data:', res.data)
-          if (res.data && Array.isArray(res.data) && res.data.length > 0) {
+          console.log('🚀 ~ handleSubmit ~ res.data:aaa', res.data)         
+          if (res.data.data && Array.isArray(res.data.data) && res.data.data.length > 0) {
             notificationApi.success({
               message: '计算成功'
             })
             // 确保将返回的预测数据更新到表格中
-            const predictionData = res.data.map((item: any) => {
+            const predictionData = res.data.data.map((item: any) => {
               const params = inputParams.find((params) => params.key === item.key)
 
               return {
@@ -141,12 +141,11 @@ const SimulatingForecast: React.FC = () => {
                 co: Number(item.co) || 0
               }
             })
-
             actionRef.current.setData(predictionData)
             setExpandedRowKeys(predictionData.map((item) => item.key))
           } else {
             notificationApi.error({
-              message: '计算异常，未返回数据，请检查表单填写'
+              message: res.data.errors
             })
           }
         }
@@ -301,9 +300,9 @@ const SimulatingForecast: React.FC = () => {
 
         {/* 右侧表格 */}
         <Col xs={24} lg={16}>
-          <StyledCard title="预测结果数据" icon={<LineChartOutlined />} color="#52c41a">
+          {/* <StyledCard title="预测结果数据" icon={<LineChartOutlined />} color="#52c41a"> */}
             <PredictionTable actionRef={actionRef} expandedRowKeys={expandedRowKeys} />
-          </StyledCard>
+          {/* </StyledCard> */}
         </Col>
       </Row>
     </div>
