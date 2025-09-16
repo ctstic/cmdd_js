@@ -12,9 +12,12 @@ export class SimulationPredictionService {
    * @param scientificData 科学数据输入
    * @returns 预测结果列表
    */
-  public async calculatePredictions(
-    scientificData: schema.ScientificDataDto
-  ): Promise<schema.PredictionResults[]> {
+  public async calculatePredictions(scientificData: schema.ScientificDataDto): Promise<any> {
+    const result: any = {
+      success: false,
+      errors: '',
+      data: []
+    }
     scientificData.standardParams.filterVentilation = (
       Number(scientificData.standardParams.filterVentilation) / 100
     )
@@ -34,15 +37,17 @@ export class SimulationPredictionService {
     const harmfulConstants = harmfulService.getLatestBatchCoefficients()
 
     if (!harmfulConstants || harmfulConstants.length === 0) {
-      throw new Error('未找到最新批次的有害成分系数数据')
+      result.errors = '未找到最新批次的有害成分系数数据'
+      return result
     }
 
     // 转换系数数据结构
     const coefficients = harmfulService.transformCoefficients(harmfulConstants)
 
     // 执行预测计算
-    const result = this.performPredictionCalculation(scientificData, coefficients)
-
+    // const result = this.performPredictionCalculation(scientificData, coefficients)
+    result.success = true
+    result.data = await this.performPredictionCalculation(scientificData, coefficients)
     return result
   }
 

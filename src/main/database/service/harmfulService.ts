@@ -63,7 +63,15 @@ export class HarmfulService {
    * @param id 系数ID
    */
   public async deleteHarmful(id: number): Promise<void> {
-    const result = this.sqlite.prepare('DELETE FROM harmful_constants WHERE id = ?').run(id)
+    const results = this.sqlite
+      .prepare('SELECT * FROM harmful_constants WHERE id = ?')
+      .all(id) as Record<string, unknown>[]
+    // results.map((result) => this.mapToHarmfulConstants(result))
+    console.log(results)
+    // 删除对应批次的所有记录
+    const result = this.sqlite
+      .prepare('DELETE FROM harmful_constants WHERE batch_no = ?')
+      .run(results[0].batch_no)
     if (result.changes === 0) {
       throw new Error('有害成分系数不存在')
     }
