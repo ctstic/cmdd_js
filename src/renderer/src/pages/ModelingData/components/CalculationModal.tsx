@@ -138,11 +138,11 @@ const CalculationModal: React.FC<CalculationModalProps> = ({
                 try {
                   await window.electronAPI.harmful.delete(record.id)
                   const res = await window.electronAPI.harmful.query('')
-                  info('success', '删除成功')
+                  info('success', '删除所有相同批次号成功')
                   setModalData(res.data)
                   return true
                 } catch {
-                  info('error', '删除失败，请重试')
+                  info('error', '删除所有相同批次号失败，请重试')
                   return false
                 }
               }}
