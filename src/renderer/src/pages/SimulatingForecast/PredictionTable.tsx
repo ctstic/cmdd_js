@@ -27,10 +27,7 @@ interface PredictionTableProps {
 const PredictionTable: React.FC<PredictionTableProps> = ({ actionRef, expandedRowKeys }) => {
   const [editableKeys, setEditableRowKeys] = useState<React.Key[]>([])
   const [dataSource, setDataSource] = useState<readonly DataSourceType[]>([])
-  // const [expandedRowKeys, setExpandedRowKeys] = useState<React.Key[]>([])
-
   const editableTableRef = useRef<any>(null)
-  console.log(dataSource, 'dataSource')
 
   // Expose methods to the parent component via actionRef
   useImperativeHandle(actionRef, () => ({

@@ -156,6 +156,18 @@ const ModelingData: React.FC = () => {
       dataIndex: 'potassiumRatio'
     },
     {
+      title: '焦油（mg/支）',
+      dataIndex: 'tar'
+    },
+    {
+      title: '烟碱（mg/支）',
+      dataIndex: 'nicotine'
+    },
+    {
+      title: 'CO（mg/支）',
+      dataIndex: 'co'
+    },
+    {
       title: '操作',
       key: 'option',
       render: (_, record) => {
@@ -216,7 +228,9 @@ const ModelingData: React.FC = () => {
             {importing ? '导入中...' : '导入Excel数据'}
           </Button>
         </Upload>
-        <a  type="link" download="模板文件.xls" href="../../../../../resources/软件数据模板.xlsx">下载模板</a>
+        <a type="link" download="模板文件.xls" href="../../../../../resources/软件数据模板.xlsx">
+          下载模板
+        </a>
       </Space>
       <Table<DataType> rowKey="id" columns={columns} dataSource={tableData} />
       <CalculationModal
