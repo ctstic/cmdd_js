@@ -197,6 +197,7 @@ const RecommendParameter: React.FC = () => {
   const [rangeForm] = Form.useForm()
   const [tableData, setTableData] = useState<DataType[]>([])
   const [messageApi, contextHolder] = message.useMessage()
+  console.log(baseForm, 'baseFormbaseFormbaseForm')
 
   const info = (type: 'info' | 'success' | 'error' | 'warning' | 'loading', msg: string) => {
     messageApi.open({
@@ -288,14 +289,19 @@ const RecommendParameter: React.FC = () => {
     // console.log('成分权重设置:', weightValues)
     // console.log('辅材参数个性化设计范围:', rangeValues)
 
-    if (
+    if (Object.keys(baseValues).length !== 9) {
+      info('warning', '请正确输入基准参数')
+    } else if (Object.keys(targetValues).length !== 4) {
+      info('warning', '请正确输入目标有害成分')
+    } else if (Object.keys(weightValues).length !== 4) {
+      info('warning', '请正确输入成分权重设置')
+    } else if (
       weightForm.getFieldValue('coWeight') +
         weightForm.getFieldValue('nicotineWeight') +
         weightForm.getFieldValue('tarWeight') >
       1
     ) {
       info('warning', '有害成分权重之和不大于1')
-      return false
     } else {
       const res = await window.electronAPI.rec.auxMaterials({
         count: rangeValues.size,
@@ -318,8 +324,11 @@ const RecommendParameter: React.FC = () => {
           co: item.designParams.co,
           prediction: item.prediction
         }))
-        // console.log(transformedData, 'resrestransformedData')
         setTableData(transformedData)
+
+        baseForm.resetFields()
+        targetForm.resetFields()
+        weightForm.resetFields()
         message.success('参数推荐完成！')
       } else {
         message.error(`${res.data.errors}`)
