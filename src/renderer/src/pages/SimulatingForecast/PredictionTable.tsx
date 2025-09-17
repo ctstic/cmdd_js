@@ -24,6 +24,13 @@ interface PredictionTableProps {
   expandedRowKeys: React.Key[]
 }
 
+const cardHeaderStyle = {
+  background: `linear-gradient(90deg, #52c41a20 0%, #ffffff 100%)`,
+  padding: '16px 24px',
+  borderRadius: '12px 12px 0 0',
+  borderBottom: `2px solid #52c41a40`
+}
+
 const PredictionTable: React.FC<PredictionTableProps> = ({ actionRef, expandedRowKeys }) => {
   const [editableKeys, setEditableRowKeys] = useState<React.Key[]>([])
   const [dataSource, setDataSource] = useState<readonly DataSourceType[]>([])
@@ -71,16 +78,23 @@ const PredictionTable: React.FC<PredictionTableProps> = ({ actionRef, expandedRo
 
   return (
     <Card
-      style={{ borderRadius: 16, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+      style={{
+        marginBottom: 20,
+        borderRadius: 16,
+        boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+        border: '1px solid #52c41a30'
+      }}
       bodyStyle={{ padding: 0 }}
     >
-      <div style={{ padding: '12px 16px', borderBottom: '2px solid #52c41a' }}>
-        <LineChartOutlined style={{ marginRight: 8, color: '#52c41a' }} />
-        <Text strong style={{ fontSize: '16px' }}>
+      <div style={cardHeaderStyle}>
+        {React.cloneElement(<LineChartOutlined />, {
+          style: { marginRight: 12, color: '#52c41a', fontSize: '18px' }
+        })}
+        <Text strong style={{ fontSize: '18px', color: '#52c41a' }}>
           预测结果数据
         </Text>
       </div>
-      <div style={{ padding: '20px 24px' }}>
+      <div style={{ padding: '24px' }}>
         <EditableProTable<DataSourceType>
           expandedRowKeys={expandedRowKeys}
           actionRef={editableTableRef}
