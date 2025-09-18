@@ -80,11 +80,11 @@ const ModelingData: React.FC = () => {
         buffer: uint8Array
       })
       console.log(result)
-      if (result.error?.length === 0) {
+      if (result.data.errors?.length === 0) {
         info('success', `导入成功`)
         loadUsers()
       } else {
-        info('error', `导入失败，${result.error[0]}`)
+        info('error', `导入失败，${result.data.errors[0]}`)
       }
     } catch (error) {
       info('error', '导入失败')
