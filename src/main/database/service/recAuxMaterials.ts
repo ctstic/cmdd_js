@@ -44,7 +44,7 @@ export class RecAuxMaterials {
       parseFloat((v / 100).toFixed(3))
     ) as [number, number]
     // 1️⃣ 获取最新批次的有害成分系数
-    const harmfulConstants = harmfulService.getLatestBatchCoefficients()
+    const harmfulConstants = harmfulService.getLatestBatchCoefficients(dto.cigarettesType)
 
     if (!harmfulConstants || harmfulConstants.length === 0) {
       result.errors = '未找到最新批次的有害成分系数数据'

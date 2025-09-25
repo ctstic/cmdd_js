@@ -14,16 +14,22 @@ export interface APIResponse<T> {
 
 /** 计算系数模块 API 定义 */
 export interface HarmfulAPI {
-  query: (query: string) => Promise<APIResponse<{ result: schema.HarmfulConstants[] }>>
-  generate: () => Promise<APIResponse<void>>
+  query: (
+    query: string,
+    cigarettesType: string
+  ) => Promise<APIResponse<{ result: schema.HarmfulConstants[] }>>
+  generate: (cigarettesType: string) => Promise<APIResponse<void>>
   delete: (id: number) => Promise<APIResponse<void>>
 }
 
 /** 多因素卷烟模块 API 定义 */
 export interface CigarettesAPI {
-  query: (query: string) => Promise<APIResponse<{ result: schema.Cigarettes[] }>>
+  query: (query: string, type: string) => Promise<APIResponse<{ result: schema.Cigarettes[] }>>
   delete: (id: number) => Promise<APIResponse<void>>
+  getCigarettesType: (type: string) => Promise<APIResponse<{ result: string[] }>>
+  deleteCigarettesType: (type: string) => Promise<APIResponse<void>>
   importFromWebFile: (fileObj: {
+    type: string
     name: string
     buffer: Uint8Array
   }) => Promise<APIResponse<schema.ImportResult>>

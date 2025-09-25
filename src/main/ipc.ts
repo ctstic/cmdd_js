@@ -35,9 +35,26 @@ export function registerIPC(): void {
   /**
    * 查询卷烟数据
    */
-  ipcMain.handle('cigarettes:query', async (_evt, query: string) => {
+  ipcMain.handle('cigarettes:query', async (_evt, query: string, type: string) => {
     try {
-      return { success: true, data: cigarettesService.getCigarettes(query) }
+      return { success: true, data: cigarettesService.getCigarettes(query, type) }
+    } catch (error) {
+      console.error('[ipc] cigarettes:query failed:', error)
+      return { success: false, error: (error as Error).message }
+    }
+  })
+
+  ipcMain.handle('cigarettes:getCigarettesType', async (_evt, type: string) => {
+    try {
+      if (type !== '') {
+        return { success: true, data: cigarettesService.getCigarettesType(type) }
+      } else {
+        if (cigarettesService.getCigarettesType(type).length > 0) {
+          return { success: false, error: '样本名称已存在' }
+        } else {
+          return { success: true, data: cigarettesService.getCigarettesType(type) }
+        }
+      }
     } catch (error) {
       console.error('[ipc] cigarettes:query failed:', error)
       return { success: false, error: (error as Error).message }
@@ -58,13 +75,26 @@ export function registerIPC(): void {
   })
 
   /**
+   * 删除样品数据
+   */
+  ipcMain.handle('cigarettes:deleteCigarettesType', async (_evt, type: string) => {
+    try {
+      await cigarettesService.deleteCigarettesType(type)
+      return { success: true }
+    } catch (error) {
+      console.error('[ipc] cigarettes:delete failed:', error)
+      return { success: false, error: (error as Error).message }
+    }
+  })
+
+  /**
    * 从Web文件导入卷烟数据
    */
   ipcMain.handle('cigarettes:importFromWebFile', async (_evt, fileObj) => {
     try {
-      const { name, buffer } = fileObj
+      const { type, name, buffer } = fileObj
       const nodeBuffer = Buffer.from(buffer) // ✅ 转成 Node Buffer
-      const result = await cigarettesService.importFromWebFile({ name, buffer: nodeBuffer })
+      const result = await cigarettesService.importFromWebFile({ type, name, buffer: nodeBuffer })
       return { success: true, data: result }
     } catch (error) {
       console.error('[ipc] cigarettes:importFromWebFile failed:', error)
@@ -77,9 +107,9 @@ export function registerIPC(): void {
   /**
    * 查询有害成分系数
    */
-  ipcMain.handle('harmful:query', async (_evt, query: string) => {
+  ipcMain.handle('harmful:query', async (_evt, query: string, cigarettesType: string) => {
     try {
-      return { success: true, data: harmfulService.getHarmful(query) }
+      return { success: true, data: harmfulService.getHarmful(query, cigarettesType) }
     } catch (error) {
       console.error('[ipc] harmful:query failed:', error)
       return { success: false, error: (error as Error).message }
@@ -103,10 +133,10 @@ export function registerIPC(): void {
    * 生成有害成分系数
    * 基于现有卷烟数据进行多元线性回归计算
    */
-  ipcMain.handle('harmful:generate', async () => {
+  ipcMain.handle('harmful:generate', async (_evt, cigarettesType: string) => {
     try {
       // 调用服务层的生成方法
-      await harmfulService.generate()
+      await harmfulService.generate(cigarettesType)
       return { success: true, message: '有害成分系数生成成功' }
     } catch (error) {
       console.error('[ipc] harmful:generate failed:', error)
