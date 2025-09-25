@@ -1,11 +1,11 @@
 # CMDD JS - Electron 用户管理系统
 
-这是一个基于 Electron + React + TypeScript + Better-SQLite3 + Drizzle ORM 的桌面应用程序，实现了完整的用户管理功能。
+这是一个基于 Electron + React + TypeScript + Better-SQLite3 + Drizzle ORM 的桌面应用程序，实现了完整的模型数据管理功能。
 
 ## 技术栈
 
 - **前端**: React 19 + TypeScript + Vite
-- **桌面框架**: Electron 37
+- **桌面框架**: Electron 22
 - **数据库**: Better-SQLite3 + Drizzle ORM
 - **样式**: CSS3
 - **包管理**: pnpm

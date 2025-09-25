@@ -34,7 +34,7 @@ export class SimulationPredictionService {
 
     console.log('🚀 ~ scientificData:', scientificData)
     // 获取最新批次的系数
-    const harmfulConstants = harmfulService.getLatestBatchCoefficients()
+    const harmfulConstants = harmfulService.getLatestBatchCoefficients(scientificData.type)
 
     if (!harmfulConstants || harmfulConstants.length === 0) {
       result.errors = '未找到最新批次的有害成分系数数据'

@@ -43,7 +43,9 @@ const electronAPI: ExposedElectronAPI = {
   cigarettes: createAPI<CigarettesAPI>({
     query: 'cigarettes:query',
     delete: 'cigarettes:delete',
-    importFromWebFile: 'cigarettes:importFromWebFile'
+    importFromWebFile: 'cigarettes:importFromWebFile',
+    getCigarettesType: 'cigarettes:getCigarettesType',
+    deleteCigarettesType: 'cigarettes:deleteCigarettesType'
   }),
   simulation: createAPI<SimulationAPI>({
     prediction: 'simulation:prediction'

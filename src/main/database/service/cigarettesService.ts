@@ -17,12 +17,13 @@ export class CigarettesService {
   /**
    * 根据编码搜索卷烟数据
    * @param code 卷烟编码（支持模糊搜索）
+   * @param type 卷烟类型
    * @returns 匹配的卷烟数据列表
    */
-  public getCigarettes(code: string): schema.Cigarettes[] {
+  public getCigarettes(code: string, type: string): schema.Cigarettes[] {
     const results = this.sqlite
-      .prepare('SELECT * FROM cigarettes WHERE code like ? ORDER BY created_at DESC')
-      .all(`%${code}%`) as Record<string, unknown>[]
+      .prepare('SELECT * FROM cigarettes WHERE code like ? AND type = ? ORDER BY created_at DESC')
+      .all(`%${code}%`, type) as Record<string, unknown>[]
 
     return results.map((result) => {
       result.tar = Number.parseFloat((result.tar as string).trim()).toFixed(2)
@@ -35,10 +36,25 @@ export class CigarettesService {
     })
   }
 
-  public getCigarettesAll(): schema.Cigarettes[] {
+  /**
+   * 根据编码搜索卷烟数据
+   * @param code 卷烟编码（支持模糊搜索）
+   * @param type 卷烟类型
+   * @returns 匹配的卷烟数据列表
+   */
+  public getCigarettesType(type: string): string[] {
     const results = this.sqlite
-      .prepare('SELECT * FROM cigarettes ORDER BY created_at DESC')
-      .all() as Record<string, unknown>[]
+      .prepare('SELECT type FROM cigarettes WHERE type = ? GROUP BY type ORDER BY created_at DESC')
+      .all(type) as Record<string, unknown>[]
+
+    // 直接返回type字符串数组
+    return results.map((result) => result.type as string)
+  }
+
+  public getCigarettesAll(type: string): schema.Cigarettes[] {
+    const results = this.sqlite
+      .prepare('SELECT * FROM cigarettes WHERE type = ? ORDER BY created_at DESC')
+      .all(type) as Record<string, unknown>[]
 
     return results.map((result) => {
       return this.mapToCigarettes(result)
@@ -56,6 +72,19 @@ export class CigarettesService {
     }
   }
 
+  /**
+   * 根据编码搜索卷烟数据
+   * @param code 卷烟编码（支持模糊搜索）
+   * @param type 卷烟类型
+   * @returns 匹配的卷烟数据列表
+   */
+  public async deleteCigarettesType(type: string): Promise<void> {
+    const result = this.sqlite.prepare('DELETE FROM cigarettes WHERE type = ?').run(type)
+    if (result.changes === 0) {
+      throw new Error('卷烟数据不存在')
+    }
+  }
+
   /* 创建新的卷烟数据记录
    * @param obj 卷烟数据对象
    * @returns 创建的卷烟数据
@@ -66,13 +95,14 @@ export class CigarettesService {
       .prepare(
         `
       INSERT INTO cigarettes (
-            code, filter_ventilation, filter_pressure_drop, permeability, quantitative,
+            code, type, filter_ventilation, filter_pressure_drop, permeability, quantitative,
             citrate, potassium_ratio, tar, nicotine, co, created_at, updated_at
           ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `
       )
       .run(
         obj.code,
+        obj.type,
         obj.filterVentilation,
         obj.filterPressureDrop,
         obj.permeability,
@@ -93,6 +123,7 @@ export class CigarettesService {
    * @returns 导入结果
    */
   public async importFromWebFile(fileObj: {
+    type: string
     name: string
     buffer: Uint8Array
   }): Promise<schema.ImportResult> {
@@ -103,7 +134,7 @@ export class CigarettesService {
       const buffer = Buffer.from(fileObj.buffer)
 
       // 调用主要的导入方法
-      return await this.importFromExcel(buffer)
+      return await this.importFromExcel(buffer, type)
     } catch (error) {
       return {
         success: false,
@@ -122,7 +153,7 @@ export class CigarettesService {
    * @param filePath Excel文件路径或Buffer
    * @returns 导入结果
    */
-  public async importFromExcel(filePath: Buffer): Promise<schema.ImportResult> {
+  public async importFromExcel(filePath: Buffer, type: string): Promise<schema.ImportResult> {
     const result: schema.ImportResult = {
       success: false,
       totalRows: 0,
@@ -195,9 +226,10 @@ export class CigarettesService {
       for (let i = 0; i < dataRows.length; i++) {
         const row = dataRows[i]
         console.log(row)
-        const rowData: schema.Cigarettes ={
+        const rowData: schema.Cigarettes = {
           id: 0,
           code: String(row[columnIndexes['编号']] || '').trim(),
+          type: type,
           filterVentilation: String(
             Number(row[columnIndexes['滤嘴通风率%']]).toFixed(3) || ''
           ).trim(),
@@ -213,13 +245,12 @@ export class CigarettesService {
           updatedAt: new Date()
         }
 
-
         // 验证数据完整性
         if (!rowData.code) {
           result.errors.push(`${rowData.code}编号不能为空`)
           return result
         }
-        if (this.getCigarettes(rowData.code).length > 0) {
+        if (this.getCigarettes(rowData.code, rowData.type).length > 0) {
           result.errors.push(`${rowData.code}编号已存在`)
           return result
         }
@@ -247,6 +278,7 @@ export class CigarettesService {
   private mapToCigarettes(result: Record<string, unknown>): schema.Cigarettes {
     return {
       id: result.id as number,
+      type: result.type as string,
       code: result.code as string,
       filterVentilation: result.filter_ventilation as string,
       filterPressureDrop: result.filter_pressure_drop as number,

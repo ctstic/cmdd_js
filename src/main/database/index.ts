@@ -160,7 +160,7 @@ class DatabaseService {
         console.log('正在初始化默认的卷烟数据...')
         const insertCigaretteStmt = this.sqlite.prepare(`
           INSERT INTO cigarettes (
-            code, filter_ventilation, filter_pressure_drop, permeability, quantitative,
+            code,type, filter_ventilation, filter_pressure_drop, permeability, quantitative,
             citrate, potassium_ratio, tar, nicotine, co, created_at, updated_at
           ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `)
@@ -169,6 +169,7 @@ class DatabaseService {
         for (const cigarettes of schema.defaultCigarettes) {
           insertCigaretteStmt.run(
             cigarettes.code,
+            cigarettes.type,
             cigarettes.filterVentilation,
             cigarettes.filterPressureDrop,
             cigarettes.permeability,
@@ -189,7 +190,7 @@ class DatabaseService {
       if (harmfulCount.count === 0) {
         console.log('正在生成有害成分系数数据...')
         // 这里调用生成方法，具体实现在service层
-        harmfulService.generate()
+        harmfulService.generate('多因素数据')
       }
     } catch (error) {
       console.error('初始化默认数据失败:', error)
