@@ -21,12 +21,12 @@ export class HarmfulService {
    * @param type 有害成分类型
    * @returns 有害成分系数列表
    */
-  public getHarmful(type: string, cigarettesType: string): schema.HarmfulConstants[] {
+  public getHarmful(type: string, specimenName: string): schema.HarmfulConstants[] {
     const results = this.sqlite
       .prepare(
-        'SELECT * FROM harmful_constants WHERE type like ? AND cigarettes_type  = ? ORDER BY created_at DESC'
+        'SELECT * FROM harmful_constants WHERE type like ? AND specimen_name  = ? ORDER BY created_at DESC'
       )
-      .all(`%${type}%`, cigarettesType) as Record<string, unknown>[]
+      .all(`%${type}%`, specimenName) as Record<string, unknown>[]
 
     return results.map((result) => this.mapToHarmfulConstants(result))
   }
@@ -36,12 +36,12 @@ export class HarmfulService {
    * @param batchNo 批次号
    * @returns 有害成分系数列表
    */
-  public getHarmfulByBatchNo(batchNo: string, cigarettesType: string): schema.HarmfulConstants[] {
+  public getHarmfulByBatchNo(batchNo: string, specimenName: string): schema.HarmfulConstants[] {
     const results = this.sqlite
       .prepare(
-        'SELECT * FROM harmful_constants WHERE batch_no = ? AND cigarettes_type  = ? ORDER BY type'
+        'SELECT * FROM harmful_constants WHERE batch_no = ? AND specimen_name  = ? ORDER BY type'
       )
-      .all(batchNo, cigarettesType) as Record<string, unknown>[]
+      .all(batchNo, specimenName) as Record<string, unknown>[]
 
     return results.map((result) => this.mapToHarmfulConstants(result))
   }
@@ -50,18 +50,18 @@ export class HarmfulService {
    * 获取最新批次号的有害成分系数
    * @returns 最新批次的有害成分系数列表
    */
-  public getLatestBatchCoefficients(cigarettesType: string): schema.HarmfulConstants[] {
+  public getLatestBatchCoefficients(specimenName: string): schema.HarmfulConstants[] {
     const maxBatchResult = this.sqlite
       .prepare(
-        'SELECT MAX(batch_no) as batchNo FROM harmful_constants  WHERE cigarettes_type  = ? ORDER BY created_at DESC'
+        'SELECT MAX(batch_no) as batchNo FROM harmful_constants  WHERE specimen_name  = ? ORDER BY created_at DESC'
       )
-      .all(cigarettesType) as unknown as { batchNo: string }
+      .all(specimenName) as unknown as { batchNo: string }
 
     if (!maxBatchResult.batchNo) {
       return []
     }
 
-    return this.getHarmfulByBatchNo(maxBatchResult.batchNo, cigarettesType)
+    return this.getHarmfulByBatchNo(maxBatchResult.batchNo, specimenName)
   }
 
   /**
@@ -87,23 +87,23 @@ export class HarmfulService {
    * 生成有害成分系数
    * 基于现有卷烟数据，使用多元线性回归算法生成系数
    */
-  public async generate(cigarettesType: string): Promise<void> {
+  public async generate(specimenName: string): Promise<void> {
     // 检查现有系数数量，确定新批次号
     const harmful = this.sqlite
-      .prepare('SELECT COUNT(*) as count FROM harmful_constants WHERE cigarettes_type = ?')
-      .get(cigarettesType) as { count: number }
+      .prepare('SELECT COUNT(*) as count FROM harmful_constants WHERE specimen_name = ?')
+      .get(specimenName) as { count: number }
 
     let batchNo = 1
     if (harmful.count !== 0) {
       // 查询出最大的批次号
       const maxType = this.sqlite
-        .prepare('SELECT MAX(batch_no) as batchNo FROM harmful_constants WHERE cigarettes_type = ?')
-        .get(cigarettesType) as { batchNo: number }
+        .prepare('SELECT MAX(batch_no) as batchNo FROM harmful_constants WHERE specimen_name = ?')
+        .get(specimenName) as { batchNo: number }
       batchNo = Number(maxType.batchNo) + 1
     }
 
     // 获取所有卷烟数据进行回归分析
-    const cigarettes = cigarettesService.getCigarettesAll(cigarettesType)
+    const cigarettes = cigarettesService.getCigarettesAll(specimenName)
 
     // 构建自变量矩阵 X: [滤嘴通风度, 滤嘴压降, 透气度, 定量, 柠檬酸盐]
     const X: number[][] = cigarettes.map((c: schema.Cigarettes) => [
@@ -147,7 +147,7 @@ export class HarmfulService {
         createdAt: new Date(),
         updatedAt: new Date(),
         type: targetNames[targetIndex],
-        cigarettesType: cigarettesType,
+        specimenName: specimenName,
         batchNo: batchNo.toString(),
         changliang: changliang.toString(),
         filterVentCoef: filterVentCoef.toString(),
@@ -164,7 +164,7 @@ export class HarmfulService {
         .prepare(
           `
           INSERT INTO harmful_constants (
-            type, batch_no, cigarettes_type, changliang,
+            type, batch_no, specimen_name, changliang,
             filter_vent_coef, filter_pressure_coef, permeability_coef,
             quantitative_coef, citrate_coef, potassium_coef,
             created_at, updated_at
@@ -174,7 +174,7 @@ export class HarmfulService {
         .run(
           harmfulConstants.type,
           harmfulConstants.batchNo,
-          harmfulConstants.cigarettesType,
+          harmfulConstants.specimenName,
           harmfulConstants.changliang,
           harmfulConstants.filterVentCoef,
           harmfulConstants.filterPressureCoef,
@@ -203,7 +203,7 @@ export class HarmfulService {
       id: item.id,
       type: item.type,
       batchNo: item.batchNo,
-      cigarettesType: item.cigarettesType,
+      specimenName: item.specimenName,
       changliang: item.changliang,
       filterVentCoef: item.filterVentCoef,
       filterPressureCoef: item.filterPressureCoef,
@@ -226,7 +226,7 @@ export class HarmfulService {
       id: result.id as number,
       type: result.type as string,
       batchNo: result.batch_no as string,
-      cigarettesType: result.cigarettes_type as string,
+      specimenName: result.specimen_name as string,
       changliang: result.changliang as string,
       filterVentCoef: result.filter_vent_coef as string,
       filterPressureCoef: result.filter_pressure_coef as string,

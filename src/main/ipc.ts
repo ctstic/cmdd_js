@@ -21,6 +21,10 @@ import { cigarettesService } from './database/service/cigarettesService'
 import { harmfulService } from './database/service/harmfulService'
 import { simulationPredictionService } from './database/service/SimulationPredictionService'
 import { recAuxMaterials } from './database/service/recAuxMaterials'
+import { ramMarkService } from './database/service/ramMarkService'
+import { rfgMarkService } from './database/service/rfgMarkService'
+import { recAuxMaterialsSaveService } from './database/service/RecAuxMaterialsSaveService'
+import { simulationPredictionSaveService } from './database/service/simulationPredictionSaveService'
 
 /**
  * 注册所有IPC处理程序
@@ -35,24 +39,24 @@ export function registerIPC(): void {
   /**
    * 查询卷烟数据
    */
-  ipcMain.handle('cigarettes:query', async (_evt, query: string, type: string) => {
+  ipcMain.handle('cigarettes:query', async (_evt, query: string, specimenName: string) => {
     try {
-      return { success: true, data: cigarettesService.getCigarettes(query, type) }
+      return { success: true, data: cigarettesService.getCigarettes(query, specimenName) }
     } catch (error) {
       console.error('[ipc] cigarettes:query failed:', error)
       return { success: false, error: (error as Error).message }
     }
   })
 
-  ipcMain.handle('cigarettes:getCigarettesType', async (_evt, type: string) => {
+  ipcMain.handle('cigarettes:getCigarettesType', async (_evt, specimenName: string) => {
     try {
-      if (type !== '') {
-        return { success: true, data: cigarettesService.getCigarettesType(type) }
+      if (specimenName !== '') {
+        return { success: true, data: cigarettesService.getCigarettesType(specimenName) }
       } else {
-        if (cigarettesService.getCigarettesType(type).length > 0) {
+        if (cigarettesService.getCigarettesType(specimenName).length > 0) {
           return { success: false, error: '样本名称已存在' }
         } else {
-          return { success: true, data: cigarettesService.getCigarettesType(type) }
+          return { success: true, data: cigarettesService.getCigarettesType(specimenName) }
         }
       }
     } catch (error) {
@@ -77,9 +81,9 @@ export function registerIPC(): void {
   /**
    * 删除样品数据
    */
-  ipcMain.handle('cigarettes:deleteCigarettesType', async (_evt, type: string) => {
+  ipcMain.handle('cigarettes:deleteCigarettesType', async (_evt, specimenName: string) => {
     try {
-      await cigarettesService.deleteCigarettesType(type)
+      await cigarettesService.deleteCigarettesType(specimenName)
       return { success: true }
     } catch (error) {
       console.error('[ipc] cigarettes:delete failed:', error)
@@ -92,9 +96,13 @@ export function registerIPC(): void {
    */
   ipcMain.handle('cigarettes:importFromWebFile', async (_evt, fileObj) => {
     try {
-      const { type, name, buffer } = fileObj
+      const { specimenName, name, buffer } = fileObj
       const nodeBuffer = Buffer.from(buffer) // ✅ 转成 Node Buffer
-      const result = await cigarettesService.importFromWebFile({ type, name, buffer: nodeBuffer })
+      const result = await cigarettesService.importFromWebFile({
+        specimenName,
+        name,
+        buffer: nodeBuffer
+      })
       return { success: true, data: result }
     } catch (error) {
       console.error('[ipc] cigarettes:importFromWebFile failed:', error)
@@ -107,9 +115,9 @@ export function registerIPC(): void {
   /**
    * 查询有害成分系数
    */
-  ipcMain.handle('harmful:query', async (_evt, query: string, cigarettesType: string) => {
+  ipcMain.handle('harmful:query', async (_evt, query: string, specimenName: string) => {
     try {
-      return { success: true, data: harmfulService.getHarmful(query, cigarettesType) }
+      return { success: true, data: harmfulService.getHarmful(query, specimenName) }
     } catch (error) {
       console.error('[ipc] harmful:query failed:', error)
       return { success: false, error: (error as Error).message }
@@ -133,10 +141,10 @@ export function registerIPC(): void {
    * 生成有害成分系数
    * 基于现有卷烟数据进行多元线性回归计算
    */
-  ipcMain.handle('harmful:generate', async (_evt, cigarettesType: string) => {
+  ipcMain.handle('harmful:generate', async (_evt, specimenName: string) => {
     try {
       // 调用服务层的生成方法
-      await harmfulService.generate(cigarettesType)
+      await harmfulService.generate(specimenName)
       return { success: true, message: '有害成分系数生成成功' }
     } catch (error) {
       console.error('[ipc] harmful:generate failed:', error)
@@ -173,6 +181,165 @@ export function registerIPC(): void {
       return { success: true, data: result }
     } catch (error) {
       console.error('[ipc] rec:auxMaterials failed:', error)
+      return { success: false, error: (error as Error).message }
+    }
+  })
+
+  /* -------------------- 基准卷烟辅材参数牌号 -------------------- */
+
+  /**
+   * 查询基准卷烟辅材参数牌号
+   */
+  ipcMain.handle('ramMark:query', async (_evt, mark: string) => {
+    try {
+      return { success: true, data: ramMarkService.getRamMarks(mark) }
+    } catch (error) {
+      console.error('[ipc] ramMark:query failed:', error)
+      return { success: false, error: (error as Error).message }
+    }
+  })
+
+  /**
+   * 新增基准卷烟辅材参数牌号
+   */
+  ipcMain.handle('ramMark:create', async (_evt, dto: schema.RamMark) => {
+    try {
+      await ramMarkService.createRamMark(dto)
+      return { success: true }
+    } catch (error) {
+      console.error('[ipc] ramMark:create failed:', error)
+      return { success: false, error: (error as Error).message }
+    }
+  })
+
+  /* -------------------- 基准主流烟气牌号 -------------------- */
+
+  /**
+   * 查询基准卷烟辅材参数牌号
+   */
+  ipcMain.handle('rfgMark:query', async (_evt, mark: string) => {
+    try {
+      return { success: true, data: rfgMarkService.getRfgMarks(mark) }
+    } catch (error) {
+      console.error('[ipc] rfgMark:query failed:', error)
+      return { success: false, error: (error as Error).message }
+    }
+  })
+
+  /**
+   * 新增基准卷烟辅材参数牌号
+   */
+  ipcMain.handle('rfgMark:create', async (_evt, dto: schema.RfgMark) => {
+    try {
+      await rfgMarkService.createRfgMark(dto)
+      return { success: true }
+    } catch (error) {
+      console.error('[ipc] rfgMark:create failed:', error)
+      return { success: false, error: (error as Error).message }
+    }
+  })
+
+  /* -------------------- 仿真预测数据管理 -------------------- */
+
+  /**
+   * 查询基准卷烟辅材参数牌号
+   */
+  ipcMain.handle('simulationPredictionSave:query', async () => {
+    try {
+      return { success: true, data: simulationPredictionSaveService.getAllSimulationPredictions() }
+    } catch (error) {
+      console.error('[ipc] simulationPredictionSave:query failed:', error)
+      return { success: false, error: (error as Error).message }
+    }
+  })
+
+  /**
+   * 查询基准卷烟辅材参数牌号
+   */
+  ipcMain.handle('simulationPredictionSave:getId', async (_evt, id: number) => {
+    try {
+      return {
+        success: true,
+        data: simulationPredictionSaveService.getSimulationPredictionById(id)
+      }
+    } catch (error) {
+      console.error('[ipc] simulationPredictionSave:getId failed:', error)
+      return { success: false, error: (error as Error).message }
+    }
+  })
+
+  /**
+   * 查询基准卷烟辅材参数牌号
+   */
+  ipcMain.handle('simulationPredictionSave:create', async (_evt, dto: schema.ScientificDataDto) => {
+    try {
+      return { success: true, data: simulationPredictionSaveService.create(dto) }
+    } catch (error) {
+      console.error('[ipc] simulationPredictionSave:create failed:', error)
+      return { success: false, error: (error as Error).message }
+    }
+  })
+
+  /**
+   * 新增基准卷烟辅材参数牌号
+   */
+  ipcMain.handle('simulationPredictionSave:delete', async (_evt, id: number) => {
+    try {
+      await simulationPredictionSaveService.deleteSimulationPrediction(id)
+      return { success: true }
+    } catch (error) {
+      console.error('[ipc] simulationPredictionSave:delete failed:', error)
+      return { success: false, error: (error as Error).message }
+    }
+  })
+
+  /* -------------------- 辅材参数推荐管理 -------------------- */
+
+  /**
+   * 查询辅材参数推荐
+   */
+  ipcMain.handle('recAuxMaterialsSave:query', async () => {
+    try {
+      return { success: true, data: recAuxMaterialsSaveService.getAllRecAuxMaterials() }
+    } catch (error) {
+      console.error('[ipc] recAuxMaterialsSave:query failed:', error)
+      return { success: false, error: (error as Error).message }
+    }
+  })
+
+  /**
+   * id查询辅材参数推荐
+   */
+  ipcMain.handle('recAuxMaterialsSave:getId', async (_evt, id: number) => {
+    try {
+      return { success: true, data: recAuxMaterialsSaveService.getRecAuxMaterialsById(id) }
+    } catch (error) {
+      console.error('[ipc] recAuxMaterialsSave:getId failed:', error)
+      return { success: false, error: (error as Error).message }
+    }
+  })
+
+  /**
+   * 辅材参数推荐保存
+   */
+  ipcMain.handle('recAuxMaterialsSave:create', async (_evt, dto: schema.AuxMaterialsDto) => {
+    try {
+      return { success: true, data: recAuxMaterialsSaveService.create(dto) }
+    } catch (error) {
+      console.error('[ipc] recAuxMaterialsSave:create failed:', error)
+      return { success: false, error: (error as Error).message }
+    }
+  })
+
+  /**
+   * 辅材参数推荐删除
+   */
+  ipcMain.handle('recAuxMaterialsSave:delete', async (_evt, id: number) => {
+    try {
+      await recAuxMaterialsSaveService.deleteRecAuxMaterials(id)
+      return { success: true }
+    } catch (error) {
+      console.error('[ipc] recAuxMaterialsSave:delete failed:', error)
       return { success: false, error: (error as Error).message }
     }
   })
