@@ -116,7 +116,7 @@ const CalculationModal: React.FC<CalculationModalProps> = ({
       dataIndex: 'quantitativeCoef'
     },
     {
-      title: '柠檬酸根 (设计值) 系数',
+      title: '柠檬酸根 (含量) 系数',
       dataIndex: 'citrateCoef'
     },
     // {

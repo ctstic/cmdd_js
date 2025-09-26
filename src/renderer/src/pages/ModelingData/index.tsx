@@ -1,5 +1,17 @@
 import React, { useState, useEffect } from 'react'
-import { Table, Popconfirm, Button, message, Upload, Space, Input } from 'antd'
+import {
+  Table,
+  Popconfirm,
+  Button,
+  message,
+  Upload,
+  Space,
+  Input,
+  Flex,
+  List,
+  Card,
+  Typography
+} from 'antd'
 import CalculationModal from './components/CalculationModal'
 import TestResultModal from './components/TestResultModal'
 import type { TableProps, UploadProps, UploadFile } from 'antd'
@@ -206,7 +218,7 @@ const ModelingData: React.FC = () => {
       dataIndex: 'quantitative'
     },
     {
-      title: '柠檬酸根 (设计值)',
+      title: '柠檬酸根 (含量)',
       dataIndex: 'citrate',
       render: (text) => <span>{(Number(text) * 100).toFixed(2)}%</span>
     },
@@ -261,6 +273,14 @@ const ModelingData: React.FC = () => {
     }
   ]
 
+  const data = [
+    'Racing car sprays burning fuel into crowd.',
+    'Japanese princess to wed commoner.',
+    'Australian walks 100km after outback crash.',
+    'Man charged over missing wedding girl.',
+    'Los Angeles battles huge wildfires.'
+  ]
+
   return (
     <>
       {contextHolder}
@@ -282,14 +302,99 @@ const ModelingData: React.FC = () => {
         >
           计算系数管理
         </Button>
+        <Popconfirm
+          key="remove"
+          title="确认要删除此类型下所有数据吗？"
+          okText="是"
+          cancelText="否"
+          onConfirm={async () => {
+            try {
+              // const res = await window.electronAPI.cigarettes.delete(record.id)
+              info('success', '删除成功')
+              // setTableData((prevData) => prevData.filter((item) => item.id !== record.id))
+            } catch {
+              info('error', '删除失败，请重试')
+            }
+          }}
+        >
+          <Button type="primary" danger>
+            删除此类数据
+          </Button>
+        </Popconfirm>
+
         <Upload {...uploadProps}>
           <Button disabled={importing} loading={importing}>
             {importing ? '导入中...' : '导入Excel数据'}
           </Button>
         </Upload>
-         <Button type="link"onClick={handleDownload}>下载模板</Button>
+
+        <Button type="link" onClick={handleDownload}>
+          下载模板
+        </Button>
       </Space>
-      <Table<DataType> rowKey="id" columns={columns} dataSource={tableData} />
+      <Flex gap={30} align="flex-start">
+        <Card
+          title="类别信息"
+          bordered={false}
+          style={{
+            width: '320px',
+            minWidth: '320px',
+            flexShrink: 0,
+            boxShadow: '0 2px 8px rgba(0,0,0,0.09)'
+          }}
+          bodyStyle={{ padding: '8px 0' }}
+        >
+          <List
+            dataSource={data}
+            renderItem={(item) => (
+              <List.Item
+                style={{
+                  padding: '12px 20px',
+                  border: 'none',
+                  borderBottom: '1px solid #f0f0f0'
+                }}
+              >
+                <Typography.Text style={{ fontSize: '14px' }}>{item}</Typography.Text>
+              </List.Item>
+            )}
+          />
+        </Card>
+
+        <Card
+          title="表格标题"
+          bordered={false}
+          style={{
+            flex: 1,
+            minWidth: 0,
+            boxShadow: '0 2px 8px rgba(0,0,0,0.09)'
+          }}
+        >
+          <Table<DataType>
+            rowKey="id"
+            columns={columns}
+            dataSource={tableData}
+            pagination={{
+              pageSize: 15
+            }}
+            scroll={{ x: 'max-content' }}
+          />
+        </Card>
+      </Flex>
+      {/* <Flex gap={30}>
+        <List
+          // header={<div>Header</div>}
+          // footer={<div>Footer</div>}
+          bordered
+          dataSource={data}
+          renderItem={(item) => (
+            <List.Item>
+              {item}
+            </List.Item>
+          )}
+        />
+        <Table<DataType> rowKey="id" columns={columns} dataSource={tableData} style={{ flex: 1 }} />
+      </Flex> */}
+
       <CalculationModal
         modalData={modalData}
         setModalData={setModalData}
