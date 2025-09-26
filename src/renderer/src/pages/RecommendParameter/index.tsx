@@ -10,7 +10,9 @@ import {
   Slider,
   Table,
   InputNumber,
-  Empty
+  Empty,
+  Flex,
+  Space
 } from 'antd'
 import {
   ExperimentOutlined,
@@ -21,10 +23,28 @@ import {
   LineChartOutlined
 } from '@ant-design/icons'
 import type { TableProps } from 'antd'
+import { createStyles } from 'antd-style'
 
+const useStyle = createStyles(({ css, token }) => {
+  const { antCls } = token
+  return {
+    customTable: css`
+      ${antCls}-table {
+        ${antCls}-table-container {
+          ${antCls}-table-body,
+          ${antCls}-table-content {
+            scrollbar-width: thin;
+            scrollbar-color: #eaeaea transparent;
+            scrollbar-gutter: stable;
+          }
+        }
+      }
+    `
+  }
+})
 const { Title, Text } = Typography
 
-const styles = {
+const style = {
   headerGradient: {
     background: 'linear-gradient(135deg, #1890ff 0%, #a3dcff 100%)'
   },
@@ -51,13 +71,15 @@ interface DataType {
 }
 
 // 第一  二步输入框
-const FormFieldGroup = ({ fields, form, layout = 'vertical', cols = 2 }) => {
+const FormFieldGroup = ({ fields, form, layout = 'vertical', cols, defaultValue }) => {
   return (
     <Form form={form} layout={layout} initialValues={{ size: 30 }}>
       <Row gutter={[24, 16]}>
         {fields.map((field) => (
-          <Col xs={24} sm={24} md={24 / cols} key={field.name}>
+          <Col xs={24} sm={24} md={cols} key={field.name}>
             <Form.Item
+              style={{ marginBottom: field.name === 'size' ? 10 : 0 }}
+              initialValue={defaultValue === undefined ? '' : defaultValue}
               required={true}
               name={field.name}
               label={
@@ -92,58 +114,58 @@ const RangeSliders = ({ fields, form }) => {
 
   return (
     <Form form={form} layout="vertical" initialValues={initialValues}>
-      <Row gutter={[10, 10]}>
+      <Flex gap={20} style={{ width: '100%' }}>
         {fields.map((field) => (
-          <Col xs={24} md={12} key={field.name}>
+          <div
+            key={field.name}
+            style={{
+              padding: '16px',
+              background: 'rgba(82, 196, 26, 0.05)',
+              borderRadius: '8px',
+              border: '1px solid #e8f5e6',
+              // height: '100%',
+              width: '20%'
+            }}
+          >
+            <Form.Item
+              name={field.name}
+              label={
+                <Text strong style={{ color: '#262626', marginBottom: 0 }}>
+                  {field.label}
+                  {field.unit ? `(${field.unit})` : ''}&nbsp;&nbsp; 步长值{field.step}
+                </Text>
+              }
+              style={{ margin: 0 }}
+            >
+              <Slider
+                range
+                value={form.getFieldValue(field.name)} // 获取当前值
+                onChange={(value) => form.setFieldsValue({ [field.name]: value })} // 更新表单值
+                min={field.min}
+                max={field.max}
+                defaultValue={field.defaultSection}
+                step={field.step}
+                tooltip={{
+                  formatter: (value) => `${value}` + `${field.unit ? `(${field.unit})` : ''} `
+                }}
+                style={{ margin: 0 }}
+              />
+            </Form.Item>
             <div
               style={{
-                padding: '16px',
-                background: 'rgba(82, 196, 26, 0.05)',
-                borderRadius: '8px',
-                border: '1px solid #e8f5e6',
-                height: '100%'
+                display: 'flex',
+                justifyContent: 'space-between',
+                marginTop: 0,
+                fontSize: '12px',
+                color: '#8c8c8c'
               }}
             >
-              <Form.Item
-                name={field.name}
-                label={
-                  <Text strong style={{ color: '#262626', marginBottom: 12 }}>
-                    {field.label}
-                    {field.unit ? `(${field.unit})` : ''}&nbsp;&nbsp; 步长值{field.step}
-                  </Text>
-                }
-                style={{ marginBottom: 0 }}
-              >
-                <Slider
-                  range
-                  value={form.getFieldValue(field.name)} // 获取当前值
-                  onChange={(value) => form.setFieldsValue({ [field.name]: value })} // 更新表单值
-                  min={field.min}
-                  max={field.max}
-                  defaultValue={field.defaultSection}
-                  step={field.step}
-                  tooltip={{
-                    formatter: (value) => `${value}` + `${field.unit ? `(${field.unit})` : ''} `
-                  }}
-                  style={{ marginTop: 12 }}
-                />
-              </Form.Item>
-              <div
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  marginTop: 8,
-                  fontSize: '12px',
-                  color: '#8c8c8c'
-                }}
-              >
-                <span>最小值</span>
-                <span>最大值</span>
-              </div>
+              <span>最小值</span>
+              <span>最大值</span>
             </div>
-          </Col>
+          </div>
         ))}
-      </Row>
+      </Flex>
     </Form>
   )
 }
@@ -152,7 +174,7 @@ const RangeSliders = ({ fields, form }) => {
 const StyledCard = ({ title, icon, children, color = '#1890ff', style = {}, mark = '' }) => {
   const cardHeaderStyle = {
     background: `linear-gradient(90deg, ${color}20 0%, #ffffff 100%)`,
-    padding: '16px 24px',
+    padding: '10px 24px',
     borderRadius: '12px 12px 0 0',
     borderBottom: `2px solid ${color}40`
   }
@@ -168,7 +190,7 @@ const StyledCard = ({ title, icon, children, color = '#1890ff', style = {}, mark
   return (
     <Card
       style={{
-        marginBottom: 20,
+        marginBottom: 15,
         borderRadius: 16,
         boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
         border: `1px solid ${color}30`,
@@ -197,7 +219,8 @@ const RecommendParameter: React.FC = () => {
   const [rangeForm] = Form.useForm()
   const [tableData, setTableData] = useState<DataType[]>([])
   const [messageApi, contextHolder] = message.useMessage()
-  console.log(baseForm, 'baseFormbaseFormbaseForm')
+  const { styles } = useStyle()
+  // console.log(baseForm, 'baseFormbaseFormbaseForm')
 
   const info = (type: 'info' | 'success' | 'error' | 'warning' | 'loading', msg: string) => {
     messageApi.open({
@@ -212,10 +235,10 @@ const RecommendParameter: React.FC = () => {
     { name: 'filterPressureDrop', label: '滤棒压降', unit: 'Pa' },
     { name: 'permeability', label: '透气度', unit: 'CU' },
     { name: 'quantitative', label: '定量', unit: 'g/m²' },
-    { name: 'citrate', label: '柠檬酸根(设计值)', unit: '%' }
+    { name: 'citrate', label: '柠檬酸根(含量)', unit: '%' }
   ]
 
-  // 基准卷烟有害成分数据
+  // 基准卷烟主流烟气数据
   const harmfulFields = [
     { name: 'tar', label: '焦油', unit: 'mg/支' },
     { name: 'nicotine', label: '烟碱', unit: 'mg/支' },
@@ -267,7 +290,7 @@ const RecommendParameter: React.FC = () => {
     },
     {
       name: 'citrate',
-      label: '柠檬酸根(设计值)',
+      label: '柠檬酸根(含量)',
       min: 0.2,
       max: 3,
       step: 0.4,
@@ -285,14 +308,14 @@ const RecommendParameter: React.FC = () => {
 
     // // 打印所有表单的值
     // console.log('基准卷烟辅材参数:', baseValues)
-    // console.log('目标有害成分:', targetValues)
+    // console.log('目标主流烟气:', targetValues)
     // console.log('成分权重设置:', weightValues)
     // console.log('辅材参数个性化设计范围:', rangeValues)
 
     if (Object.keys(baseValues).length !== 9) {
       info('warning', '请正确输入基准参数')
     } else if (Object.keys(targetValues).length !== 4) {
-      info('warning', '请正确输入目标有害成分')
+      info('warning', '请正确输入目标主流烟气')
     } else if (Object.keys(weightValues).length !== 4) {
       info('warning', '请正确输入成分权重设置')
     } else if (
@@ -301,7 +324,7 @@ const RecommendParameter: React.FC = () => {
         weightForm.getFieldValue('tarWeight') >
       1
     ) {
-      info('warning', '有害成分权重之和不大于1')
+      info('warning', '主流烟气权重之和不大于1')
     } else {
       const res = await window.electronAPI.rec.auxMaterials({
         count: rangeValues.size,
@@ -336,31 +359,6 @@ const RecommendParameter: React.FC = () => {
     }
   }
 
-  const columns: TableProps<DataType>['columns'] = [
-    {
-      title: '滤嘴通风率',
-      dataIndex: 'filterVentilation',
-      render: (text) => <span>{(Number(text) * 100).toFixed(2)}%</span>
-    },
-    {
-      title: '滤棒压降 (Pa)',
-      dataIndex: 'filterPressureDrop'
-    },
-    {
-      title: '透气度 (CU)',
-      dataIndex: 'permeability'
-    },
-    {
-      title: '定量 (g/m²)',
-      dataIndex: 'quantitative'
-    },
-    {
-      title: '柠檬酸根 (设计值)',
-      dataIndex: 'citrate',
-      render: (text) => <span>{(Number(text) * 100).toFixed(2)}%</span>
-    }
-  ]
-
   // 用来计算百分比变化的函数
   const calculatePercentageChange = (prediction: number, originalValue: number) => {
     const diff = ((prediction / originalValue - 1) * 100).toFixed(2)
@@ -381,13 +379,81 @@ const RecommendParameter: React.FC = () => {
     )
   }
 
+  const columns: TableProps<DataType>['columns'] = [
+    {
+      title: '滤嘴通风率',
+      dataIndex: 'filterVentilation',
+      render: (text) => <span>{(Number(text) * 100).toFixed(2)}%</span>
+    },
+    {
+      title: '滤棒压降 (Pa)',
+      dataIndex: 'filterPressureDrop'
+    },
+    {
+      title: '透气度 (CU)',
+      dataIndex: 'permeability'
+    },
+    {
+      title: '定量 (g/m²)',
+      dataIndex: 'quantitative'
+    },
+    {
+      title: '柠檬酸根 (含量)',
+      dataIndex: 'citrate',
+      render: (text) => <span>{(Number(text) * 100).toFixed(2)}%</span>
+    },
+    {
+      title: '焦油',
+      dataIndex: 'tar',
+      render: (_, record) => {
+        const tarPercentageChange = calculatePercentageChange(record.prediction[2], record.tar)
+        return (
+          <span style={{ color: record?.tar ? '#52c41a' : 'gray' }}>
+            {record.prediction[2].toFixed(2)}
+            {renderArrow(tarPercentageChange)}
+          </span>
+        )
+      }
+    },
+    {
+      title: '烟碱',
+      dataIndex: 'nicotine',
+      render: (_, record) => {
+        const nicotinePercentageChange = calculatePercentageChange(
+          record.prediction[1],
+          record.nicotine
+        )
+        return (
+          <span style={{ color: record?.nicotine ? '#52c41a' : 'gray' }}>
+            {record.prediction[1].toFixed(2)}
+            {renderArrow(nicotinePercentageChange)}
+          </span>
+        )
+      }
+    },
+    {
+      title: 'CO',
+      dataIndex: 'co',
+      render: (_, record) => {
+        const coPercentageChange = calculatePercentageChange(record.prediction[0], record.co)
+
+        return (
+          <span style={{ color: record?.co ? '#52c41a' : 'gray' }}>
+            {record.prediction[0].toFixed(2)}
+            {renderArrow(coPercentageChange)}
+          </span>
+        )
+      }
+    }
+  ]
+
   return (
     <div style={{ minHeight: 'calc(100vh - 145px)' }}>
       {contextHolder}
       <Card
         style={{
-          marginBottom: 24,
-          ...styles.headerGradient,
+          marginBottom: 20,
+          ...style.headerGradient,
           color: 'white',
           borderRadius: 16,
           boxShadow: '0 8px 20px rgba(24, 144, 255, 0.3)',
@@ -397,7 +463,7 @@ const RecommendParameter: React.FC = () => {
       >
         <Title level={2} style={{ color: 'white', margin: 0, fontWeight: 700 }}>
           <CalculatorOutlined style={{ marginRight: 16, fontSize: '32px' }} />
-          卷烟焦油和烟碱推荐辅材参数
+          卷烟辅材参数推荐系统
         </Title>
         <Text
           style={{
@@ -412,32 +478,38 @@ const RecommendParameter: React.FC = () => {
         </Text>
       </Card>
       <Row gutter={[24, 16]}>
-        <Col xs={24} md={10} style={{ maxHeight: 'calc(100vh - 320px)', overflowY: 'scroll' }}>
-          <StyledCard title="基准卷烟辅材参数" icon={<ExperimentOutlined />}>
-            <FormFieldGroup fields={baseMaterialFields} form={baseForm} cols={3} />
+        <Col xs={16} md={8}>
+          <StyledCard title="基准卷烟主流烟气" icon={<SafetyCertificateOutlined />}>
+            <FormFieldGroup fields={harmfulFields} form={baseForm} cols={8} />
           </StyledCard>
-          <StyledCard title="基准卷烟有害成分" icon={<SafetyCertificateOutlined />}>
-            <FormFieldGroup fields={harmfulFields} form={baseForm} cols={3} />
-          </StyledCard>
-          <StyledCard title="目标有害成分" icon={<SafetyCertificateOutlined />} color="#fa8c16">
-            <FormFieldGroup fields={harmfulFields} form={targetForm} cols={3} />
+          <StyledCard title="目标主流烟气" icon={<SafetyCertificateOutlined />} color="#fa8c16">
+            <FormFieldGroup fields={harmfulFields} form={targetForm} cols={8} />
           </StyledCard>
           <StyledCard
-            title="有害成分权重设置"
+            title="主流烟气权重设置"
             icon={<ExperimentOutlined />}
-            mark="有害成分权重之和不大于1"
+            mark="主流烟气权重之和不大于1"
             color="#fa8c16"
           >
-            <FormFieldGroup fields={harmfulWeightFields} form={weightForm} cols={3} />
+            <FormFieldGroup
+              fields={harmfulWeightFields}
+              form={weightForm}
+              cols={8}
+              defaultValue={0.33}
+            />
+          </StyledCard>
+        </Col>
+        <Col xs={32} md={16}>
+          <StyledCard title="基准卷烟辅材参数" icon={<ExperimentOutlined />}>
+            <FormFieldGroup fields={baseMaterialFields} form={baseForm} cols={4} />
           </StyledCard>
           <StyledCard
             title="辅材参数个性化设计范围"
             icon={<SafetyCertificateOutlined />}
-            style={{ marginBottom: 12 }}
             color="#52c41a"
           >
             <FormFieldGroup
-              fields={[{ name: 'size', label: '生成有害成分数量', unit: '条' }]}
+              fields={[{ name: 'size', label: '生成推荐数量', unit: '条' }]}
               form={rangeForm}
               cols={5}
             />
@@ -445,8 +517,8 @@ const RecommendParameter: React.FC = () => {
 
             <div
               style={{
-                marginTop: 24,
-                padding: 16,
+                marginTop: 10,
+                padding: 12,
                 background: '#f6ffed',
                 borderRadius: 8,
                 border: '1px dashed #b7eb8f'
@@ -457,20 +529,37 @@ const RecommendParameter: React.FC = () => {
               </Text>
             </div>
           </StyledCard>
-          {/* 导航按钮 */}
-          <div
-            style={{
-              marginBottom: 12,
-              paddingBlock: 20,
-              textAlign: 'center',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              background: 'rgba(255, 255, 255, 0.9)',
-              borderRadius: 12,
-              boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
-            }}
-          >
+        </Col>
+      </Row>
+
+      <StyledCard title="推荐辅材参数表格" icon={<SafetyCertificateOutlined />} color="#52c41a">
+        <Table
+          className={styles.customTable}
+          scroll={{ x: 960, y: 55 * 5 }}
+          rowKey="id"
+          locale={{
+            emptyText: <Empty description="暂无数据" image={Empty.PRESENTED_IMAGE_SIMPLE} />
+          }}
+          bordered
+          dataSource={tableData}
+          columns={columns}
+          pagination={false}
+          style={{
+            borderRadius: '8px'
+          }}
+        />
+      </StyledCard>
+      <Card
+        style={{
+          borderRadius: 16,
+          boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+          border: '1px solid #e8e8e8',
+          marginBottom: 15
+        }}
+        bodyStyle={{ padding: 0 }}
+      >
+        <div style={{ padding: '20px 24px', textAlign: 'center' }}>
+          <Space>
             <Button
               type="primary"
               onClick={handleSubmit}
@@ -482,86 +571,61 @@ const RecommendParameter: React.FC = () => {
             >
               提交并生成推荐
             </Button>
-          </div>
-        </Col>
-        <Col xs={24} md={14}>
-          <StyledCard
-            title="推荐辅材参数表格"
-            icon={<SafetyCertificateOutlined />}
-            style={{ marginBottom: 12 }}
-            color="#52c41a"
-          >
-            <Table
-              rowKey="id"
-              locale={{
-                emptyText: <Empty description="暂无数据" image={Empty.PRESENTED_IMAGE_SIMPLE} />
-              }}
-              expandable={{
-                expandedRowRender: (record) => {
-                  // 计算每个项的百分比变化
-                  const coPercentageChange = calculatePercentageChange(
-                    record.prediction[0],
-                    record.co
-                  )
-                  const nicotinePercentageChange = calculatePercentageChange(
-                    record.prediction[1],
-                    record.nicotine
-                  )
-                  const tarPercentageChange = calculatePercentageChange(
-                    record.prediction[2],
-                    record.tar
-                  )
-                  return (
-                    <div
-                      style={{
-                        display: 'flex',
-                        width: '100%',
-                        padding: '10px',
-                        fontFamily: 'Arial, sans-serif',
-                        backgroundColor: '#f5f5f5',
-                        borderRadius: '4px'
-                      }}
-                    >
-                      <div style={{ textAlign: 'left', width: '200px' }}>
-                        <p style={{ margin: 0, fontSize: '16px' }}>
-                          <strong>焦油:</strong>
-                          <span style={{ color: record?.tar ? '#52c41a' : 'gray' }}>
-                            {record.prediction[2].toFixed(2)} {renderArrow(tarPercentageChange)}
-                          </span>
-                        </p>
-                      </div>
-                      <div style={{ textAlign: 'left', width: '200px' }}>
-                        <p style={{ margin: 0, fontSize: '16px' }}>
-                          <strong>烟碱:</strong>
-                          <span style={{ color: record?.nicotine ? '#52c41a' : 'gray' }}>
-                            {record.prediction[1].toFixed(2)}{' '}
-                            {renderArrow(nicotinePercentageChange)}
-                          </span>
-                        </p>
-                      </div>
-                      <div style={{ textAlign: 'left', width: '200px' }}>
-                        <p style={{ margin: 0, fontSize: '16px' }}>
-                          <strong>CO:</strong>
-                          <span style={{ color: record?.co ? '#52c41a' : 'gray' }}>
-                            {record.prediction[0].toFixed(2)} {renderArrow(coPercentageChange)}
-                          </span>
-                        </p>
-                      </div>
-                    </div>
-                  )
-                }
-              }}
-              bordered
-              dataSource={tableData}
-              columns={columns}
-              pagination={false}
+            <Button
+              size="large"
+              type="dashed"
+              // onClick={handleReset}
               style={{
-                borderRadius: '8px'
+                background: '#ffdd8e',
+                borderColor: '#ffdd8e',
+                minWidth: 100,
+                color: 'white'
               }}
-            />
-          </StyledCard>
-        </Col>
-      </Row>
+            >
+              重置
+            </Button>
+            <Button
+              size="large"
+              type="dashed"
+              // onClick={handleReset}
+              style={{
+                background: '#92d96f',
+                borderColor: '#92d96f',
+                minWidth: 100,
+                color: 'white'
+              }}
+            >
+              保存
+            </Button>
+            <Button
+              size="large"
+              type="dashed"
+              // onClick={handleReset}
+              style={{
+                background: '#a689cf',
+                borderColor: '#a689cf',
+                minWidth: 100,
+                color: 'white'
+              }}
+            >
+              导出全部数据
+            </Button>
+            <Button
+              size="large"
+              type="dashed"
+              // onClick={handleReset}
+              style={{
+                background: '#ffdd8e',
+                borderColor: '#ffdd8e',
+                minWidth: 100,
+                color: 'white'
+              }}
+            >
+              查看历史数据
+            </Button>
+          </Space>
+        </div>
+      </Card>
     </div>
   )
 }

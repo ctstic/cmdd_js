@@ -36,7 +36,7 @@ const TestResultModal: React.FC<TestResultModalProps> = ({ data, modalOpen, onCa
       title={
         <div style={{ display: 'flex', alignItems: 'center' }}>
           <ExperimentOutlined style={{ marginRight: 12, color: '#1890ff' }} />
-          <span>{data.code} - 测试结果详情</span>
+          <span>{data.code} - 数据详情</span>
         </div>
       }
       open={modalOpen}

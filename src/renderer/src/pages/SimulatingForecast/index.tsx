@@ -1,5 +1,17 @@
 import React, { useRef, useState } from 'react'
-import { Card, Row, Col, Typography, Button, Space, Form, InputNumber, notification } from 'antd'
+import {
+  Card,
+  Row,
+  Col,
+  Typography,
+  Button,
+  Space,
+  Form,
+  InputNumber,
+  notification,
+  Flex,
+  Select
+} from 'antd'
 import {
   CalculatorOutlined,
   ExperimentOutlined,
@@ -7,6 +19,7 @@ import {
   LineChartOutlined
 } from '@ant-design/icons'
 import PredictionTable from './PredictionTable'
+import BrandNameModal from './BrandNameModal'
 
 const { Title, Text } = Typography
 
@@ -34,7 +47,7 @@ const baseMaterialFields: FormFieldConfig[] = [
   { name: 'filterPressureDrop', label: '滤棒压降', unit: 'Pa' },
   { name: 'permeability', label: '透气度', unit: 'CU' },
   { name: 'quantitative', label: '定量', unit: 'g/m²' },
-  { name: 'citrate', label: '柠檬酸根(设计值)', unit: '%' }
+  { name: 'citrate', label: '柠檬酸根(含量)', unit: '%' }
   // { name: 'potassiumRatio', label: '钾盐占比', unit: '%' }
 ]
 
@@ -52,7 +65,8 @@ const SimulatingForecast: React.FC = () => {
   const [notificationApi, contextHolder] = notification.useNotification()
   const [form] = Form.useForm()
   const actionRef = useRef<any>(null)
-  const [expandedRowKeys, setExpandedRowKeys] = useState<React.Key[]>([])
+  const [brandNameOpen, setBrandNameOpen] = useState<boolean>(false)
+  const [brandNameSmokeOpen, setBrandNameSmokeOpen] = useState<boolean>(false)
 
   // 可复用的卡片组件
   const StyledCard = ({ title, icon, children, color = '#1890ff' }) => {
@@ -65,10 +79,11 @@ const SimulatingForecast: React.FC = () => {
     return (
       <Card
         style={{
-          marginBottom: 20,
+          marginBottom: 10,
           borderRadius: 16,
           boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-          border: `1px solid ${color}30`
+          border: `1px solid ${color}30`,
+          flex: 1
         }}
         bodyStyle={{ padding: 0 }}
       >
@@ -118,7 +133,7 @@ const SimulatingForecast: React.FC = () => {
           })
 
           // 判断返回数据是否存在
-          console.log('🚀 ~ handleSubmit ~ res.data:aaa', res.data)         
+          console.log('🚀 ~ handleSubmit ~ res.data:aaa', res.data)
           if (res.data.data && Array.isArray(res.data.data) && res.data.data.length > 0) {
             notificationApi.success({
               message: '计算成功'
@@ -142,7 +157,7 @@ const SimulatingForecast: React.FC = () => {
               }
             })
             actionRef.current.setData(predictionData)
-            setExpandedRowKeys(predictionData.map((item) => item.key))
+            // setForecastData(predictionData)
           } else {
             notificationApi.error({
               message: res.data.errors
@@ -164,11 +179,19 @@ const SimulatingForecast: React.FC = () => {
     if (actionRef.current) {
       actionRef.current.setData([])
     }
-    setExpandedRowKeys([])
+    // setForecastData([])
     notificationApi.success({
       message: '重置成功',
       description: '表单和表格数据已重置'
     })
+  }
+
+  const onChange = (value: string) => {
+    console.log(`selected ${value}`)
+  }
+
+  const onSearch = (value: string) => {
+    console.log('search:', value)
   }
 
   return (
@@ -177,18 +200,18 @@ const SimulatingForecast: React.FC = () => {
       {/* 标题 */}
       <Card
         style={{
-          marginBottom: 24,
+          marginBottom: 15,
           ...styles.headerGradient,
           color: 'white',
           borderRadius: 16,
-          boxShadow: '0 8px 20px rgba(24, 144, 255, 0.3)',
+          boxShadow: '0 8px 15px rgba(24, 144, 255, 0.3)',
           border: 'none'
         }}
         bodyStyle={{ padding: '28px 32px' }}
       >
         <Title level={2} style={{ color: 'white', margin: 0, fontWeight: 700 }}>
           <CalculatorOutlined style={{ marginRight: 16, fontSize: '32px' }} />
-          卷烟焦油和烟碱仿真预测系统
+          卷烟主流烟气仿真预测系统
         </Title>
         <Text
           style={{
@@ -203,108 +226,218 @@ const SimulatingForecast: React.FC = () => {
         </Text>
       </Card>
 
-      <Row gutter={[24, 16]}>
-        {/* 左侧表单 */}
-        <Col xs={24} lg={8}>
-          <Form form={form} layout="vertical">
-            {/* 辅材参数 */}
-            <StyledCard title="基准卷烟辅材参数" icon={<ExperimentOutlined />}>
-              <Row gutter={16}>
-                {baseMaterialFields.map((field) => (
-                  <Col xs={24} sm={12} key={field.name}>
-                    <Form.Item
-                      name={field.name}
-                      label={`${field.label}${field.unit ? ` (${field.unit})` : ''}`}
-                      rules={requiredRule(field.label)}
+      <Form form={form} layout="vertical">
+        <Flex gap={20}>
+          {/* 辅材参数 */}
+          <StyledCard title="基准卷烟辅材参数" icon={<ExperimentOutlined />}>
+            <Row gutter={[16, 16]}>
+              {baseMaterialFields.map((field) => (
+                <Col span={8} key={field.name}>
+                  <Form.Item
+                    name={field.name}
+                    label={`${field.label}${field.unit ? ` (${field.unit})` : ''}`}
+                    rules={requiredRule(field.label)}
+                  >
+                    <InputNumber
+                      style={{ width: '100%' }}
+                      min={0}
+                      step={0.01}
+                      precision={2}
+                      placeholder={`请输入${field.label}`}
+                    />
+                  </Form.Item>
+                </Col>
+              ))}
+              <Col span={8}>
+                <Form.Item name="name" label="牌号名称">
+                  <Flex gap={8} align="flex-end">
+                    <Select
+                      showSearch
+                      placeholder="请选择牌号名称"
+                      optionFilterProp="label"
+                      onChange={onChange}
+                      onSearch={onSearch}
+                      options={[
+                        {
+                          value: 'jack',
+                          label: 'Jack'
+                        },
+                        {
+                          value: 'lucy',
+                          label: 'Lucy'
+                        },
+                        {
+                          value: 'tom',
+                          label: 'Tom'
+                        }
+                      ]}
+                    />
+                    <Button
+                      type="primary"
+                      onClick={() => {
+                        setBrandNameOpen(true)
+                      }}
                     >
-                      <InputNumber
-                        style={{ width: '100%' }}
-                        min={0}
-                        step={0.01}
-                        precision={2}
-                        placeholder={`请输入${field.label}`}
-                      />
-                    </Form.Item>
-                  </Col>
-                ))}
-              </Row>
-            </StyledCard>
+                      保存
+                    </Button>
+                  </Flex>
+                </Form.Item>
+              </Col>
+            </Row>
+          </StyledCard>
 
-            {/* 有害成分 */}
-            <StyledCard
-              title="基准卷烟有害成分"
-              icon={<SafetyCertificateOutlined />}
-              color="#fa8c16"
+          {/* 主流烟气 */}
+          <StyledCard title="基准卷烟主流烟气" icon={<SafetyCertificateOutlined />} color="#fa8c16">
+            <Row gutter={[16, 16]}>
+              {harmfulFields.map((field) => (
+                <Col span={8} key={field.name}>
+                  <Form.Item
+                    name={field.name}
+                    label={`${field.label}${field.unit ? ` (${field.unit})` : ''}`}
+                    rules={requiredRule(field.label)}
+                  >
+                    <InputNumber
+                      style={{ width: '100%' }}
+                      min={0}
+                      step={0.01}
+                      precision={2}
+                      placeholder={`请输入${field.label}`}
+                    />
+                  </Form.Item>
+                </Col>
+              ))}
+              <Col span={8}>
+                <Form.Item name="name" label="牌号名称">
+                  <Flex gap={8} align="flex-end">
+                    <Select
+                      showSearch
+                      placeholder="请选择牌号名称"
+                      optionFilterProp="label"
+                      onChange={onChange}
+                      onSearch={onSearch}
+                      options={[
+                        {
+                          value: 'jack',
+                          label: 'vv'
+                        },
+                        {
+                          value: 'lucy',
+                          label: 'cc'
+                        },
+                        {
+                          value: 'tom',
+                          label: 'aa'
+                        }
+                      ]}
+                    />
+                    <Button
+                      type="primary"
+                      onClick={() => {
+                        setBrandNameSmokeOpen(true)
+                      }}
+                    >
+                      保存
+                    </Button>
+                  </Flex>
+                </Form.Item>
+              </Col>
+            </Row>
+          </StyledCard>
+        </Flex>
+      </Form>
+      <PredictionTable actionRef={actionRef} />
+
+      <Card
+        style={{
+          borderRadius: 16,
+          boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+          border: '1px solid #e8e8e8'
+        }}
+        bodyStyle={{ padding: 0 }}
+      >
+        <div style={{ padding: '20px 24px', textAlign: 'center' }}>
+          <Space>
+            <Button
+              size="large"
+              type="primary"
+              onClick={handleSubmit}
+              style={{
+                background: '#2597ff',
+                borderColor: '#2597ff',
+                minWidth: 100
+              }}
             >
-              <Row gutter={16}>
-                {harmfulFields.map((field) => (
-                  <Col xs={24} sm={8} key={field.name}>
-                    <Form.Item
-                      name={field.name}
-                      label={`${field.label}${field.unit ? ` (${field.unit})` : ''}`}
-                      rules={requiredRule(field.label)}
-                    >
-                      <InputNumber
-                        style={{ width: '100%' }}
-                        min={0}
-                        step={0.01}
-                        precision={2}
-                        placeholder={`请输入${field.label}`}
-                      />
-                    </Form.Item>
-                  </Col>
-                ))}
-              </Row>
-            </StyledCard>
-          </Form>
-          {/* 底部按钮 */}
-          <Card
-            style={{
-              borderRadius: 16,
-              boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-              border: '1px solid #e8e8e8'
-            }}
-            bodyStyle={{ padding: 0 }}
-          >
-            <div style={{ padding: '20px 24px', textAlign: 'center' }}>
-              <Space>
-                <Button
-                  size="large"
-                  type="primary"
-                  onClick={handleSubmit}
-                  style={{
-                    background: '#2597ff',
-                    borderColor: '#2597ff',
-                    minWidth: 100
-                  }}
-                >
-                  计算
-                </Button>
-                <Button
-                  size="large"
-                  type="dashed"
-                  onClick={handleReset}
-                  style={{
-                    background: '#ffdd8e',
-                    borderColor: '#ffdd8e',
-                    minWidth: 100,
-                    color: 'white'
-                  }}
-                >
-                  重置
-                </Button>
-              </Space>
-            </div>
-          </Card>
-        </Col>
-
-        {/* 右侧表格 */}
-        <Col xs={24} lg={16}>
-          {/* <StyledCard title="预测结果数据" icon={<LineChartOutlined />} color="#52c41a"> */}
-            <PredictionTable actionRef={actionRef} expandedRowKeys={expandedRowKeys} />
-          {/* </StyledCard> */}
-        </Col>
-      </Row>
+              计算
+            </Button>
+            <Button
+              size="large"
+              type="dashed"
+              onClick={handleReset}
+              style={{
+                background: '#ffdd8e',
+                borderColor: '#ffdd8e',
+                minWidth: 100,
+                color: 'white'
+              }}
+            >
+              重置
+            </Button>
+            <Button
+              size="large"
+              type="dashed"
+              onClick={handleReset}
+              style={{
+                background: '#92d96f',
+                borderColor: '#92d96f',
+                minWidth: 100,
+                color: 'white'
+              }}
+            >
+              保存
+            </Button>
+            <Button
+              size="large"
+              type="dashed"
+              onClick={handleReset}
+              style={{
+                background: '#a689cf',
+                borderColor: '#a689cf',
+                minWidth: 100,
+                color: 'white'
+              }}
+            >
+              导出全部数据
+            </Button>
+            <Button
+              size="large"
+              type="dashed"
+              onClick={handleReset}
+              style={{
+                background: '#ffdd8e',
+                borderColor: '#ffdd8e',
+                minWidth: 100,
+                color: 'white'
+              }}
+            >
+              查看历史数据
+            </Button>
+          </Space>
+        </div>
+      </Card>
+      <BrandNameModal
+        title="基准卷烟辅材参数"
+        modalOpen={brandNameOpen}
+        onCancel={() => {
+          setBrandNameOpen(false)
+        }}
+      />
+      <BrandNameModal
+        title="基准卷烟主流烟气"
+        modalOpen={brandNameSmokeOpen}
+        onCancel={() => {
+          setBrandNameSmokeOpen(false)
+        }}
+      />
     </div>
   )
 }
