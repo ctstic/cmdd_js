@@ -24,6 +24,7 @@ import {
 } from '@ant-design/icons'
 import type { TableProps } from 'antd'
 import { createStyles } from 'antd-style'
+import HistoryModal from './HistoryModal'
 
 const useStyle = createStyles(({ css, token }) => {
   const { antCls } = token
@@ -220,6 +221,8 @@ const RecommendParameter: React.FC = () => {
   const [tableData, setTableData] = useState<DataType[]>([])
   const [messageApi, contextHolder] = message.useMessage()
   const { styles } = useStyle()
+  const [historyModalOpen, setHistoryModalOpen] = useState<boolean>(false)
+
   // console.log(baseForm, 'baseFormbaseFormbaseForm')
 
   const info = (type: 'info' | 'success' | 'error' | 'warning' | 'loading', msg: string) => {
@@ -613,7 +616,9 @@ const RecommendParameter: React.FC = () => {
             <Button
               size="large"
               type="dashed"
-              // onClick={handleReset}
+              onClick={() => {
+                setHistoryModalOpen(true)
+              }}
               style={{
                 background: '#ffdd8e',
                 borderColor: '#ffdd8e',
@@ -626,6 +631,13 @@ const RecommendParameter: React.FC = () => {
           </Space>
         </div>
       </Card>
+      <HistoryModal
+        modalOpen={historyModalOpen}
+        onCancel={() => {
+          setHistoryModalOpen(false)
+        }}
+        title={''}
+      />
     </div>
   )
 }
