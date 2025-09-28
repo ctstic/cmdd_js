@@ -95,7 +95,7 @@ class DatabaseService {
       this.sqlite.exec(`
         CREATE TABLE IF NOT EXISTS cigarettes (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
-          code TEXT NOT NULL UNIQUE,
+          code TEXT NOT NULL,
           specimen_name TEXT NOT NULL,
           filter_ventilation TEXT NOT NULL,
           filter_pressure_drop INTEGER NOT NULL,

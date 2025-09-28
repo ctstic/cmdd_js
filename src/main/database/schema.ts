@@ -4,7 +4,7 @@ import { createInsertSchema, createSelectSchema } from 'drizzle-zod'
 // 科研建模数据表
 export const cigarettes = sqliteTable('cigarettes', {
   id: integer('id').primaryKey({ autoIncrement: true }),
-  code: text('code').notNull().unique(), // 编号
+  code: text('code').notNull(), // 编号
   specimenName: text('specimen_name').notNull().unique(), // 样品名称
   filterVentilation: text('filter_ventilation').notNull(), // 滤嘴通风率
   filterPressureDrop: integer('filter_pressure_drop').notNull(), // 滤棒压降(Pa)
