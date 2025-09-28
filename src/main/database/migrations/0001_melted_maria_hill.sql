@@ -1,0 +1,1 @@
+DROP INDEX `cigarettes_code_unique`;

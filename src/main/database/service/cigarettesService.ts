@@ -107,7 +107,7 @@ export class CigarettesService {
       INSERT INTO cigarettes (
             code, specimen_name, filter_ventilation, filter_pressure_drop, permeability, quantitative,
             citrate, potassium_ratio, tar, nicotine, co, created_at, updated_at
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `
       )
       .run(

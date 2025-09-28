@@ -44,6 +44,7 @@ const ModelingData: React.FC = () => {
   const [typeData, setTypeData] = useState<DataType[]>([])
   const [uploadModal, setUploadModal] = useState<boolean>(false)
   const restFormRef = useRef<ProFormInstance>()
+  const [selectedItem, setSelectedItem] = useState<string>('')
 
   const info = (type: 'info' | 'success' | 'error' | 'warning' | 'loading', msg: string) => {
     messageApi.open({
@@ -52,22 +53,26 @@ const ModelingData: React.FC = () => {
     })
   }
 
-  const loadTypes = async (): Promise<void> => {
-    const result = await window.electronAPI.cigarettes.getcigarettesType('')
-    console.log(result, 'resultresultresultresult')
 
-    setTypeData(result.data || [])
-  }
+  const handleData = async (): Promise<void> => {
+    try {
+      const typeData = await window.electronAPI.cigarettes.getCigarettesType('')
+      setTypeData(typeData.data || [])
+      console.log(typeData, typeData.data[0], 'typeData')
 
-  // 加载所有
-  const loadUsers = async (): Promise<void> => {
-    const result = await window.electronAPI.cigarettes.query('')
-    setTableData(result.data || [])
+      if (typeData.data.length) {
+        setSelectedItem(typeData.data[0])
+        const result = await window.electronAPI.cigarettes.query('', typeData.data[0])
+        console.log(result.data, 'result.dataresult.dataresult.data')
+        setTableData(result.data || [])
+      }
+    } catch {
+      info('error', '网络错误！')
+    }
   }
 
   useEffect(() => {
-    loadTypes()
-    loadUsers()
+    handleData()
   }, [])
 
   const handleDownload = async () => {
@@ -224,9 +229,9 @@ const ModelingData: React.FC = () => {
           onClick={async () => {
             setCalculationModal(true)
             try {
-              const res = await window.electronAPI.harmful.query('')
+              const res = await window.electronAPI.harmful.query('', selectedItem)
               setModalData(res.data)
-              setCalculationModal(true)
+              // setCalculationModal(true)
               return true
             } catch {
               info('error', '网络错误')
@@ -243,9 +248,11 @@ const ModelingData: React.FC = () => {
           cancelText="否"
           onConfirm={async () => {
             try {
-              // const res = await window.electronAPI.cigarettes.delete(record.id)
+              const res = await window.electronAPI.cigarettes.deleteCigarettesType(selectedItem)
               info('success', '删除成功')
-              // setTableData((prevData) => prevData.filter((item) => item.id !== record.id))
+              if (res.success) {
+                handleData()
+              }
             } catch {
               info('error', '删除失败，请重试')
             }
@@ -288,10 +295,25 @@ const ModelingData: React.FC = () => {
                 style={{
                   padding: '12px 20px',
                   border: 'none',
-                  borderBottom: '1px solid #f0f0f0'
+                  borderBottom: '1px solid #f0f0f0',
+                  backgroundColor: selectedItem === item ? '#e6f7ff' : 'transparent', // 选中背景色
+                  cursor: 'pointer'
+                }}
+                onClick={async () => {
+                  console.log(item, 'item')
+                  setSelectedItem(item)
+                  const result = await window.electronAPI.cigarettes.query('', item)
+                  setTableData(result.data || [])
                 }}
               >
-                <Typography.Text style={{ fontSize: '14px' }}>{item}</Typography.Text>
+                <Typography.Text
+                  style={{
+                    fontSize: '14px',
+                    color: selectedItem === item ? '#1890ff' : 'rgba(0, 0, 0, 0.85)' // 选中文字颜色
+                  }}
+                >
+                  {item}
+                </Typography.Text>
               </List.Item>
             )}
           />
@@ -322,8 +344,11 @@ const ModelingData: React.FC = () => {
         formRef={restFormRef}
         open={uploadModal}
         onFinish={async (values) => {
-          console.log(values, 'values')
-
+          const res = await window.electronAPI.cigarettes.getCigarettesType(values.specimenName)
+          if (!res.success) {
+            info('error', res.error)
+            return
+          }
           if (values.upload[0].size > 10 * 1024 * 1024) {
             info('error', '文件大小不能超过10MB')
             return
@@ -332,14 +357,14 @@ const ModelingData: React.FC = () => {
           const arrayBuffer = await values.upload[0].originFileObj.arrayBuffer()
           const uint8Array = new Uint8Array(arrayBuffer)
           const result = await window.electronAPI.cigarettes.importFromWebFile({
-            type: values.brandName,
+            specimenName: values.specimenName,
             name: values.upload[0].originFileObj,
             buffer: uint8Array
           })
 
-          if (result.data.errors?.length === 0) {
+          if (result.data.errors?.length === 0) {          
             info('success', `导入成功`)
-            loadUsers()
+            handleData()
             setUploadModal(false)
           } else {
             info('error', `导入失败，${result.data.errors[0]}`)
@@ -351,7 +376,18 @@ const ModelingData: React.FC = () => {
           onCancel: () => setUploadModal(false)
         }}
       >
-        <ProFormText width="md" name="brandName" label="牌号名称" placeholder="请输入牌号名称" />
+        <ProFormText
+          width="md"
+          rules={[
+            {
+              required: true,
+              message: '请上传文件！'
+            }
+          ]}
+          name="specimenName"
+          label="类别名称"
+          placeholder="请输入牌号名称"
+        />
         <ProFormUploadButton
           accept=".xlsx,.xls"
           name="upload"
@@ -380,6 +416,7 @@ const ModelingData: React.FC = () => {
         modalData={modalData}
         setModalData={setModalData}
         modalOpen={calculationModal}
+        selectedItem={selectedItem}
         onCancel={() => {
           setCalculationModal(false)
         }}

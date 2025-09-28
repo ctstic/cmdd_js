@@ -19,12 +19,14 @@ export type CalculationModalProps = {
   modalOpen: boolean
   onCancel: () => void
   modalData: any
+  selectedItem: string
   setModalData: React.Dispatch<React.SetStateAction<DataType[]>>
 }
 
 const CalculationModal: React.FC<CalculationModalProps> = ({
   modalData,
   modalOpen,
+  selectedItem,
   setModalData,
   onCancel
 }) => {
@@ -84,6 +86,10 @@ const CalculationModal: React.FC<CalculationModalProps> = ({
       title: '批次号',
       dataIndex: 'batchNo',
       ...getColumnSearchProps()
+    },
+    {
+      title: '类别名称',
+      dataIndex: 'specimenName'
     },
     {
       title: '有害成分类型',
@@ -175,9 +181,9 @@ const CalculationModal: React.FC<CalculationModalProps> = ({
           type="primary"
           onClick={async () => {
             try {
-              await window.electronAPI.harmful.generate()
+              await window.electronAPI.harmful.generate(selectedItem)
               info('success', '生成计算系数成功')
-              const res = await window.electronAPI.harmful.query('')
+              const res = await window.electronAPI.harmful.query('', selectedItem)
               setModalData(res.data)
               return true
             } catch {
