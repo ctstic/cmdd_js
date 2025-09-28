@@ -50,7 +50,7 @@ export function registerIPC(): void {
 
   ipcMain.handle('cigarettes:getCigarettesType', async (_evt, specimenName: string) => {
     try {
-      if (specimenName !== '') {
+      if (specimenName == '') {
         return { success: true, data: cigarettesService.getCigarettesType(specimenName) }
       } else {
         if (cigarettesService.getCigarettesType(specimenName).length > 0) {

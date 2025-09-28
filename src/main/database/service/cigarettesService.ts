@@ -23,7 +23,7 @@ export class CigarettesService {
   public getCigarettes(code: string, specimenName: string): schema.Cigarettes[] {
     const results = this.sqlite
       .prepare(
-        'SELECT * FROM cigarettes WHERE code like ? AND specimenName = ? ORDER BY created_at DESC'
+        'SELECT * FROM cigarettes WHERE code like ? AND specimen_name = ? ORDER BY created_at DESC'
       )
       .all(`%${code}%`, specimenName) as Record<string, unknown>[]
 
@@ -45,19 +45,23 @@ export class CigarettesService {
    * @returns 匹配的卷烟数据列表
    */
   public getCigarettesType(specimenName: string): string[] {
-    const results = this.sqlite
-      .prepare(
-        'SELECT specimenName FROM cigarettes WHERE specimenName = ? GROUP BY specimenName ORDER BY created_at DESC'
-      )
-      .all(specimenName) as Record<string, unknown>[]
-
+    const sql = `
+        SELECT specimen_name FROM cigarettes
+        WHERE (? = '' OR specimen_name = ?)
+        GROUP BY specimen_name
+        ORDER BY created_at DESC
+      `
+    const results = this.sqlite.prepare(sql).all(specimenName, specimenName) as Record<
+      string,
+      unknown
+    >[]
     // 直接返回type字符串数组
-    return results.map((result) => result.specimenName as string)
+    return results.map((result) => result.specimen_name as string)
   }
 
   public getCigarettesAll(specimenName: string): schema.Cigarettes[] {
     const results = this.sqlite
-      .prepare('SELECT * FROM cigarettes WHERE specimenName = ? ORDER BY created_at DESC')
+      .prepare('SELECT * FROM cigarettes WHERE specimen_name = ? ORDER BY created_at DESC')
       .all(specimenName) as Record<string, unknown>[]
 
     return results.map((result) => {
@@ -84,7 +88,7 @@ export class CigarettesService {
    */
   public async deleteCigarettesType(specimenName: string): Promise<void> {
     const result = this.sqlite
-      .prepare('DELETE FROM cigarettes WHERE specimenName = ?')
+      .prepare('DELETE FROM cigarettes WHERE specimen_name = ?')
       .run(specimenName)
     if (result.changes === 0) {
       throw new Error('卷烟数据不存在')
