@@ -96,6 +96,7 @@ class DatabaseService {
         CREATE TABLE IF NOT EXISTS cigarettes (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
           code TEXT NOT NULL UNIQUE,
+          specimen_name TEXT NOT NULL,
           filter_ventilation TEXT NOT NULL,
           filter_pressure_drop INTEGER NOT NULL,
           permeability TEXT NOT NULL,
@@ -115,6 +116,7 @@ class DatabaseService {
         CREATE TABLE IF NOT EXISTS harmful_constants (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
           type TEXT NOT NULL,
+          specimen_name TEXT NOT NULL,
           batch_no TEXT NOT NULL,
           changliang TEXT NOT NULL,
           filter_vent_coef TEXT NOT NULL,
@@ -127,6 +129,80 @@ class DatabaseService {
           updated_at INTEGER NOT NULL
         )
       `)
+
+      this.sqlite.exec(`
+        CREATE TABLE IF NOT EXISTS ram_mark (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            mark TEXT NOT NULL UNIQUE,
+            filter_ventilation TEXT NOT NULL,
+            filter_pressure_drop INTEGER NOT NULL,
+            permeability TEXT NOT NULL,
+            quantitative TEXT NOT NULL,
+            citrate TEXT NOT NULL,
+            created_at INTEGER NOT NULL,
+            updated_at INTEGER NOT NULL
+          )
+  `)
+
+      this.sqlite.exec(`
+        CREATE TABLE IF NOT EXISTS rfg_mark (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          mark TEXT NOT NULL UNIQUE,
+          tar TEXT NOT NULL,
+          nicotine TEXT NOT NULL,
+          co TEXT NOT NULL,
+          created_at INTEGER NOT NULL,
+          updated_at INTEGER NOT NULL
+        )
+  `)
+
+      this.sqlite.exec(`
+        CREATE TABLE IF NOT EXISTS simulation_prediction_save (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          specimen_name TEXT NOT NULL UNIQUE,
+          filter_ventilation TEXT NOT NULL,
+          filter_pressure_drop INTEGER NOT NULL,
+          permeability TEXT NOT NULL,
+          quantitative TEXT NOT NULL,
+          citrate TEXT NOT NULL,
+          tar TEXT NOT NULL,
+          nicotine TEXT NOT NULL,
+          co TEXT NOT NULL,
+          profile TEXT NOT NULL DEFAULT '{}',
+          created_at INTEGER NOT NULL,
+          updated_at INTEGER NOT NULL
+        )
+  `)
+
+      this.sqlite.exec(`
+        CREATE TABLE IF NOT EXISTS rec_aux_materials_save (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          specimen_name TEXT NOT NULL UNIQUE,
+          recommend_number TEXT NOT NULL,
+          filter_ventilation TEXT NOT NULL,
+          filter_pressure_drop INTEGER NOT NULL,
+          permeability TEXT NOT NULL,
+          quantitative TEXT NOT NULL,
+          citrate TEXT NOT NULL,
+          tar TEXT NOT NULL,
+          nicotine TEXT NOT NULL,
+          co TEXT NOT NULL,
+          target_tar TEXT NOT NULL,
+          target_nicotine TEXT NOT NULL,
+          target_co TEXT NOT NULL,
+          tar_weight TEXT NOT NULL,
+          nicotine_weight TEXT NOT NULL,
+          co_weight TEXT NOT NULL,
+          filter_ventilation_ranger TEXT NOT NULL,
+          filter_pressure_drop_ranger TEXT NOT NULL,
+          permeability_ranger TEXT NOT NULL,
+          quantitative_ranger TEXT NOT NULL,
+          citrate_ranger TEXT NOT NULL,
+          profile TEXT NOT NULL DEFAULT '{}',
+          created_at INTEGER NOT NULL,
+          updated_at INTEGER NOT NULL
+        )
+  `)
 
       console.log('数据库表创建成功')
     } catch (error) {
@@ -160,16 +236,16 @@ class DatabaseService {
         console.log('正在初始化默认的卷烟数据...')
         const insertCigaretteStmt = this.sqlite.prepare(`
           INSERT INTO cigarettes (
-            code,type, filter_ventilation, filter_pressure_drop, permeability, quantitative,
+            code,specimen_name, filter_ventilation, filter_pressure_drop, permeability, quantitative,
             citrate, potassium_ratio, tar, nicotine, co, created_at, updated_at
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `)
 
         const now = Date.now()
         for (const cigarettes of schema.defaultCigarettes) {
           insertCigaretteStmt.run(
             cigarettes.code,
-            cigarettes.type,
+            cigarettes.specimenName,
             cigarettes.filterVentilation,
             cigarettes.filterPressureDrop,
             cigarettes.permeability,

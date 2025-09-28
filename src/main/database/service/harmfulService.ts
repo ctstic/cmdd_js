@@ -168,7 +168,7 @@ export class HarmfulService {
             filter_vent_coef, filter_pressure_coef, permeability_coef,
             quantitative_coef, citrate_coef, potassium_coef,
             created_at, updated_at
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `
         )
         .run(

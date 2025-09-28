@@ -16,20 +16,20 @@ export interface APIResponse<T> {
 export interface HarmfulAPI {
   query: (
     query: string,
-    cigarettesType: string
+    specimenName: string
   ) => Promise<APIResponse<{ result: schema.HarmfulConstants[] }>>
-  generate: (cigarettesType: string) => Promise<APIResponse<void>>
+  generate: (specimenName: string) => Promise<APIResponse<void>>
   delete: (id: number) => Promise<APIResponse<void>>
 }
 
 /** 多因素卷烟模块 API 定义 */
 export interface CigarettesAPI {
-  query: (query: string, type: string) => Promise<APIResponse<{ result: schema.Cigarettes[] }>>
+  query: (query: string, specimenName: string) => Promise<APIResponse<{ result: schema.Cigarettes[] }>>
   delete: (id: number) => Promise<APIResponse<void>>
-  getCigarettesType: (type: string) => Promise<APIResponse<{ result: string[] }>>
-  deleteCigarettesType: (type: string) => Promise<APIResponse<void>>
+  getCigarettesType: (specimenName: string) => Promise<APIResponse<{ result: string[] }>>
+  deleteCigarettesType: (specimenName: string) => Promise<APIResponse<void>>
   importFromWebFile: (fileObj: {
-    type: string
+    specimenName: string
     name: string
     buffer: Uint8Array
   }) => Promise<APIResponse<schema.ImportResult>>
