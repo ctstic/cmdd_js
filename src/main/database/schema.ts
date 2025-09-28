@@ -5,7 +5,7 @@ import { createInsertSchema, createSelectSchema } from 'drizzle-zod'
 export const cigarettes = sqliteTable('cigarettes', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   code: text('code').notNull().unique(), // 编号
-  type: text('type').notNull().unique(), // 样品名称
+  specimenName: text('specimen_name').notNull().unique(), // 样品名称
   filterVentilation: text('filter_ventilation').notNull(), // 滤嘴通风率
   filterPressureDrop: integer('filter_pressure_drop').notNull(), // 滤棒压降(Pa)
   permeability: text('permeability').notNull(), // 透气度/CU
@@ -28,7 +28,7 @@ export const cigarettes = sqliteTable('cigarettes', {
 
 export const harmfulConstants = sqliteTable('harmful_constants', {
   id: integer('id').primaryKey({ autoIncrement: true }),
-  cigarettesType: text('cigarettes_type').notNull().unique(), // 建模数据样品名称
+  specimenName: text('specimen_name').notNull().unique(), // 建模数据样品名称
   type: text('type').notNull(), // 有害成分类型
   batchNo: text('batch_no').notNull(), // 批次号
   changliang: text('changliang').notNull(), //常量
@@ -47,6 +47,124 @@ export const harmfulConstants = sqliteTable('harmful_constants', {
     .$defaultFn(() => new Date())
     .$onUpdateFn(() => new Date())
 })
+
+// 基准卷烟辅材参数牌号
+export const ramMark = sqliteTable('ram_mark', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  mark: text('mark').notNull().unique(), // 牌号
+  filterVentilation: text('filter_ventilation').notNull(), // 滤嘴通风率
+  filterPressureDrop: integer('filter_pressure_drop').notNull(), // 滤棒压降(Pa)
+  permeability: text('permeability').notNull(), // 透气度/CU
+  quantitative: text('quantitative').notNull(), // 定量 g/m2
+  citrate: text('citrate').notNull(), // 柠檬酸根(设计值)
+
+  createdAt: integer('created_at', { mode: 'timestamp' })
+    .notNull()
+    .$defaultFn(() => new Date()),
+  updatedAt: integer('updated_at', { mode: 'timestamp' })
+    .notNull()
+    .$defaultFn(() => new Date())
+    .$onUpdateFn(() => new Date())
+})
+
+// 基准卷烟主流烟气牌号
+export const rfgMark = sqliteTable('rfg_mark', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  mark: text('mark').notNull().unique(), // 牌号
+  tar: text('tar').notNull(), // 焦油 mg/支
+  nicotine: text('nicotine').notNull(), // 烟碱 mg/支
+  co: text('co').notNull(), // CO mg/支
+
+  createdAt: integer('created_at', { mode: 'timestamp' })
+    .notNull()
+    .$defaultFn(() => new Date()),
+  updatedAt: integer('updated_at', { mode: 'timestamp' })
+    .notNull()
+    .$defaultFn(() => new Date())
+    .$onUpdateFn(() => new Date())
+})
+
+// 卷烟主流烟气仿真预测保存
+export const simulationPredictionSave = sqliteTable('simulation_rediction_save', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  specimenName: text('specimen_name').notNull().unique(), // 建模数据样品名称
+  filterVentilation: text('filter_ventilation').notNull(), // 基准滤嘴通风率
+  filterPressureDrop: integer('filter_pressure_drop').notNull(), // 基准滤棒压降(Pa)
+  permeability: text('permeability').notNull(), // 基准透气度/CU
+  quantitative: text('quantitative').notNull(), // 基准定量 g/m2
+  citrate: text('citrate').notNull(), // 基准柠檬酸根(设计值)
+
+  tar: text('tar').notNull(), //基准 焦油 mg/支
+  nicotine: text('nicotine').notNull(), //基准 烟碱 mg/支
+  co: text('co').notNull(), //基准 CO mg/支
+  // 预测x 和 y 值
+  profile: text('profile', { mode: 'json' }).notNull().default({}),
+
+  createdAt: integer('created_at', { mode: 'timestamp' })
+    .notNull()
+    .$defaultFn(() => new Date()),
+  updatedAt: integer('updated_at', { mode: 'timestamp' })
+    .notNull()
+    .$defaultFn(() => new Date())
+    .$onUpdateFn(() => new Date())
+})
+
+// 推荐辅材参数保存
+export const recAuxMaterialsSave = sqliteTable('rec_aux_materials_save', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  specimenName: text('specimen_name').notNull().unique(), // 建模数据样品名称
+  recommendNumber: text('recommend_number').notNull(), // 生成推荐数量
+  filterVentilation: text('filter_ventilation').notNull(), // 基准滤嘴通风率
+  filterPressureDrop: integer('filter_pressure_drop').notNull(), // 基准滤棒压降(Pa)
+  permeability: text('permeability').notNull(), // 基准透气度/CU
+  quantitative: text('quantitative').notNull(), // 基准定量 g/m2
+  citrate: text('citrate').notNull(), // 基准柠檬酸根(设计值)
+
+  tar: text('tar').notNull(), // 基准焦油 mg/支
+  nicotine: text('nicotine').notNull(), //基准 烟碱 mg/支
+  co: text('co').notNull(), //基准 CO mg/支
+
+  targetTar: text('target_tar').notNull(), // 目标焦油 mg/支
+  targetNicotine: text('target_nicotine').notNull(), //目标 烟碱 mg/支
+  targetCo: text('target_co').notNull(), //目标 CO mg/支
+
+  tarWeight: text('tar_weight').notNull(), // 目标焦油权重 mg/支
+  nicotineWeight: text('nicotine_weight').notNull(), //目标 烟碱权重 mg/支
+  coWeight: text('co_weight').notNull(), //目标 CO权重 mg/支
+
+  filterVentilationRanger: text('filter_ventilation_ranger').notNull(), // 基准滤嘴通风率
+  filterPressureDropRanger: text('filter_pressure_drop_ranger').notNull(), // 基准滤棒压降(Pa)
+  permeabilityRanger: text('permeability_ranger').notNull(), // 基准透气度/CU
+  quantitativeRanger: text('quantitative_ranger').notNull(), // 基准定量 g/m2
+  citrateRanger: text('citrate_ranger').notNull(), // 基准柠檬酸根(设计值)
+
+  // 预测x 和 y 值
+  profile: text('profile', { mode: 'json' }).notNull().default({}),
+
+  createdAt: integer('created_at', { mode: 'timestamp' })
+    .notNull()
+    .$defaultFn(() => new Date()),
+  updatedAt: integer('updated_at', { mode: 'timestamp' })
+    .notNull()
+    .$defaultFn(() => new Date())
+    .$onUpdateFn(() => new Date())
+})
+
+// 🚬 卷烟检测结果表
+export const insertCigaretteSchema = createInsertSchema(cigarettes)
+export const selectCigaretteSchema = createSelectSchema(cigarettes)
+
+// ⚗️ 有害成分系数表
+export const insertHarmfulConstantSchema = createInsertSchema(harmfulConstants)
+export const selectHarmfulConstantSchema = createSelectSchema(harmfulConstants)
+
+// 导出类型
+export type Cigarettes = typeof cigarettes.$inferSelect
+export type HarmfulConstants = typeof harmfulConstants.$inferSelect
+export type RamMark = typeof ramMark.$inferSelect
+export type RfgMark = typeof rfgMark.$inferSelect
+export type SimulationPredictionSave = typeof simulationPredictionSave.$inferSelect
+export type RecAuxMaterialsSave = typeof recAuxMaterialsSave.$inferSelect
 
 /**
  * Excel列名映射配置
@@ -107,6 +225,7 @@ export interface PredictionResults {
 }
 
 export interface StandardParams {
+  key: string // 索引
   // x
   filterVentilation: string // 滤嘴通风率基准参数
   filterPressureDrop: string // 滤棒压降基准参数
@@ -139,8 +258,9 @@ export interface StandardDesignRangeParams {
 
 // --------------仿真预测--------------------
 export class ScientificDataDto {
-  type: string = ''
+  specimenName: string = ''
   standardParams: StandardParams = {
+    key: '',
     filterVentilation: '',
     filterPressureDrop: '',
     permeability: '',
@@ -150,7 +270,7 @@ export class ScientificDataDto {
     nicotine: '',
     co: ''
   } // 基准参数x+y
-  predictionParams: PredictionParams[] = [] // 预测x参数数组
+  predictionParams: StandardParams[] = [] // 预测x参数数组
   constructor(data: Partial<ScientificDataDto> = {}) {
     Object.assign(this, data)
   }
@@ -166,8 +286,9 @@ export class ScientificDataVo {
 // --------------推荐辅材参数--------------------
 export class AuxMaterialsDto {
   count: number = 100 // 生成数量
-  cigarettesType: string = '' // 生成数量
+  specimenName: string = '' // 样品名称
   standardParams: StandardParams = {
+    key: '',
     filterVentilation: '',
     filterPressureDrop: '',
     permeability: '',
@@ -193,6 +314,7 @@ export class AuxMaterialsDto {
     quantitative: [24, 36],
     citrate: [0.006, 0.022]
   } // 设计值范围
+  recommendedValue: StandardParams[] = [] // 推荐值
   constructor(data: Partial<AuxMaterialsDto> = {}) {
     Object.assign(this, data)
   }
@@ -204,18 +326,6 @@ export class AuxMaterialsVo {
     Object.assign(this, data)
   }
 }
-
-// 🚬 卷烟检测结果表
-export const insertCigaretteSchema = createInsertSchema(cigarettes)
-export const selectCigaretteSchema = createSelectSchema(cigarettes)
-
-// ⚗️ 有害成分系数表
-export const insertHarmfulConstantSchema = createInsertSchema(harmfulConstants)
-export const selectHarmfulConstantSchema = createSelectSchema(harmfulConstants)
-
-// 导出类型
-export type Cigarettes = typeof cigarettes.$inferSelect
-export type HarmfulConstants = typeof harmfulConstants.$inferSelect
 
 // 默认卷烟数据
 export const defaultCigarettes: Omit<Cigarettes, 'id' | 'createdAt' | 'updatedAt'>[] = [
@@ -230,7 +340,7 @@ export const defaultCigarettes: Omit<Cigarettes, 'id' | 'createdAt' | 'updatedAt
     tar: '6.88201061090464',
     nicotine: '0.592059469957721',
     co: '3.933',
-    type: '多因素数据'
+    specimenName: '多因素数据'
   },
   {
     code: 'S0-2',
@@ -243,7 +353,7 @@ export const defaultCigarettes: Omit<Cigarettes, 'id' | 'createdAt' | 'updatedAt
     tar: '6.938704055407103',
     nicotine: '0.606108118323836',
     co: '3.8686666666666665',
-    type: '多因素数据'
+    specimenName: '多因素数据'
   },
   {
     code: 'M17',
@@ -256,7 +366,7 @@ export const defaultCigarettes: Omit<Cigarettes, 'id' | 'createdAt' | 'updatedAt
     tar: '6.88008538346379',
     nicotine: '0.609073072643856',
     co: '3.756',
-    type: '多因素数据'
+    specimenName: '多因素数据'
   },
   {
     code: 'M01',
@@ -269,7 +379,7 @@ export const defaultCigarettes: Omit<Cigarettes, 'id' | 'createdAt' | 'updatedAt
     tar: '9.674505032200457',
     nicotine: '0.815132110493353',
     co: '5.636',
-    type: '多因素数据'
+    specimenName: '多因素数据'
   },
   {
     code: 'M02',
@@ -282,7 +392,7 @@ export const defaultCigarettes: Omit<Cigarettes, 'id' | 'createdAt' | 'updatedAt
     tar: '9.997684233415136',
     nicotine: '0.865028902966716',
     co: '5.823',
-    type: '多因素数据'
+    specimenName: '多因素数据'
   },
   {
     code: 'M03',
@@ -295,7 +405,7 @@ export const defaultCigarettes: Omit<Cigarettes, 'id' | 'createdAt' | 'updatedAt
     tar: '9.215296359953719',
     nicotine: '0.775943255261382',
     co: '5.463',
-    type: '多因素数据'
+    specimenName: '多因素数据'
   },
   {
     code: 'M04',
@@ -308,7 +418,7 @@ export const defaultCigarettes: Omit<Cigarettes, 'id' | 'createdAt' | 'updatedAt
     tar: '9.31756726622841',
     nicotine: '0.8167436773038',
     co: '5.663',
-    type: '多因素数据'
+    specimenName: '多因素数据'
   },
   {
     code: 'M05',
@@ -321,7 +431,7 @@ export const defaultCigarettes: Omit<Cigarettes, 'id' | 'createdAt' | 'updatedAt
     tar: '9.149617470030904',
     nicotine: '0.786067169007716',
     co: '6.168',
-    type: '多因素数据'
+    specimenName: '多因素数据'
   },
   {
     code: 'M07',
@@ -334,7 +444,7 @@ export const defaultCigarettes: Omit<Cigarettes, 'id' | 'createdAt' | 'updatedAt
     tar: '8.509333466002252',
     nicotine: '0.721069145805097',
     co: '5.26',
-    type: '多因素数据'
+    specimenName: '多因素数据'
   },
   {
     code: 'M08',
@@ -347,7 +457,7 @@ export const defaultCigarettes: Omit<Cigarettes, 'id' | 'createdAt' | 'updatedAt
     tar: '7.306653745974666',
     nicotine: '0.72',
     co: '4.957',
-    type: '多因素数据'
+    specimenName: '多因素数据'
   },
   {
     code: 'M09',
@@ -360,7 +470,7 @@ export const defaultCigarettes: Omit<Cigarettes, 'id' | 'createdAt' | 'updatedAt
     tar: '7.66383548276469',
     nicotine: '0.647240885555945',
     co: '4.822',
-    type: '多因素数据'
+    specimenName: '多因素数据'
   },
   {
     code: 'M10',
@@ -373,7 +483,7 @@ export const defaultCigarettes: Omit<Cigarettes, 'id' | 'createdAt' | 'updatedAt
     tar: '8.19047357664283',
     nicotine: '0.695278220014253',
     co: '5.005',
-    type: '多因素数据'
+    specimenName: '多因素数据'
   },
   {
     code: 'M11',
@@ -386,7 +496,7 @@ export const defaultCigarettes: Omit<Cigarettes, 'id' | 'createdAt' | 'updatedAt
     tar: '7.92308022967455',
     nicotine: '0.675122517473582',
     co: '4.43',
-    type: '多因素数据'
+    specimenName: '多因素数据'
   },
   {
     code: 'M12',
@@ -399,7 +509,7 @@ export const defaultCigarettes: Omit<Cigarettes, 'id' | 'createdAt' | 'updatedAt
     tar: '7.854320281800892',
     nicotine: '0.693163143971973',
     co: '5.085',
-    type: '多因素数据'
+    specimenName: '多因素数据'
   },
   {
     code: 'M13',
@@ -412,7 +522,7 @@ export const defaultCigarettes: Omit<Cigarettes, 'id' | 'createdAt' | 'updatedAt
     tar: '7.628771884217969',
     nicotine: '0.686848628901918',
     co: '5.097',
-    type: '多因素数据'
+    specimenName: '多因素数据'
   },
   {
     code: 'M14',
@@ -425,7 +535,7 @@ export const defaultCigarettes: Omit<Cigarettes, 'id' | 'createdAt' | 'updatedAt
     tar: '6.345643373836174',
     nicotine: '0.563184987802125',
     co: '4.157',
-    type: '多因素数据'
+    specimenName: '多因素数据'
   },
   {
     code: 'M15',
@@ -438,7 +548,7 @@ export const defaultCigarettes: Omit<Cigarettes, 'id' | 'createdAt' | 'updatedAt
     tar: '7.248698664876443',
     nicotine: '0.674180501076417',
     co: '4.57',
-    type: '多因素数据'
+    specimenName: '多因素数据'
   },
   {
     code: 'M16',
@@ -451,7 +561,7 @@ export const defaultCigarettes: Omit<Cigarettes, 'id' | 'createdAt' | 'updatedAt
     tar: '6.352876838382236',
     nicotine: '0.608168073355355',
     co: '4.032',
-    type: '多因素数据'
+    specimenName: '多因素数据'
   },
   {
     code: 'M18',
@@ -464,7 +574,7 @@ export const defaultCigarettes: Omit<Cigarettes, 'id' | 'createdAt' | 'updatedAt
     tar: '5.1228826543437975',
     nicotine: '0.520369657852149',
     co: '2.795',
-    type: '多因素数据'
+    specimenName: '多因素数据'
   },
   {
     code: 'M19',
@@ -477,7 +587,7 @@ export const defaultCigarettes: Omit<Cigarettes, 'id' | 'createdAt' | 'updatedAt
     tar: '5.8690127846242595',
     nicotine: '0.54746721449634',
     co: '3.325',
-    type: '多因素数据'
+    specimenName: '多因素数据'
   },
   {
     code: 'M20',
@@ -490,7 +600,7 @@ export const defaultCigarettes: Omit<Cigarettes, 'id' | 'createdAt' | 'updatedAt
     tar: '5.965465083834044',
     nicotine: '0.548135434935723',
     co: '3.443',
-    type: '多因素数据'
+    specimenName: '多因素数据'
   },
   {
     code: 'M21',
@@ -503,7 +613,7 @@ export const defaultCigarettes: Omit<Cigarettes, 'id' | 'createdAt' | 'updatedAt
     tar: '5.399943558248553',
     nicotine: '0.537133848549752',
     co: '3.028',
-    type: '多因素数据'
+    specimenName: '多因素数据'
   },
   {
     code: 'M22',
@@ -516,7 +626,7 @@ export const defaultCigarettes: Omit<Cigarettes, 'id' | 'createdAt' | 'updatedAt
     tar: '4.571090431224639',
     nicotine: '0.365804776022978',
     co: '2.947',
-    type: '多因素数据'
+    specimenName: '多因素数据'
   },
   {
     code: 'M23',
@@ -529,7 +639,7 @@ export const defaultCigarettes: Omit<Cigarettes, 'id' | 'createdAt' | 'updatedAt
     tar: '5.126457006211051',
     nicotine: '0.361009592202934',
     co: '2.998',
-    type: '多因素数据'
+    specimenName: '多因素数据'
   },
   {
     code: 'M24',
@@ -542,7 +652,7 @@ export const defaultCigarettes: Omit<Cigarettes, 'id' | 'createdAt' | 'updatedAt
     tar: '4.5',
     nicotine: '0.348800321459478',
     co: '2.606',
-    type: '多因素数据'
+    specimenName: '多因素数据'
   },
   {
     code: 'M25',
@@ -555,7 +665,7 @@ export const defaultCigarettes: Omit<Cigarettes, 'id' | 'createdAt' | 'updatedAt
     tar: '2.8237359432941567',
     nicotine: '0.295820398780028',
     co: '2.8',
-    type: '多因素数据'
+    specimenName: '多因素数据'
   },
   {
     code: 'M26',
@@ -568,7 +678,7 @@ export const defaultCigarettes: Omit<Cigarettes, 'id' | 'createdAt' | 'updatedAt
     tar: '2.557585353879815',
     nicotine: '0.269260611304518',
     co: '1.437',
-    type: '多因素数据'
+    specimenName: '多因素数据'
   },
   {
     code: 'M27',
@@ -581,7 +691,7 @@ export const defaultCigarettes: Omit<Cigarettes, 'id' | 'createdAt' | 'updatedAt
     tar: '4.023923312191393',
     nicotine: '0.416046166094955',
     co: '1.973',
-    type: '多因素数据'
+    specimenName: '多因素数据'
   },
   {
     code: 'M28',
@@ -594,7 +704,7 @@ export const defaultCigarettes: Omit<Cigarettes, 'id' | 'createdAt' | 'updatedAt
     tar: '3.4209890720373504',
     nicotine: '0.363008253199657',
     co: '1.674',
-    type: '多因素数据'
+    specimenName: '多因素数据'
   },
   {
     code: 'M29',
@@ -607,7 +717,7 @@ export const defaultCigarettes: Omit<Cigarettes, 'id' | 'createdAt' | 'updatedAt
     tar: '2.34241198112558',
     nicotine: '0.251138743400015',
     co: '1.077',
-    type: '多因素数据'
+    specimenName: '多因素数据'
   },
   {
     code: 'M30',
@@ -620,7 +730,7 @@ export const defaultCigarettes: Omit<Cigarettes, 'id' | 'createdAt' | 'updatedAt
     tar: '3.210149103172675',
     nicotine: '0.330165571538312',
     co: '1.319',
-    type: '多因素数据'
+    specimenName: '多因素数据'
   },
   {
     code: 'M31',
@@ -633,7 +743,7 @@ export const defaultCigarettes: Omit<Cigarettes, 'id' | 'createdAt' | 'updatedAt
     tar: '2.360327423327017',
     nicotine: '0.283321968957196',
     co: '1.127',
-    type: '多因素数据'
+    specimenName: '多因素数据'
   },
   {
     code: 'M32',
@@ -646,6 +756,6 @@ export const defaultCigarettes: Omit<Cigarettes, 'id' | 'createdAt' | 'updatedAt
     tar: '1.983006386758969',
     nicotine: '0.245775244556189',
     co: '0.956',
-    type: '多因素数据'
+    specimenName: '多因素数据'
   }
 ]

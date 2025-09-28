@@ -47,6 +47,40 @@ export interface RecAuxMaterialsAPI {
   auxMaterials: (dto: schema.AuxMaterialsDto) => Promise<APIResponse<any>>
 }
 
+/** 基准卷烟主流烟气牌号模块 API 定义 */
+export interface RfgMarkAPI {
+  query: (query: string) => Promise<APIResponse<{ result: schema.RfgMark[] }>>
+  createRfgMark: (obj: schema.RfgMark) => Promise<APIResponse<void>>
+}
+
+/** 基准卷烟主流烟气牌号模块 API 定义 */
+export interface RfgMarkAPI {
+  query: (query: string) => Promise<APIResponse<{ result: schema.RfgMark[] }>>
+  createRfgMark: (obj: schema.RfgMark) => Promise<APIResponse<void>>
+}
+
+/** 基准卷烟辅材参数牌号模块 API 定义 */
+export interface RamMarkAPI {
+  query: (query: string) => Promise<APIResponse<{ result: schema.RamMark[] }>>
+  createRamMark: (obj: schema.RamMark) => Promise<APIResponse<void>>
+}
+
+/** 基准卷烟主流烟气牌号模块 API 定义 */
+export interface SimulationPredictionSaveAPI {
+  query: () => Promise<APIResponse<{ result: schema.SimulationPredictionSave[] }>>
+  getId: (id: number) => Promise<APIResponse<{ result: schema.SimulationPredictionSave }>>
+  create: (obj: schema.ScientificDataDto) => Promise<APIResponse<void>>
+  delete: (id: number) => Promise<APIResponse<void>>
+}
+
+/** 辅材参数推荐管理 模块 API 定义 */
+export interface RecAuxMaterialsSaveAPI {
+  query: () => Promise<APIResponse<{ result: schema.RecAuxMaterialsSave[] }>>
+  getId: (id: number) => Promise<APIResponse<{ result: schema.RecAuxMaterialsSave }>>
+  create: (obj: schema.AuxMaterialsDto) => Promise<APIResponse<void>>
+  delete: (id: number) => Promise<APIResponse<void>>
+}
+
 /**
  * preload 层最终暴露到 window 上的总对象接口。
  * 渲染进程只需要通过 window.electronAPI 来访问这些方法。
@@ -56,5 +90,9 @@ export interface ExposedElectronAPI {
   cigarettes: CigarettesAPI
   simulation: SimulationAPI
   rec: RecAuxMaterialsAPI
+  rfgMark: RfgMarkAPI
+  ramMark: RamMarkAPI
+  simulationPredictionSaveAPI: SimulationPredictionSaveAPI
+  recAuxMaterialsSaveAPI: RecAuxMaterialsSaveAPI
   process: { versions: NodeJS.ProcessVersions } // Node.js 版本信息，可用于调试
 }

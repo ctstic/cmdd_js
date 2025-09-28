@@ -10,6 +10,10 @@ import {
   CigarettesAPI,
   SimulationAPI,
   RecAuxMaterialsAPI,
+  RfgMarkAPI,
+  RamMarkAPI,
+  SimulationPredictionSaveAPI,
+  RecAuxMaterialsSaveAPI,
   ExposedElectronAPI
 } from './types'
 
@@ -52,6 +56,26 @@ const electronAPI: ExposedElectronAPI = {
   }),
   rec: createAPI<RecAuxMaterialsAPI>({
     auxMaterials: 'rec:auxMaterials'
+  }),
+  rfgMark: createAPI<RfgMarkAPI>({
+    query: 'rfgMark:query',
+    createRfgMark: 'rfgMark:create'
+  }),
+  ramMark: createAPI<RamMarkAPI>({
+    query: 'ramMark:query',
+    createRamMark: 'ramMark:create'
+  }),
+  simulationPredictionSaveAPI: createAPI<SimulationPredictionSaveAPI>({
+    query: 'simulationPredictionSave:query',
+    getId: 'simulationPredictionSave:getId',
+    create: 'simulationPredictionSave:create',
+    delete: 'simulationPredictionSave:delete'
+  }),
+  recAuxMaterialsSaveAPI: createAPI<RecAuxMaterialsSaveAPI>({
+    query: 'recAuxMaterialsSave:query',
+    getId: 'recAuxMaterialsSave:getId',
+    create: 'recAuxMaterialsSave:create',
+    delete: 'recAuxMaterialsSave:delete'
   }),
   process: { versions: process.versions }
 }

@@ -34,7 +34,7 @@ export class SimulationPredictionService {
 
     console.log('🚀 ~ scientificData:', scientificData)
     // 获取最新批次的系数
-    const harmfulConstants = harmfulService.getLatestBatchCoefficients(scientificData.type)
+    const harmfulConstants = harmfulService.getLatestBatchCoefficients(scientificData.specimenName)
 
     if (!harmfulConstants || harmfulConstants.length === 0) {
       result.errors = '未找到最新批次的有害成分系数数据'
@@ -60,11 +60,11 @@ export class SimulationPredictionService {
   public async performPredictionCalculation(
     scientificData: schema.ScientificDataDto,
     coefficients: schema.HarmfulConstants[]
-  ): Promise<schema.PredictionResults[]> {
+  ): Promise<schema.StandardParams[]> {
     // 基准数据预测（使用标准参数）
     const baselinePredictions = this.predictBaseline(scientificData.standardParams, coefficients)
 
-    const results: schema.PredictionResults[] = []
+    const results: schema.StandardParams[] = []
 
     // 对每组预测参数进行计算
     for (let i = 0; i < scientificData.predictionParams.length; i++) {
@@ -78,7 +78,7 @@ export class SimulationPredictionService {
         scientificData.standardParams,
         baselinePredictions,
         targetPredictions,
-        predictionParam.key
+        predictionParam
       )
 
       results.push(harmfulPrediction)
@@ -144,14 +144,14 @@ export class SimulationPredictionService {
     standardParams: schema.StandardParams,
     baselinePredictions: number[],
     targetPredictions: number[],
-    key: string
-  ): schema.PredictionResults {
-    const processedData: schema.PredictionResults = {
-      key: key,
-      tar: '',
-      nicotine: '',
-      co: ''
-    }
+    predictionParam: schema.StandardParams
+  ): schema.StandardParams {
+    // const processedData: schema.PredictionResults = {
+    //   key: key,
+    //   tar: '',
+    //   nicotine: '',
+    //   co: ''
+    // }
 
     // 格式化数字并计算比例的辅助函数
     const formatNumber = (num: number): number => parseFloat(num.toFixed(2))
@@ -167,20 +167,20 @@ export class SimulationPredictionService {
     }
 
     // 计算一氧化碳含量 (索引0对应co)
-    processedData.co = formatNumber(
+    predictionParam.co = formatNumber(
       safeDivision(baselineCo, baselinePredictions[0]) * targetPredictions[0]
     ).toString()
 
     // 计算尼古丁含量 (索引1对应nicotine)
-    processedData.nicotine = formatNumber(
+    predictionParam.nicotine = formatNumber(
       safeDivision(baselineNicotine, baselinePredictions[1]) * targetPredictions[1]
     ).toString()
 
     // 计算焦油含量 (索引2对应tar)
-    processedData.tar = formatNumber(
+    predictionParam.tar = formatNumber(
       safeDivision(baselineTar, baselinePredictions[2]) * targetPredictions[2]
     ).toString()
-    return processedData
+    return predictionParam
   }
 }
 
