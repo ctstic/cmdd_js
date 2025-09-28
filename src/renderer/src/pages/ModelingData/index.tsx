@@ -1,10 +1,9 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import {
   Table,
   Popconfirm,
   Button,
   message,
-  Upload,
   Space,
   Input,
   Flex,
@@ -14,8 +13,11 @@ import {
 } from 'antd'
 import CalculationModal from './components/CalculationModal'
 import TestResultModal from './components/TestResultModal'
-import type { TableProps, UploadProps, UploadFile } from 'antd'
+import type { TableProps } from 'antd'
 import { SearchOutlined } from '@ant-design/icons'
+import { ModalForm, ProFormText, ProFormUploadButton } from '@ant-design/pro-components'
+import type { ProFormInstance } from '@ant-design/pro-components'
+
 interface DataType {
   id: number
   code: string
@@ -36,15 +38,25 @@ const ModelingData: React.FC = () => {
   const [modalData, setModalData] = useState<DataType[]>([])
   const [testResultModal, setTestResultModal] = useState<boolean>(false)
   const [currentRow, setCurrentRow] = useState<Partial<DataType[]> | undefined>(undefined)
-  const [importing, setImporting] = useState(false)
-  const [fileList, setFileList] = useState<UploadFile[]>([])
+  // const [importing, setImporting] = useState(false)
+  // const [fileList, setFileList] = useState<UploadFile[]>([])
   const [messageApi, contextHolder] = message.useMessage()
+  const [typeData, setTypeData] = useState<DataType[]>([])
+  const [uploadModal, setUploadModal] = useState<boolean>(false)
+  const restFormRef = useRef<ProFormInstance>()
 
   const info = (type: 'info' | 'success' | 'error' | 'warning' | 'loading', msg: string) => {
     messageApi.open({
       type,
       content: msg
     })
+  }
+
+  const loadTypes = async (): Promise<void> => {
+    const result = await window.electronAPI.cigarettes.getcigarettesType('')
+    console.log(result, 'resultresultresultresult')
+
+    setTypeData(result.data || [])
   }
 
   // 加载所有
@@ -54,79 +66,9 @@ const ModelingData: React.FC = () => {
   }
 
   useEffect(() => {
+    loadTypes()
     loadUsers()
   }, [])
-
-  // 处理文件上传
-  const handleUpload = async (file: File): Promise<void> => {
-    setImporting(true)
-
-    try {
-      // 验证文件类型
-      const allowedTypes = [
-        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // .xlsx
-        'application/vnd.ms-excel', // .xls
-        'application/excel'
-      ]
-
-      if (!allowedTypes.includes(file.type) && !file.name.match(/\.(xlsx|xls)$/i)) {
-        // message.error('请上传Excel文件(.xlsx或.xls格式)')
-        info('error', '请上传Excel文件(.xlsx或.xls格式)')
-        return
-      }
-
-      // 验证文件大小 (限制为10MB)
-      if (file.size > 10 * 1024 * 1024) {
-        info('error', '文件大小不能超过10MB')
-        return
-      }
-      // console.log(file.size)
-      info('warning', '正在导入数据，请稍候...')
-      // 调用导入服务
-      const arrayBuffer = await file.arrayBuffer()
-      const uint8Array = new Uint8Array(arrayBuffer)
-
-      // 传给 Node (Electron Main)
-      const result = await window.electronAPI.cigarettes.importFromWebFile({
-        name: file.name,
-        buffer: uint8Array
-      })
-      console.log(result)
-      if (result.data.errors?.length === 0) {
-        info('success', `导入成功`)
-        loadUsers()
-      } else {
-        info('error', `导入失败，${result.data.errors[0]}`)
-      }
-    } catch (error) {
-      info('error', '导入失败')
-    } finally {
-      setImporting(false)
-    }
-  }
-
-  // Upload组件配置
-  const uploadProps: UploadProps = {
-    name: 'file',
-    // type:'primary',
-    multiple: false,
-    fileList: fileList,
-    beforeUpload: (file) => {
-      handleUpload(file as BrowserFile)
-      return false // 阻止自动上传
-    },
-    onChange: (info) => {
-      setFileList(info.fileList.slice(-1)) // 只保留最后一个文件
-    },
-    onRemove: () => {
-      setFileList([])
-    },
-    accept: '.xlsx,.xls',
-    showUploadList: {
-      showRemoveIcon: true,
-      showPreviewIcon: false
-    }
-  }
 
   const handleDownload = async () => {
     // 1) 取出打包资源（Vite 的 import.meta.url 可生成正确路径）
@@ -273,14 +215,6 @@ const ModelingData: React.FC = () => {
     }
   ]
 
-  const data = [
-    'Racing car sprays burning fuel into crowd.',
-    'Japanese princess to wed commoner.',
-    'Australian walks 100km after outback crash.',
-    'Man charged over missing wedding girl.',
-    'Los Angeles battles huge wildfires.'
-  ]
-
   return (
     <>
       {contextHolder}
@@ -322,11 +256,14 @@ const ModelingData: React.FC = () => {
           </Button>
         </Popconfirm>
 
-        <Upload {...uploadProps}>
-          <Button disabled={importing} loading={importing}>
-            {importing ? '导入中...' : '导入Excel数据'}
-          </Button>
-        </Upload>
+        <Button
+          type="primary"
+          onClick={async () => {
+            setUploadModal(true)
+          }}
+        >
+          导入数据
+        </Button>
 
         <Button type="link" onClick={handleDownload}>
           下载模板
@@ -345,7 +282,7 @@ const ModelingData: React.FC = () => {
           bodyStyle={{ padding: '8px 0' }}
         >
           <List
-            dataSource={data}
+            dataSource={typeData}
             renderItem={(item) => (
               <List.Item
                 style={{
@@ -380,20 +317,64 @@ const ModelingData: React.FC = () => {
           />
         </Card>
       </Flex>
-      {/* <Flex gap={30}>
-        <List
-          // header={<div>Header</div>}
-          // footer={<div>Footer</div>}
-          bordered
-          dataSource={data}
-          renderItem={(item) => (
-            <List.Item>
-              {item}
-            </List.Item>
-          )}
+      <ModalForm
+        title={'上传aaa'}
+        formRef={restFormRef}
+        open={uploadModal}
+        onFinish={async (values) => {
+          console.log(values, 'values')
+
+          if (values.upload[0].size > 10 * 1024 * 1024) {
+            info('error', '文件大小不能超过10MB')
+            return
+          }
+
+          const arrayBuffer = await values.upload[0].originFileObj.arrayBuffer()
+          const uint8Array = new Uint8Array(arrayBuffer)
+          const result = await window.electronAPI.cigarettes.importFromWebFile({
+            type: values.brandName,
+            name: values.upload[0].originFileObj,
+            buffer: uint8Array
+          })
+
+          if (result.data.errors?.length === 0) {
+            info('success', `导入成功`)
+            loadUsers()
+            setUploadModal(false)
+          } else {
+            info('error', `导入失败，${result.data.errors[0]}`)
+            setUploadModal(false)
+          }
+        }}
+        modalProps={{
+          destroyOnClose: true,
+          onCancel: () => setUploadModal(false)
+        }}
+      >
+        <ProFormText width="md" name="brandName" label="牌号名称" placeholder="请输入牌号名称" />
+        <ProFormUploadButton
+          accept=".xlsx,.xls"
+          name="upload"
+          label="上传xlsx数据"
+          max={1}
+          rules={[
+            {
+              required: true,
+              message: '请上传文件！'
+            }
+          ]}
+          fieldProps={{
+            name: 'file',
+            showUploadList: {
+              showRemoveIcon: true
+            },
+            beforeUpload(file) {
+              restFormRef.current?.setFields('upload', file)
+              return false
+            }
+          }}
         />
-        <Table<DataType> rowKey="id" columns={columns} dataSource={tableData} style={{ flex: 1 }} />
-      </Flex> */}
+      </ModalForm>
 
       <CalculationModal
         modalData={modalData}
