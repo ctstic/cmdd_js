@@ -71,12 +71,18 @@ const SimulatingForecast: React.FC = () => {
   const [brandNameSmokeOption, setBrandNameSmokeOption] = useState<
     { label: string; value: string }[]
   >([])
+  const [brandNameData, setBrandNameData] = useState<any>([])
+  const [brandNameSmokeData, setBrandNameSmokeData] = useState<object>({})
+  const [typeData, setTypeData] = useState<{ label: string; value: string }[]>([])
+  const [selectType, setSelectType] = useState<string>('')
 
   const handleBrandName = async (): Promise<void> => {
     try {
       const optionData = await window.electronAPI.ramMark.query('')
-      setBrandNameOption(optionData.data || [])
-      console.log(optionData, 'optionData')
+      setBrandNameData(optionData.data)
+      setBrandNameOption(
+        optionData.data.map((item) => ({ label: item.mark, value: item.mark })) || []
+      )
     } catch {
       notificationApi.error({
         message: '网络错误！'
@@ -86,9 +92,23 @@ const SimulatingForecast: React.FC = () => {
 
   const handleBrandNameSmoke = async (): Promise<void> => {
     try {
-      const smokeOptionData = await window.electronAPI.ramMark.query('')
-      setBrandNameSmokeOption(smokeOptionData.data || [])
-      console.log(smokeOptionData, 'smokeOptionData')
+      const smokeOptionData = await window.electronAPI.rfgMark.query('')
+      setBrandNameSmokeData(smokeOptionData.data)
+      setBrandNameSmokeOption(
+        smokeOptionData.data.map((item) => ({ label: item.mark, value: item.mark })) || []
+      )
+      console.log(smokeOptionData, 'smokeOptionData2')
+    } catch {
+      notificationApi.error({
+        message: '网络错误！'
+      })
+    }
+  }
+
+  const handleTypeData = async (): Promise<void> => {
+    try {
+      const typeData = await window.electronAPI.cigarettes.getCigarettesType('')
+      setTypeData(typeData.data.map((item) => ({ label: item, value: item })) || [])
     } catch {
       notificationApi.error({
         message: '网络错误！'
@@ -97,13 +117,10 @@ const SimulatingForecast: React.FC = () => {
   }
 
   useEffect(() => {
-    if (!brandNameOption) {
-      handleBrandName()
-    }
-    if (!brandNameSmokeOpen) {
-      handleBrandNameSmoke()
-    }
-  }, [brandNameOption, brandNameSmokeOpen])
+    handleBrandName()
+    handleBrandNameSmoke()
+    handleTypeData()
+  }, [])
 
   // 可复用的卡片组件
   const StyledCard = ({ title, icon, children, color = '#1890ff' }) => {
@@ -142,8 +159,6 @@ const SimulatingForecast: React.FC = () => {
       const formValues = await form.validateFields()
       if (actionRef.current) {
         const dataSource = actionRef.current.getData()
-        console.log('🚀 ~ handleSubmit ~ dataSource:', dataSource)
-        console.log('🚀 ~ handleSubmit ~ formValues:', formValues)
 
         // 过滤数据，只传递输入参数，不传递预测结果
         const inputParams = dataSource.map((item) => ({
@@ -152,7 +167,10 @@ const SimulatingForecast: React.FC = () => {
           filterPressureDrop: Number(item.filterPressureDrop),
           permeability: Number(item.permeability),
           quantitative: Number(item.quantitative),
-          citrate: Number(item.citrate)
+          citrate: Number(item.citrate),
+          tar: '',
+          nicotine: '',
+          co: ''
           // potassiumRatio: Number(item.potassiumRatio) //钾盐占比
           // 不传递 tar, nicotine, co 字段
         }))
@@ -163,8 +181,12 @@ const SimulatingForecast: React.FC = () => {
             message: '请正确填写预测结果数据表格'
           })
         } else {
+          // console.log(selectType, 'selectTypeselectType')
+          // console.log('🚀 ~ handleSubmit ~ inputParams:', inputParams)
+          // console.log('🚀 ~ handleSubmit ~ formValues:', formValues)
           // 调用接口
           const res = await window.electronAPI.simulation.prediction({
+            specimenName: selectType,
             standardParams: formValues,
             predictionParams: inputParams
           })
@@ -176,9 +198,13 @@ const SimulatingForecast: React.FC = () => {
               message: '计算成功'
             })
             // 确保将返回的预测数据更新到表格中
-            const predictionData = res.data.data.map((item: any) => {
+            const predictionData = res.data.data.map((item: any, index: number) => {
               const params = inputParams.find((params) => params.key === item.key)
-
+              actionRef.current.setRowsData(index, {
+                tar: Number(item.tar) || 0,
+                nicotine: Number(item.nicotine) || 0,
+                co: Number(item.co) || 0
+              })
               return {
                 ...item,
                 key: item.key.toString(),
@@ -194,7 +220,6 @@ const SimulatingForecast: React.FC = () => {
               }
             })
             actionRef.current.setData(predictionData)
-            // setForecastData(predictionData)
           } else {
             notificationApi.error({
               message: res.data.errors
@@ -223,12 +248,30 @@ const SimulatingForecast: React.FC = () => {
     })
   }
 
-  const onChange = (value: string) => {
-    console.log(`selected ${value}`)
+  const onChangeSmoke = (value: string) => {
+    brandNameSmokeData.map((item) => {
+      if (value === item.mark) {
+        form.setFieldsValue({
+          tar: item.tar,
+          co: item.co,
+          nicotine: item.nicotine
+        })
+      }
+    })
   }
 
-  const onSearch = (value: string) => {
-    console.log('search:', value)
+  const onChange = (value: string) => {
+    brandNameData.map((item) => {
+      if (value === item.mark) {
+        form.setFieldsValue({
+          filterVentilation: item.filterVentilation,
+          filterPressureDrop: item.filterPressureDrop,
+          permeability: item.permeability,
+          quantitative: item.quantitative,
+          citrate: item.citrate
+        })
+      }
+    })
   }
 
   return (
@@ -262,6 +305,27 @@ const SimulatingForecast: React.FC = () => {
           基于多维数据的智能化预测分析
         </Text>
       </Card>
+      <Flex align="center" justify="start" gap={2}>
+        <span style={{ fontSize: '14px', color: '#333', fontWeight: 500 }}>请选择类型：</span>
+        <Select
+          style={{
+            marginBottom: '10px',
+            minWidth: '200px',
+            borderRadius: '8px',
+            boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+          }}
+          showSearch
+          placeholder="请选择类型"
+          optionFilterProp="label"
+          options={typeData}
+          allowClear
+          onChange={(value) => {
+            setSelectType(value)
+          }}
+          value={selectType}
+          dropdownStyle={{ borderRadius: '8px' }}
+        />
+      </Flex>
 
       <Form form={form} layout="vertical">
         <Flex gap={20}>
@@ -293,8 +357,9 @@ const SimulatingForecast: React.FC = () => {
                       placeholder="请选择牌号名称"
                       optionFilterProp="label"
                       onChange={onChange}
-                      onSearch={onSearch}
-                      options={brandNameOption}            
+                      // onSearch={onSearch}
+                      options={brandNameOption}
+                      allowClear
                     />
                     <Button
                       type="primary"
@@ -337,9 +402,9 @@ const SimulatingForecast: React.FC = () => {
                       showSearch
                       placeholder="请选择牌号名称"
                       optionFilterProp="label"
-                      onChange={onChange}
-                      onSearch={onSearch}
+                      onChange={onChangeSmoke}
                       options={brandNameSmokeOption}
+                      allowClear
                     />
                     <Button
                       type="primary"
@@ -396,7 +461,18 @@ const SimulatingForecast: React.FC = () => {
             <Button
               size="large"
               type="dashed"
-              onClick={handleReset}
+              onClick={async () => {
+                const formValues = await form.validateFields()
+                const dataSource = actionRef.current.getData()
+                console.log(dataSource, 'dataSource')
+
+                const res = await window.electronAPI.simulationPredictionSaveAPI.create({
+                  specimenName: selectType,
+                  standardParams: formValues,
+                  predictionParams: dataSource
+                })
+                console.log(res, 'resresres')
+              }}
               style={{
                 background: '#92d96f',
                 borderColor: '#92d96f',
@@ -441,8 +517,31 @@ const SimulatingForecast: React.FC = () => {
         onCancel={() => {
           setBrandNameOpen(false)
         }}
-        type={0}
-        form={form}
+        onSubmit={async (values) => {
+          const { filterVentilation, filterPressureDrop, permeability, quantitative, citrate } =
+            form.getFieldsValue()
+          if (
+            filterVentilation === undefined ||
+            filterPressureDrop === undefined ||
+            permeability === undefined ||
+            quantitative === undefined ||
+            citrate === undefined
+          ) {
+            return false
+          }
+          // console.log(filterVentilation, filterPressureDrop, permeability, quantitative, citrate,111);
+
+          const res = await window.electronAPI.ramMark.createRamMark({
+            mark: values,
+            filterVentilation,
+            filterPressureDrop,
+            permeability,
+            quantitative,
+            citrate
+          })
+          setBrandNameOpen(false)
+          handleBrandName()
+        }}
       />
       <BrandNameModal
         title="基准卷烟主流烟气"
@@ -450,8 +549,21 @@ const SimulatingForecast: React.FC = () => {
         onCancel={() => {
           setBrandNameSmokeOpen(false)
         }}
-        type={1}
-        form={form}
+        onSubmit={async (values) => {
+          const { co, nicotine, tar } = form.getFieldsValue()
+          if (co === undefined || nicotine === undefined || tar === undefined) {
+            return false
+          }
+          // console.log(co, nicotine, tar, 111)
+          const res = await window.electronAPI.rfgMark.createRfgMark({
+            mark: values,
+            co,
+            nicotine,
+            tar
+          })
+          setBrandNameSmokeOpen(false)
+          handleBrandNameSmoke()
+        }}
       />
     </div>
   )
