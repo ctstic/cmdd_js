@@ -327,6 +327,22 @@ export class AuxMaterialsVo {
   }
 }
 
+export interface RfgMarkDto {
+  mark: string
+  tar: string
+  nicotine: string
+  co: string
+}
+
+export interface RamMarkDto {
+  mark: string
+  filterVentilation: string
+  filterPressureDrop: number
+  permeability: string
+  quantitative: string
+  citrate: string
+}
+
 // 默认卷烟数据
 export const defaultCigarettes: Omit<Cigarettes, 'id' | 'createdAt' | 'updatedAt'>[] = [
   {

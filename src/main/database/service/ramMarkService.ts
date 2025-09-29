@@ -8,9 +8,12 @@ export class RamMarkService {
    * @returns 基准卷烟辅材参数牌号列表
    */
   public getRamMarks(mark: string): schema.RamMark[] {
-    const results = this.sqlite
-      .prepare('SELECT * FROM ram_mark  WHERE mark = ? ORDER BY created_at DESC')
-      .get(mark) as Record<string, unknown>[]
+    const sql = `
+        SELECT * FROM ram_mark
+        WHERE (? = '' OR mark = ?)
+        ORDER BY created_at DESC
+      `
+    const results = this.sqlite.prepare(sql).all(mark, mark) as Record<string, unknown>[]
 
     return results.map((result) => this.mapToRamMark(result))
   }
@@ -19,7 +22,7 @@ export class RamMarkService {
    * 创建新的基准卷烟辅材参数牌号
    * @param obj 基准卷烟辅材参数对象
    */
-  public async createRamMark(obj: schema.RamMark): Promise<void> {
+  public async createRamMark(obj: schema.RamMarkDto): Promise<void> {
     const now = new Date()
     this.sqlite
       .prepare(

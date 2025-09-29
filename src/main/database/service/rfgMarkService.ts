@@ -9,9 +9,12 @@ export class RfgMarkService {
    * @returns 基准卷烟主流烟气牌号列表
    */
   public getRfgMarks(mark: string): schema.RfgMark[] {
-    const results = this.sqlite
-      .prepare('SELECT * FROM rfg_mark WHERE mark = ? ORDER BY created_at DESC')
-      .get(mark) as Record<string, unknown>[]
+    const sql = `
+        SELECT * FROM rfg_mark
+        WHERE (? = '' OR mark = ?)
+        ORDER BY created_at DESC
+      `
+    const results = this.sqlite.prepare(sql).all(mark, mark) as Record<string, unknown>[]
 
     return results.map((result) => this.mapToRfgMark(result))
   }
@@ -20,7 +23,7 @@ export class RfgMarkService {
    * 创建新的基准卷烟主流烟气牌号
    * @param obj 基准卷烟主流烟气牌号对象
    */
-  public async createRfgMark(obj: schema.RfgMark): Promise<void> {
+  public async createRfgMark(obj: schema.RfgMarkDto): Promise<void> {
     const now = new Date()
     this.sqlite
       .prepare(

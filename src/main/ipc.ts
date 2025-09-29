@@ -202,10 +202,14 @@ export function registerIPC(): void {
   /**
    * 新增基准卷烟辅材参数牌号
    */
-  ipcMain.handle('ramMark:create', async (_evt, dto: schema.RamMark) => {
+  ipcMain.handle('ramMark:create', async (_evt, dto: schema.RamMarkDto) => {
     try {
-      await ramMarkService.createRamMark(dto)
-      return { success: true }
+      if (ramMarkService.getRamMarks(dto.mark).length > 0) {
+        return { success: false, error: '牌号名称已存在' }
+      } else {
+        await ramMarkService.createRamMark(dto)
+        return { success: true }
+      }
     } catch (error) {
       console.error('[ipc] ramMark:create failed:', error)
       return { success: false, error: (error as Error).message }
@@ -229,10 +233,14 @@ export function registerIPC(): void {
   /**
    * 新增基准卷烟辅材参数牌号
    */
-  ipcMain.handle('rfgMark:create', async (_evt, dto: schema.RfgMark) => {
+  ipcMain.handle('rfgMark:create', async (_evt, dto: schema.RfgMarkDto) => {
     try {
-      await rfgMarkService.createRfgMark(dto)
-      return { success: true }
+      if (rfgMarkService.getRfgMarks(dto.mark).length > 0) {
+        return { success: false, error: '牌号名称已存在' }
+      } else {
+        await rfgMarkService.createRfgMark(dto)
+        return { success: true }
+      }
     } catch (error) {
       console.error('[ipc] rfgMark:create failed:', error)
       return { success: false, error: (error as Error).message }

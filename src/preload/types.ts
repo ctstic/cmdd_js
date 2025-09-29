@@ -50,19 +50,13 @@ export interface RecAuxMaterialsAPI {
 /** 基准卷烟主流烟气牌号模块 API 定义 */
 export interface RfgMarkAPI {
   query: (query: string) => Promise<APIResponse<{ result: schema.RfgMark[] }>>
-  createRfgMark: (obj: schema.RfgMark) => Promise<APIResponse<void>>
-}
-
-/** 基准卷烟主流烟气牌号模块 API 定义 */
-export interface RfgMarkAPI {
-  query: (query: string) => Promise<APIResponse<{ result: schema.RfgMark[] }>>
-  createRfgMark: (obj: schema.RfgMark) => Promise<APIResponse<void>>
+  createRfgMark: (obj: schema.RfgMarkDto) => Promise<APIResponse<void>>
 }
 
 /** 基准卷烟辅材参数牌号模块 API 定义 */
 export interface RamMarkAPI {
   query: (query: string) => Promise<APIResponse<{ result: schema.RamMark[] }>>
-  createRamMark: (obj: schema.RamMark) => Promise<APIResponse<void>>
+  createRamMark: (obj: schema.RamMarkDto) => Promise<APIResponse<void>>
 }
 
 /** 基准卷烟主流烟气牌号模块 API 定义 */
