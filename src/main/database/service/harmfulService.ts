@@ -55,8 +55,7 @@ export class HarmfulService {
       .prepare(
         'SELECT MAX(batch_no) as batchNo FROM harmful_constants  WHERE specimen_name  = ? ORDER BY created_at DESC'
       )
-      .all(specimenName) as unknown as { batchNo: string }
-
+      .get(specimenName) as unknown as { batchNo: string }
     if (!maxBatchResult.batchNo) {
       return []
     }

@@ -170,6 +170,19 @@ export function registerIPC(): void {
     }
   )
 
+  ipcMain.handle(
+    'simulation:exportResult',
+    async (_evt, scientificData: schema.ScientificDataDto) => {
+      try {
+        const result = await simulationPredictionService.exportResult(scientificData)
+        return { success: true, data: result }
+      } catch (error) {
+        console.error('[ipc] simulation:exportResult failed:', error)
+        return { success: false, error: (error as Error).message }
+      }
+    }
+  )
+
   /* -------------------- 辅材推荐计算 -------------------- */
   /**
    * 辅材推荐计算
@@ -284,6 +297,15 @@ export function registerIPC(): void {
       return { success: true, data: simulationPredictionSaveService.create(dto) }
     } catch (error) {
       console.error('[ipc] simulationPredictionSave:create failed:', error)
+      return { success: false, error: (error as Error).message }
+    }
+  })
+
+  ipcMain.handle('simulationPredictionSave:exportId', async (_evt, id: number) => {
+    try {
+      return { success: true, data: simulationPredictionSaveService.exportId(id) }
+    } catch (error) {
+      console.error('[ipc] simulationPredictionSave:exportId failed:', error)
       return { success: false, error: (error as Error).message }
     }
   })
