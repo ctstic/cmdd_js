@@ -7,9 +7,15 @@ export type CalculationModalProps = {
   modalOpen: boolean
   onCancel: () => void
   title: string
+  historyData: any
 }
 
-const HistoryModal: React.FC<CalculationModalProps> = ({ title, modalOpen, onCancel }) => {
+const HistoryModal: React.FC<CalculationModalProps> = ({
+  title,
+  historyData,
+  modalOpen,
+  onCancel
+}) => {
   const [messageApi, contextHolder] = message.useMessage()
   const restFormRef = useRef<ProFormInstance>()
 
@@ -57,9 +63,10 @@ const HistoryModal: React.FC<CalculationModalProps> = ({ title, modalOpen, onCan
     }
   ]
 
-  const expandedRowRender = () => {
+  const expandedRowRender = (record) => {
     return (
       <ProTable
+        rowKey="key"
         columns={[
           {
             title: '滤嘴通风率',
@@ -99,7 +106,7 @@ const HistoryModal: React.FC<CalculationModalProps> = ({ title, modalOpen, onCan
         headerTitle="预测数据表格"
         search={false}
         options={false}
-        dataSource={data}
+        dataSource={record.profile}
         pagination={false}
       />
     )
@@ -109,6 +116,7 @@ const HistoryModal: React.FC<CalculationModalProps> = ({ title, modalOpen, onCan
     <>
       {contextHolder}
       <ModalForm
+        width="80%"
         title={`${title} -- 保存此牌号数据`}
         formRef={restFormRef}
         open={modalOpen}
@@ -125,15 +133,16 @@ const HistoryModal: React.FC<CalculationModalProps> = ({ title, modalOpen, onCan
         <ProTable<TableListItem>
           headerTitle="基准数据表格"
           columns={columns}
-          request={(params, sorter, filter) => {
-            // 表单搜索项会从 params 传入，传递给后端接口。
-            console.log(params, sorter, filter)
-            return Promise.resolve({
-              data: tableListDataSource,
-              success: true
-            })
-          }}
-          rowKey="key"
+          dataSource={historyData}
+          // request={(params, sorter, filter) => {
+          //   // 表单搜索项会从 params 传入，传递给后端接口。
+          //   console.log(params, sorter, filter)
+          //   return Promise.resolve({
+          //     data: tableListDataSource,
+          //     success: true
+          //   })
+          // }}
+          rowKey="id"
           pagination={{
             showQuickJumper: true
           }}

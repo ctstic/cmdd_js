@@ -12,7 +12,8 @@ import {
   InputNumber,
   Empty,
   Flex,
-  Space
+  Space,
+  Select
 } from 'antd'
 import {
   ExperimentOutlined,
@@ -72,7 +73,7 @@ interface DataType {
 }
 
 // 第一  二步输入框
-const FormFieldGroup = ({ fields, form, layout = 'vertical', cols, defaultValue }) => {
+const FormFieldGroup = ({ fields, form, layout = 'vertical', cols, defaultValue, brandName }) => {
   return (
     <Form form={form} layout={layout} initialValues={{ size: 30 }}>
       <Row gutter={[24, 16]}>
@@ -101,6 +102,37 @@ const FormFieldGroup = ({ fields, form, layout = 'vertical', cols, defaultValue 
             </Form.Item>
           </Col>
         ))}
+        {brandName && (
+          <Col xs={24} sm={24} md={cols}>
+            <Form.Item
+              name=""
+              label={
+                <Text strong style={{ color: '#262626', marginBottom: 8, display: 'block' }}>
+                  牌号名称
+                </Text>
+              }
+            >
+              <Flex gap={8} align="flex-end">
+                <Select
+                  showSearch
+                  placeholder="请选择牌号名称"
+                  optionFilterProp="label"
+                  // onChange={onChange}
+                  // onSearch={onSearch}
+                  // options={brandNameOption}
+                />
+                <Button
+                  type="primary"
+                  onClick={() => {
+                    // setBrandNameOpen(true)
+                  }}
+                >
+                  保存
+                </Button>
+              </Flex>
+            </Form.Item>
+          </Col>
+        )}
       </Row>
     </Form>
   )
@@ -483,10 +515,22 @@ const RecommendParameter: React.FC = () => {
       <Row gutter={[24, 16]}>
         <Col xs={16} md={8}>
           <StyledCard title="基准卷烟主流烟气" icon={<SafetyCertificateOutlined />}>
-            <FormFieldGroup fields={harmfulFields} form={baseForm} cols={8} />
+            <FormFieldGroup
+              fields={harmfulFields}
+              form={baseForm}
+              cols={8}
+              defaultValue={undefined}
+              brandName={true}
+            />
           </StyledCard>
           <StyledCard title="目标主流烟气" icon={<SafetyCertificateOutlined />} color="#fa8c16">
-            <FormFieldGroup fields={harmfulFields} form={targetForm} cols={8} />
+            <FormFieldGroup
+              fields={harmfulFields}
+              form={targetForm}
+              cols={8}
+              defaultValue={undefined}
+              brandName={false}
+            />
           </StyledCard>
           <StyledCard
             title="主流烟气权重设置"
@@ -499,12 +543,19 @@ const RecommendParameter: React.FC = () => {
               form={weightForm}
               cols={8}
               defaultValue={0.33}
+              brandName={false}
             />
           </StyledCard>
         </Col>
         <Col xs={32} md={16}>
           <StyledCard title="基准卷烟辅材参数" icon={<ExperimentOutlined />}>
-            <FormFieldGroup fields={baseMaterialFields} form={baseForm} cols={4} />
+            <FormFieldGroup
+              fields={baseMaterialFields}
+              form={baseForm}
+              cols={6}
+              defaultValue={undefined}
+              brandName={true}
+            />
           </StyledCard>
           <StyledCard
             title="辅材参数个性化设计范围"

@@ -20,6 +20,7 @@ import {
 } from '@ant-design/icons'
 import PredictionTable from './PredictionTable'
 import BrandNameModal from './BrandNameModal'
+import HistoryModal from '../RecommendParameter/HistoryModal'
 
 const { Title, Text } = Typography
 
@@ -75,6 +76,8 @@ const SimulatingForecast: React.FC = () => {
   const [brandNameSmokeData, setBrandNameSmokeData] = useState<object>({})
   const [typeData, setTypeData] = useState<{ label: string; value: string }[]>([])
   const [selectType, setSelectType] = useState<string>('')
+  const [historyModalOpen, setHistoryModalOpen] = useState<boolean>(false)
+  const [historyData, setHistoryData] = useState<[]>([])
 
   const handleBrandName = async (): Promise<void> => {
     try {
@@ -498,7 +501,11 @@ const SimulatingForecast: React.FC = () => {
             <Button
               size="large"
               type="dashed"
-              onClick={handleReset}
+              onClick={async () => {
+                const res = await window.electronAPI.simulationPredictionSaveAPI.query()
+                setHistoryData(res.data)
+                setHistoryModalOpen(true)
+              }}
               style={{
                 background: '#ffdd8e',
                 borderColor: '#ffdd8e',
@@ -564,6 +571,14 @@ const SimulatingForecast: React.FC = () => {
           setBrandNameSmokeOpen(false)
           handleBrandNameSmoke()
         }}
+      />
+      <HistoryModal
+        modalOpen={historyModalOpen}
+        onCancel={() => {
+          setHistoryModalOpen(false)
+        }}
+        title={''}
+        historyData={historyData}
       />
     </div>
   )
