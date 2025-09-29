@@ -1,5 +1,5 @@
 import { LineChartOutlined } from '@ant-design/icons'
-import type { ProColumns } from '@ant-design/pro-components'
+import type { EditableFormInstance, ProColumns } from '@ant-design/pro-components'
 import { EditableProTable } from '@ant-design/pro-components'
 import { Card, Typography } from 'antd'
 import React, { useState, useRef, useImperativeHandle } from 'react'
@@ -53,13 +53,17 @@ const cardHeaderStyle = {
 const PredictionTable: React.FC<PredictionTableProps> = ({ actionRef }) => {
   const [editableKeys, setEditableRowKeys] = useState<React.Key[]>([])
   const [dataSource, setDataSource] = useState<readonly DataSourceType[]>([])
-  const editableTableRef = useRef<any>(null)
+  const editableTableRef = useRef<EditableFormInstance<DataSourceType>>()
   const { styles } = useStyle()
 
-  // Expose methods to the parent component via actionRef
   useImperativeHandle(actionRef, () => ({
-    getData: () => dataSource, // Get data from the table
-    setData: (newData: DataSourceType[]) => setDataSource(newData) // Set new data
+    getData: () => dataSource,
+    setData: (newData: DataSourceType[]) => setDataSource(newData),
+    setRowsData: (index, data) => {
+      if (editableTableRef.current) {
+        editableTableRef.current.setRowData?.(index, data)
+      }
+    }
   }))
 
   const columns: ProColumns<DataSourceType>[] = [
@@ -95,19 +99,22 @@ const PredictionTable: React.FC<PredictionTableProps> = ({ actionRef }) => {
     },
     {
       title: '预测数据',
-      dataIndex: 'forecast',
+      dataIndex: 'foreCast',
       children: [
         {
           title: '焦油',
-          dataIndex: 'tar'
+          dataIndex: 'tar',
+          readonly: true
         },
         {
           title: '烟碱',
-          dataIndex: 'nicotine'
+          dataIndex: 'nicotine',
+          readonly: true
         },
         {
           title: 'CO',
-          dataIndex: 'co'
+          dataIndex: 'co',
+          readonly: true
         }
       ]
     },
@@ -145,7 +152,7 @@ const PredictionTable: React.FC<PredictionTableProps> = ({ actionRef }) => {
           className={styles.customTable}
           scroll={{ x: 960, y: 55 * 8 }}
           bordered
-          actionRef={editableTableRef}
+          editableFormRef={editableTableRef}
           columns={columns}
           recordCreatorProps={{
             // position:'top',
@@ -166,50 +173,6 @@ const PredictionTable: React.FC<PredictionTableProps> = ({ actionRef }) => {
             },
             onChange: setEditableRowKeys
           }}
-          // expandable={{
-          //   expandedRowRender: (record) => {
-          //     // 找到对应的预测数据
-          //     const prediction = dataSource.find((item) => item.key === record.key)
-
-          //     return (
-          //       <div
-          //         style={{
-          //           display: 'flex',
-          //           width: '100%',
-          //           padding: '10px',
-          //           fontFamily: 'Arial, sans-serif',
-          //           backgroundColor: '#f5f5f5',
-          //           borderRadius: '4px'
-          //         }}
-          //       >
-          //         <div style={{ textAlign: 'left', width: '200px' }}>
-          //           <p style={{ margin: 0, fontSize: '16px' }}>
-          //             <strong>焦油:</strong>
-          //             <span style={{ color: prediction?.tar ? '#52c41a' : 'gray' }}>
-          //               {prediction?.tar || '未计算'}
-          //             </span>
-          //           </p>
-          //         </div>
-          //         <div style={{ textAlign: 'left', width: '200px' }}>
-          //           <p style={{ margin: 0, fontSize: '16px' }}>
-          //             <strong>烟碱:</strong>
-          //             <span style={{ color: prediction?.nicotine ? '#52c41a' : 'gray' }}>
-          //               {prediction?.nicotine || '未计算'}
-          //             </span>
-          //           </p>
-          //         </div>
-          //         <div style={{ textAlign: 'left', width: '200px' }}>
-          //           <p style={{ margin: 0, fontSize: '16px' }}>
-          //             <strong>CO:</strong>
-          //             <span style={{ color: prediction?.co ? '#52c41a' : 'gray' }}>
-          //               {prediction?.co || '未计算'}
-          //             </span>
-          //           </p>
-          //         </div>
-          //       </div>
-          //     )
-          //   }
-          // }}
         />
       </div>
     </Card>

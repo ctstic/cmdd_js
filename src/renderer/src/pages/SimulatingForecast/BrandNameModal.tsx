@@ -7,16 +7,15 @@ export type CalculationModalProps = {
   modalOpen: boolean
   onCancel: () => void
   title: string
-  type: number
-  form: any
+ onSubmit: (values:string) => void
 }
 
 const BrandNameModal: React.FC<CalculationModalProps> = ({
   title,
   modalOpen,
-  form,
+  onSubmit,
   onCancel,
-  type
+  // type
 }) => {
   const [messageApi, contextHolder] = message.useMessage()
   const restFormRef = useRef<ProFormInstance>()
@@ -37,52 +36,7 @@ const BrandNameModal: React.FC<CalculationModalProps> = ({
         formRef={restFormRef}
         open={modalOpen}
         onFinish={async (values) => {
-          // console.log(values, 'values')
-          try {
-            if (type) {
-              const { co, nicotine, tar } = form.getFieldsValue()
-              if (co === undefined || nicotine === undefined || tar === undefined) {
-                return false
-              }
-              console.log(co, nicotine, tar,111);
-
-              const res = await window.electronAPI.rfgMark.createRfgMark({
-                mark: values.brandName,
-                co,
-                nicotine,
-                tar
-              })
-              console.log(res, 'resresresres')
-            } else {
-              const { filterVentilation, filterPressureDrop, permeability, quantitative, citrate } =
-                form.getFieldsValue()
-
-              // 检查这些字段是否为 undefined
-              if (
-                filterVentilation === undefined ||
-                filterPressureDrop === undefined ||
-                permeability === undefined ||
-                quantitative === undefined ||
-                citrate === undefined
-              ) {
-                return false
-              }
-              // console.log(filterVentilation, filterPressureDrop, permeability, quantitative, citrate,111);
-
-              const res = await window.electronAPI.ramMark.createRamMark({
-                mark: values.brandName,
-                filterVentilation,
-                filterPressureDrop,
-                permeability,
-                quantitative,
-                citrate
-              })
-            }
-            info('success', '保存成功！')
-          } catch {
-            info('error', '网络错误！')
-          }
-          onCancel()
+          onSubmit(values.brandName)
         }}
         modalProps={{
           destroyOnClose: true,
