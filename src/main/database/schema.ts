@@ -87,7 +87,7 @@ export const rfgMark = sqliteTable('rfg_mark', {
 // 卷烟主流烟气仿真预测保存
 export const simulationPredictionSave = sqliteTable('simulation_rediction_save', {
   id: integer('id').primaryKey({ autoIncrement: true }),
-  specimenName: text('specimen_name').notNull().unique(), // 建模数据样品名称
+  specimenName: text('specimen_name').notNull(), // 建模数据样品名称
   filterVentilation: text('filter_ventilation').notNull(), // 基准滤嘴通风率
   filterPressureDrop: integer('filter_pressure_drop').notNull(), // 基准滤棒压降(Pa)
   permeability: text('permeability').notNull(), // 基准透气度/CU
@@ -98,7 +98,9 @@ export const simulationPredictionSave = sqliteTable('simulation_rediction_save',
   nicotine: text('nicotine').notNull(), //基准 烟碱 mg/支
   co: text('co').notNull(), //基准 CO mg/支
   // 预测x 和 y 值
-  profile: text('profile', { mode: 'json' }).notNull().default({}),
+  profile: text('profile', { mode: 'json' })
+    .notNull()
+    .default(() => JSON.stringify([])),
 
   createdAt: integer('created_at', { mode: 'timestamp' })
     .notNull()
@@ -112,7 +114,7 @@ export const simulationPredictionSave = sqliteTable('simulation_rediction_save',
 // 推荐辅材参数保存
 export const recAuxMaterialsSave = sqliteTable('rec_aux_materials_save', {
   id: integer('id').primaryKey({ autoIncrement: true }),
-  specimenName: text('specimen_name').notNull().unique(), // 建模数据样品名称
+  specimenName: text('specimen_name').notNull(), // 建模数据样品名称
   recommendNumber: text('recommend_number').notNull(), // 生成推荐数量
   filterVentilation: text('filter_ventilation').notNull(), // 基准滤嘴通风率
   filterPressureDrop: integer('filter_pressure_drop').notNull(), // 基准滤棒压降(Pa)
@@ -139,7 +141,9 @@ export const recAuxMaterialsSave = sqliteTable('rec_aux_materials_save', {
   citrateRanger: text('citrate_ranger').notNull(), // 基准柠檬酸根(设计值)
 
   // 预测x 和 y 值
-  profile: text('profile', { mode: 'json' }).notNull().default({}),
+  profile: text('profile', { mode: 'json' })
+    .notNull()
+    .default(() => JSON.stringify([])),
 
   createdAt: integer('created_at', { mode: 'timestamp' })
     .notNull()
@@ -343,6 +347,19 @@ export interface RamMarkDto {
   citrate: string
 }
 
+// 导出预测数据
+export interface exportSimDto {
+  模型类别: string // 样品名称
+  数据类别: string
+  滤嘴通风率: string
+  滤棒压降: string
+  透气度: string
+  定量: string
+  柠檬酸根: string
+  焦油: string
+  烟碱: string
+  CO: string
+}
 // 默认卷烟数据
 export const defaultCigarettes: Omit<Cigarettes, 'id' | 'createdAt' | 'updatedAt'>[] = [
   {

@@ -1,5 +1,6 @@
 import { schema } from '..'
 import { harmfulService } from './harmfulService'
+import { simulationPredictionSaveService } from './simulationPredictionSaveService'
 
 /**
  * 仿真预测计算服务类
@@ -182,7 +183,39 @@ export class SimulationPredictionService {
     ).toString()
     return predictionParam
   }
-}
 
+  /**
+   * 导出预测结果
+   * 根据基准值和预测值计算最终的有害成分含量
+   * @param scientificData 标准参数
+   * @returns 处理后的有害成分数据
+   */
+  public async exportResult(scientificData: schema.ScientificDataDto): Promise<any> {
+    console.log(JSON.stringify(scientificData.predictionParams),'11111111111111111111111')
+    const results: schema.exportSimDto[] = []
+    scientificData.standardParams.key = scientificData.specimenName
+    results.push(this.mapToExportSimDto(scientificData.standardParams, '基准数据'))
+    scientificData.predictionParams.map((result) => {
+      result.key = scientificData.specimenName
+      results.push(this.mapToExportSimDto(result, '预测数据'))
+    })
+    simulationPredictionSaveService.export(results)
+  }
+
+  private mapToExportSimDto(result: schema.StandardParams, datatype: string): schema.exportSimDto {
+    return {
+      模型类别: result.key as string,
+      数据类别: datatype as string,
+      滤嘴通风率: result.filterVentilation as string,
+      滤棒压降: result.filterPressureDrop as string,
+      透气度: result.permeability as string,
+      定量: result.quantitative as string,
+      柠檬酸根: result.citrate as string,
+      焦油: result.tar as string,
+      烟碱: result.nicotine as string,
+      CO: result.co as string
+    }
+  }
+}
 // 导出仿真预测服务单例实例
 export const simulationPredictionService = new SimulationPredictionService()

@@ -24,7 +24,10 @@ export interface HarmfulAPI {
 
 /** 多因素卷烟模块 API 定义 */
 export interface CigarettesAPI {
-  query: (query: string, specimenName: string) => Promise<APIResponse<{ result: schema.Cigarettes[] }>>
+  query: (
+    query: string,
+    specimenName: string
+  ) => Promise<APIResponse<{ result: schema.Cigarettes[] }>>
   delete: (id: number) => Promise<APIResponse<void>>
   getCigarettesType: (specimenName: string) => Promise<APIResponse<{ result: string[] }>>
   deleteCigarettesType: (specimenName: string) => Promise<APIResponse<void>>
@@ -40,6 +43,7 @@ export interface SimulationAPI {
   prediction: (
     scientificData: schema.ScientificDataDto
   ) => Promise<APIResponse<{ result: schema.PredictionResults[] }>>
+  exportResult: (scientificData: schema.ScientificDataDto) => Promise<APIResponse<any>>
 }
 
 /** 辅材推荐模块 API 定义 */
@@ -65,6 +69,7 @@ export interface SimulationPredictionSaveAPI {
   getId: (id: number) => Promise<APIResponse<{ result: schema.SimulationPredictionSave }>>
   create: (obj: schema.ScientificDataDto) => Promise<APIResponse<void>>
   delete: (id: number) => Promise<APIResponse<void>>
+  exportId: (id: number) => Promise<APIResponse<any>>
 }
 
 /** 辅材参数推荐管理 模块 API 定义 */

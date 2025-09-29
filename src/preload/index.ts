@@ -52,7 +52,8 @@ const electronAPI: ExposedElectronAPI = {
     deleteCigarettesType: 'cigarettes:deleteCigarettesType'
   }),
   simulation: createAPI<SimulationAPI>({
-    prediction: 'simulation:prediction'
+    prediction: 'simulation:prediction',
+    exportResult: 'simulation:exportResult'
   }),
   rec: createAPI<RecAuxMaterialsAPI>({
     auxMaterials: 'rec:auxMaterials'
@@ -69,7 +70,8 @@ const electronAPI: ExposedElectronAPI = {
     query: 'simulationPredictionSave:query',
     getId: 'simulationPredictionSave:getId',
     create: 'simulationPredictionSave:create',
-    delete: 'simulationPredictionSave:delete'
+    delete: 'simulationPredictionSave:delete',
+    exportId: 'simulationPredictionSave:exportId'
   }),
   recAuxMaterialsSaveAPI: createAPI<RecAuxMaterialsSaveAPI>({
     query: 'recAuxMaterialsSave:query',
