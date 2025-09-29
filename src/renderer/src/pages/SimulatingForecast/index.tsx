@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import {
   Card,
   Row,
@@ -67,6 +67,43 @@ const SimulatingForecast: React.FC = () => {
   const actionRef = useRef<any>(null)
   const [brandNameOpen, setBrandNameOpen] = useState<boolean>(false)
   const [brandNameSmokeOpen, setBrandNameSmokeOpen] = useState<boolean>(false)
+  const [brandNameOption, setBrandNameOption] = useState<{ label: string; value: string }[]>([])
+  const [brandNameSmokeOption, setBrandNameSmokeOption] = useState<
+    { label: string; value: string }[]
+  >([])
+
+  const handleBrandName = async (): Promise<void> => {
+    try {
+      const optionData = await window.electronAPI.ramMark.query('')
+      setBrandNameOption(optionData.data || [])
+      console.log(optionData, 'optionData')
+    } catch {
+      notificationApi.error({
+        message: '网络错误！'
+      })
+    }
+  }
+
+  const handleBrandNameSmoke = async (): Promise<void> => {
+    try {
+      const smokeOptionData = await window.electronAPI.ramMark.query('')
+      setBrandNameSmokeOption(smokeOptionData.data || [])
+      console.log(smokeOptionData, 'smokeOptionData')
+    } catch {
+      notificationApi.error({
+        message: '网络错误！'
+      })
+    }
+  }
+
+  useEffect(() => {
+    if (!brandNameOption) {
+      handleBrandName()
+    }
+    if (!brandNameSmokeOpen) {
+      handleBrandNameSmoke()
+    }
+  }, [brandNameOption, brandNameSmokeOpen])
 
   // 可复用的卡片组件
   const StyledCard = ({ title, icon, children, color = '#1890ff' }) => {
@@ -257,20 +294,7 @@ const SimulatingForecast: React.FC = () => {
                       optionFilterProp="label"
                       onChange={onChange}
                       onSearch={onSearch}
-                      options={[
-                        {
-                          value: 'jack',
-                          label: 'Jack'
-                        },
-                        {
-                          value: 'lucy',
-                          label: 'Lucy'
-                        },
-                        {
-                          value: 'tom',
-                          label: 'Tom'
-                        }
-                      ]}
+                      options={brandNameOption}            
                     />
                     <Button
                       type="primary"
@@ -315,20 +339,7 @@ const SimulatingForecast: React.FC = () => {
                       optionFilterProp="label"
                       onChange={onChange}
                       onSearch={onSearch}
-                      options={[
-                        {
-                          value: 'jack',
-                          label: 'vv'
-                        },
-                        {
-                          value: 'lucy',
-                          label: 'cc'
-                        },
-                        {
-                          value: 'tom',
-                          label: 'aa'
-                        }
-                      ]}
+                      options={brandNameSmokeOption}
                     />
                     <Button
                       type="primary"
@@ -430,6 +441,8 @@ const SimulatingForecast: React.FC = () => {
         onCancel={() => {
           setBrandNameOpen(false)
         }}
+        type={0}
+        form={form}
       />
       <BrandNameModal
         title="基准卷烟主流烟气"
@@ -437,6 +450,8 @@ const SimulatingForecast: React.FC = () => {
         onCancel={() => {
           setBrandNameSmokeOpen(false)
         }}
+        type={1}
+        form={form}
       />
     </div>
   )
