@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import {
   Card,
   Row,
@@ -26,6 +26,7 @@ import {
 import type { TableProps } from 'antd'
 import { createStyles } from 'antd-style'
 import HistoryModal from './HistoryModal'
+import BrandNameModal from '../SimulatingForecast/BrandNameModal'
 
 const useStyle = createStyles(({ css, token }) => {
   const { antCls } = token
@@ -70,72 +71,6 @@ interface DataType {
   co: string
   nicotine: string
   tar: string
-}
-
-// 第一  二步输入框
-const FormFieldGroup = ({ fields, form, layout = 'vertical', cols, defaultValue, brandName }) => {
-  return (
-    <Form form={form} layout={layout} initialValues={{ size: 30 }}>
-      <Row gutter={[24, 16]}>
-        {fields.map((field) => (
-          <Col xs={24} sm={24} md={cols} key={field.name}>
-            <Form.Item
-              style={{ marginBottom: field.name === 'size' ? 10 : 0 }}
-              initialValue={defaultValue === undefined ? '' : defaultValue}
-              required={true}
-              name={field.name}
-              label={
-                <Text strong style={{ color: '#262626', marginBottom: 8, display: 'block' }}>
-                  {field.label}
-                  {field.unit ? `(${field.unit})` : ''}
-                </Text>
-              }
-            >
-              <InputNumber
-                style={{ width: '100%' }}
-                min={0}
-                max={field.unit === '%' ? 100 : undefined}
-                step={field.name === 'size' ? 1 : 0.01}
-                precision={field.name === 'size' ? 0 : 2}
-                placeholder={`请输入${field.label}`}
-              />
-            </Form.Item>
-          </Col>
-        ))}
-        {brandName && (
-          <Col xs={24} sm={24} md={cols}>
-            <Form.Item
-              name=""
-              label={
-                <Text strong style={{ color: '#262626', marginBottom: 8, display: 'block' }}>
-                  牌号名称
-                </Text>
-              }
-            >
-              <Flex gap={8} align="flex-end">
-                <Select
-                  showSearch
-                  placeholder="请选择牌号名称"
-                  optionFilterProp="label"
-                  // onChange={onChange}
-                  // onSearch={onSearch}
-                  // options={brandNameOption}
-                />
-                <Button
-                  type="primary"
-                  onClick={() => {
-                    // setBrandNameOpen(true)
-                  }}
-                >
-                  保存
-                </Button>
-              </Flex>
-            </Form.Item>
-          </Col>
-        )}
-      </Row>
-    </Form>
-  )
 }
 
 // 第三步滑块组件
@@ -254,8 +189,160 @@ const RecommendParameter: React.FC = () => {
   const [messageApi, contextHolder] = message.useMessage()
   const { styles } = useStyle()
   const [historyModalOpen, setHistoryModalOpen] = useState<boolean>(false)
+  const [historyData, setHistoryData] = useState<[]>([])
+  const [brandNameOpen, setBrandNameOpen] = useState<boolean>(false)
+  const [brandNameSmokeOpen, setBrandNameSmokeOpen] = useState<boolean>(false)
+  const [brandNameOption, setBrandNameOption] = useState<{ label: string; value: string }[]>([])
+  const [brandNameSmokeOption, setBrandNameSmokeOption] = useState<
+    { label: string; value: string }[]
+  >([])
+  const [brandNameData, setBrandNameData] = useState<any>([])
+  const [brandNameSmokeData, setBrandNameSmokeData] = useState<object>({})
+  const [typeData, setTypeData] = useState<{ label: string; value: string }[]>([])
+  const [selectType, setSelectType] = useState<string>('')
 
-  // console.log(baseForm, 'baseFormbaseFormbaseForm')
+  // 第一  二步输入框
+  const FormFieldGroup = ({
+    fields,
+    form,
+    layout = 'vertical',
+    cols,
+    defaultValue,
+    brandName,
+    type
+  }) => {
+    return (
+      <Form form={form} layout={layout} initialValues={{ size: 30 }}>
+        <Row gutter={[24, 16]}>
+          {fields.map((field) => (
+            <Col xs={24} sm={24} md={cols} key={field.name}>
+              <Form.Item
+                style={{ marginBottom: field.name === 'size' ? 10 : 0 }}
+                initialValue={defaultValue === undefined ? '' : defaultValue}
+                required={true}
+                name={field.name}
+                label={
+                  <Text strong style={{ color: '#262626', marginBottom: 8, display: 'block' }}>
+                    {field.label}
+                    {field.unit ? `(${field.unit})` : ''}
+                  </Text>
+                }
+              >
+                <InputNumber
+                  style={{ width: '100%' }}
+                  min={0}
+                  max={field.unit === '%' ? 100 : undefined}
+                  step={field.name === 'size' ? 1 : 0.01}
+                  precision={field.name === 'size' ? 0 : 2}
+                  placeholder={`请输入${field.label}`}
+                />
+              </Form.Item>
+            </Col>
+          ))}
+          {brandName && (
+            <Col xs={24} sm={24} md={cols}>
+              <Form.Item
+                name=""
+                label={
+                  <Text strong style={{ color: '#262626', marginBottom: 8, display: 'block' }}>
+                    牌号名称
+                  </Text>
+                }
+              >
+                <Flex gap={8} align="flex-end">
+                  <Select
+                    showSearch
+                    placeholder="请选择牌号名称"
+                    optionFilterProp="label"
+                    onChange={(value) => {
+                      if (type == 1) {
+                        brandNameData.map((item) => {
+                          if (value === item.mark) {
+                            baseForm.setFieldsValue({
+                              filterVentilation: item.filterVentilation,
+                              filterPressureDrop: item.filterPressureDrop,
+                              permeability: item.permeability,
+                              quantitative: item.quantitative,
+                              citrate: item.citrate
+                            })
+                          }
+                        })
+                      } else {
+                        brandNameSmokeData.map((item) => {
+                          if (value === item.mark) {
+                            baseForm.setFieldsValue({
+                              tar: item.tar,
+                              co: item.co,
+                              nicotine: item.nicotine
+                            })
+                          }
+                        })
+                      }
+                    }}
+                    // onSearch={onSearch}
+                    options={type == 1 ? brandNameOption : brandNameSmokeOption}
+                  />
+                  <Button
+                    type="primary"
+                    onClick={() => {
+                      if (type == 1) {
+                        setBrandNameOpen(true)
+                      } else {
+                        setBrandNameSmokeOpen(true)
+                      }
+                    }}
+                  >
+                    保存
+                  </Button>
+                </Flex>
+              </Form.Item>
+            </Col>
+          )}
+        </Row>
+      </Form>
+    )
+  }
+
+  const handleBrandName = async (): Promise<void> => {
+    try {
+      const optionData = await window.electronAPI.ramMark.query('')
+      setBrandNameData(optionData.data)
+      setBrandNameOption(
+        optionData.data.map((item) => ({ label: item.mark, value: item.mark })) || []
+      )
+      // console.log(optionData, 'bb')
+    } catch {
+      info('error', '网络错误！')
+    }
+  }
+
+  const handleBrandNameSmoke = async (): Promise<void> => {
+    try {
+      const smokeOptionData = await window.electronAPI.rfgMark.query('')
+      setBrandNameSmokeData(smokeOptionData.data)
+      setBrandNameSmokeOption(
+        smokeOptionData.data.map((item) => ({ label: item.mark, value: item.mark })) || []
+      )
+      // console.log(smokeOptionData, 'aa')
+    } catch {
+      info('error', '网络错误！')
+    }
+  }
+
+  const handleTypeData = async (): Promise<void> => {
+    try {
+      const typeData = await window.electronAPI.cigarettes.getCigarettesType('')
+      setTypeData(typeData.data.map((item) => ({ label: item, value: item })) || [])
+    } catch {
+      info('error', '网络错误！')
+    }
+  }
+
+  useEffect(() => {
+    handleBrandName()
+    handleBrandNameSmoke()
+    handleTypeData()
+  }, [])
 
   const info = (type: 'info' | 'success' | 'error' | 'warning' | 'loading', msg: string) => {
     messageApi.open({
@@ -342,7 +429,7 @@ const RecommendParameter: React.FC = () => {
     const rangeValues = rangeForm.getFieldsValue(true)
 
     // // 打印所有表单的值
-    // console.log('基准卷烟辅材参数:', baseValues)
+    console.log('基准卷烟辅材参数:', baseValues)
     // console.log('目标主流烟气:', targetValues)
     // console.log('成分权重设置:', weightValues)
     // console.log('辅材参数个性化设计范围:', rangeValues)
@@ -363,6 +450,7 @@ const RecommendParameter: React.FC = () => {
     } else {
       const res = await window.electronAPI.rec.auxMaterials({
         count: rangeValues.size,
+        specimenName: selectType,
         standardParams: baseValues,
         targetParams: { ...targetValues, ...weightValues },
         standardDesignParams: rangeValues
@@ -383,10 +471,11 @@ const RecommendParameter: React.FC = () => {
           prediction: item.prediction
         }))
         setTableData(transformedData)
+        console.log(transformedData, 'transformedData')
 
-        baseForm.resetFields()
-        targetForm.resetFields()
-        weightForm.resetFields()
+        // baseForm.resetFields()
+        // targetForm.resetFields()
+        // weightForm.resetFields()
         message.success('参数推荐完成！')
       } else {
         message.error(`${res.data.errors}`)
@@ -512,6 +601,27 @@ const RecommendParameter: React.FC = () => {
           基于多维数据的智能化推荐辅材参数
         </Text>
       </Card>
+      <Flex align="center" justify="start" gap={2}>
+        <span style={{ fontSize: '14px', color: '#333', fontWeight: 500 }}>请选择类型：</span>
+        <Select
+          style={{
+            marginBottom: '10px',
+            minWidth: '200px',
+            borderRadius: '8px',
+            boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+          }}
+          showSearch
+          placeholder="请选择类型"
+          optionFilterProp="label"
+          options={typeData}
+          allowClear
+          onChange={(value) => {
+            setSelectType(value)
+          }}
+          value={selectType}
+          dropdownStyle={{ borderRadius: '8px' }}
+        />
+      </Flex>
       <Row gutter={[24, 16]}>
         <Col xs={16} md={8}>
           <StyledCard title="基准卷烟主流烟气" icon={<SafetyCertificateOutlined />}>
@@ -521,6 +631,7 @@ const RecommendParameter: React.FC = () => {
               cols={8}
               defaultValue={undefined}
               brandName={true}
+              type={2}
             />
           </StyledCard>
           <StyledCard title="目标主流烟气" icon={<SafetyCertificateOutlined />} color="#fa8c16">
@@ -530,6 +641,7 @@ const RecommendParameter: React.FC = () => {
               cols={8}
               defaultValue={undefined}
               brandName={false}
+              type={0}
             />
           </StyledCard>
           <StyledCard
@@ -544,6 +656,7 @@ const RecommendParameter: React.FC = () => {
               cols={8}
               defaultValue={0.33}
               brandName={false}
+              type={0}
             />
           </StyledCard>
         </Col>
@@ -555,6 +668,7 @@ const RecommendParameter: React.FC = () => {
               cols={6}
               defaultValue={undefined}
               brandName={true}
+              type={1}
             />
           </StyledCard>
           <StyledCard
@@ -566,6 +680,9 @@ const RecommendParameter: React.FC = () => {
               fields={[{ name: 'size', label: '生成推荐数量', unit: '条' }]}
               form={rangeForm}
               cols={5}
+              defaultValue={undefined}
+              brandName={false}
+              type={0}
             />
             <RangeSliders fields={rangeFields} form={rangeForm} />
 
@@ -589,7 +706,7 @@ const RecommendParameter: React.FC = () => {
       <StyledCard title="推荐辅材参数表格" icon={<SafetyCertificateOutlined />} color="#52c41a">
         <Table
           className={styles.customTable}
-          scroll={{ x: 960, y: 55 * 5 }}
+          scroll={{ x: 960, y: 55 * 3 }}
           rowKey="id"
           locale={{
             emptyText: <Empty description="暂无数据" image={Empty.PRESENTED_IMAGE_SIMPLE} />
@@ -641,7 +758,27 @@ const RecommendParameter: React.FC = () => {
             <Button
               size="large"
               type="dashed"
-              // onClick={handleReset}
+              onClick={async () => {
+                try {
+                  const baseValues = baseForm.getFieldsValue(true)
+                  const targetValues = targetForm.getFieldsValue(true)
+                  const weightValues = weightForm.getFieldsValue(true)
+                  const rangeValues = rangeForm.getFieldsValue(true)
+                  await window.electronAPI.recAuxMaterialsSaveAPI.create({
+                    count: rangeValues.size,
+                    specimenName: selectType,
+                    standardParams: baseValues,
+                    targetParams: { ...targetValues, ...weightValues },
+                    standardDesignParams: rangeValues
+                  })
+                  // console.log(res, 'resresres')
+                  info('success', '保存成功！')
+                } catch (error) {
+                  console.log(error, 'aaaa')
+
+                  info('error', '网络错误！')
+                }
+              }}
               style={{
                 background: '#92d96f',
                 borderColor: '#92d96f',
@@ -654,7 +791,26 @@ const RecommendParameter: React.FC = () => {
             <Button
               size="large"
               type="dashed"
-              // onClick={handleReset}
+              onClick={async () => {
+                try {
+                  const baseValues = baseForm.getFieldsValue(true)
+                  const targetValues = targetForm.getFieldsValue(true)
+                  const weightValues = weightForm.getFieldsValue(true)
+                  const rangeValues = rangeForm.getFieldsValue(true)
+
+                  const res = await window.electronAPI.rec.exportResult({
+                    count: rangeValues.size,
+                    specimenName: selectType,
+                    standardParams: baseValues,
+                    targetParams: { ...targetValues, ...weightValues },
+                    standardDesignParams: rangeValues
+                  })
+                  console.log(res, '导出成功')
+                  info('success', '导出成功！')
+                } catch {
+                  info('error', '网络错误！')
+                }
+              }}
               style={{
                 background: '#a689cf',
                 borderColor: '#a689cf',
@@ -667,7 +823,9 @@ const RecommendParameter: React.FC = () => {
             <Button
               size="large"
               type="dashed"
-              onClick={() => {
+              onClick={async () => {
+                // const res = await window.electronAPI.recAuxMaterialsSaveAPI.query()
+                // setHistoryData(res.data)
                 setHistoryModalOpen(true)
               }}
               style={{
@@ -687,7 +845,62 @@ const RecommendParameter: React.FC = () => {
         onCancel={() => {
           setHistoryModalOpen(false)
         }}
-        title={''}
+        type={0}
+        historyData={historyData}
+      />
+      <BrandNameModal
+        title="基准卷烟辅材参数"
+        modalOpen={brandNameOpen}
+        onCancel={() => {
+          setBrandNameOpen(false)
+        }}
+        onSubmit={async (values) => {
+          const { filterVentilation, filterPressureDrop, permeability, quantitative, citrate } =
+            baseForm.getFieldsValue(true)
+          if (
+            filterVentilation === undefined ||
+            filterPressureDrop === undefined ||
+            permeability === undefined ||
+            quantitative === undefined ||
+            citrate === undefined
+          ) {
+            return false
+          }
+          // console.log(filterVentilation, filterPressureDrop, permeability, quantitative, citrate,111);
+
+          const res = await window.electronAPI.ramMark.createRamMark({
+            mark: values,
+            filterVentilation,
+            filterPressureDrop,
+            permeability,
+            quantitative,
+            citrate
+          })
+          setBrandNameOpen(false)
+          handleBrandName()
+        }}
+      />
+      <BrandNameModal
+        title="基准卷烟主流烟气"
+        modalOpen={brandNameSmokeOpen}
+        onCancel={() => {
+          setBrandNameSmokeOpen(false)
+        }}
+        onSubmit={async (values) => {
+          const { co, nicotine, tar } = baseForm.getFieldsValue(true)
+          if (co === undefined || nicotine === undefined || tar === undefined) {
+            return false
+          }
+          // console.log(co, nicotine, tar, 111)
+          const res = await window.electronAPI.rfgMark.createRfgMark({
+            mark: values,
+            co,
+            nicotine,
+            tar
+          })
+          setBrandNameSmokeOpen(false)
+          handleBrandNameSmoke()
+        }}
       />
     </div>
   )

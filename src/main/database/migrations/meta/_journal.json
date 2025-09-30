@@ -15,6 +15,13 @@
       "when": 1759051890334,
       "tag": "0001_melted_maria_hill",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1759141342830,
+      "tag": "0002_living_killraven",
+      "breakpoints": true
     }
   ]
 }
