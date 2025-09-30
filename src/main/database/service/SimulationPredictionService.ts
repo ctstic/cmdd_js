@@ -191,7 +191,6 @@ export class SimulationPredictionService {
    * @returns 处理后的有害成分数据
    */
   public async exportResult(scientificData: schema.ScientificDataDto): Promise<any> {
-    console.log(JSON.stringify(scientificData.predictionParams),'11111111111111111111111')
     const results: schema.exportSimDto[] = []
     scientificData.standardParams.key = scientificData.specimenName
     results.push(this.mapToExportSimDto(scientificData.standardParams, '基准数据'))

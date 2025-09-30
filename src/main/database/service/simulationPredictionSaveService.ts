@@ -1,6 +1,6 @@
 import { db, schema } from '..'
 import { dialog } from 'electron'
-import * as XLSX from 'xlsx'
+import XLSX from 'xlsx-js-style'
 
 export class SimulationPredictionSaveService {
   private sqlite = db.getSqliteInstance()
@@ -146,30 +146,36 @@ export class SimulationPredictionSaveService {
 
     // 3️⃣ 设置列宽（可选）
     worksheet['!cols'] = [
-      { wch: 15 },
-      { wch: 15 },
-      { wch: 15 },
-      { wch: 15 },
-      { wch: 15 },
-      { wch: 10 },
-      { wch: 12 },
-      { wch: 10 },
-      { wch: 10 },
-      { wch: 10 }
+      { wch: 25 },
+      { wch: 25 },
+      { wch: 25 },
+      { wch: 25 },
+      { wch: 25 },
+      { wch: 25 },
+      { wch: 25 },
+      { wch: 20 },
+      { wch: 20 },
+      { wch: 20 }
     ]
 
-    // 4️⃣ 加粗表头
-    const headerRange = XLSX.utils.decode_range(worksheet['!ref']!)
-    for (let C = headerRange.s.c; C <= headerRange.e.c; ++C) {
-      const cellAddress = XLSX.utils.encode_cell({ r: 0, c: C })
-      if (!worksheet[cellAddress]) continue
-      worksheet[cellAddress].s = {
-        font: { bold: true }
+    worksheet['!rows'] = [
+      { hpt: 25 }, // 第一行表头 25 磅
+      { hpt: 18 } // 数据行 18 磅
+    ]
+    // 只给第一行表头加样式（加粗+居中+灰色背景）
+    for (let C = 0; C <= 20; ++C) {
+      const cellAddress = XLSX.utils.encode_cell({ r: 0, c: C }) // 第一行 R=0
+      if (worksheet[cellAddress]) {
+        worksheet[cellAddress].s = {
+          font: { bold: true, color: { rgb: '000000' } }, // 黑色加粗
+          alignment: { horizontal: 'center', vertical: 'center' }, // 居中
+          fill: { fgColor: { rgb: 'DDDDDD' } } // 灰色背景
+        }
       }
     }
 
     const workbook = XLSX.utils.book_new()
-    XLSX.utils.book_append_sheet(workbook, worksheet, '数据')
+    XLSX.utils.book_append_sheet(workbook, worksheet, '仿真预测数据')
 
     // 4. 保存文件
     XLSX.writeFile(workbook, filePath)
@@ -185,7 +191,7 @@ export class SimulationPredictionSaveService {
   public async exportId(id: number): Promise<any> {
     const result = this.sqlite
       .prepare('SELECT * FROM simulation_prediction_save WHERE id = ?')
-      .get(1) as Record<string, unknown>
+      .get(id) as Record<string, unknown>
 
     if (!result) {
       return { success: false, error: '数据不存在' }

@@ -7,13 +7,6 @@
     "cigarettes": {
       "name": "cigarettes",
       "columns": {
-        "id": {
-          "name": "id",
-          "type": "integer",
-          "primaryKey": true,
-          "notNull": true,
-          "autoincrement": true
-        },
         "code": {
           "name": "code",
           "type": "text",

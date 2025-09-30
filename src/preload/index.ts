@@ -56,7 +56,8 @@ const electronAPI: ExposedElectronAPI = {
     exportResult: 'simulation:exportResult'
   }),
   rec: createAPI<RecAuxMaterialsAPI>({
-    auxMaterials: 'rec:auxMaterials'
+    auxMaterials: 'rec:auxMaterials',
+    exportResult: 'rec:exportResult'
   }),
   rfgMark: createAPI<RfgMarkAPI>({
     query: 'rfgMark:query',
@@ -77,7 +78,8 @@ const electronAPI: ExposedElectronAPI = {
     query: 'recAuxMaterialsSave:query',
     getId: 'recAuxMaterialsSave:getId',
     create: 'recAuxMaterialsSave:create',
-    delete: 'recAuxMaterialsSave:delete'
+    delete: 'recAuxMaterialsSave:delete',
+    exportId: 'recAuxMaterialsSave:exportId'
   }),
   process: { versions: process.versions }
 }

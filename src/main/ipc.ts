@@ -198,6 +198,16 @@ export function registerIPC(): void {
     }
   })
 
+  ipcMain.handle('rec:exportResult', async (_evt, dto: schema.AuxMaterialsDto) => {
+    try {
+      const result = await recAuxMaterials.exportResult(dto)
+      return { success: true, data: result }
+    } catch (error) {
+      console.error('[ipc] rec:exportResult failed:', error)
+      return { success: false, error: (error as Error).message }
+    }
+  })
+
   /* -------------------- 基准卷烟辅材参数牌号 -------------------- */
 
   /**
@@ -333,6 +343,15 @@ export function registerIPC(): void {
       return { success: true, data: recAuxMaterialsSaveService.getAllRecAuxMaterials() }
     } catch (error) {
       console.error('[ipc] recAuxMaterialsSave:query failed:', error)
+      return { success: false, error: (error as Error).message }
+    }
+  })
+
+  ipcMain.handle('recAuxMaterialsSave:exportId', async (_evt, id: number) => {
+    try {
+      return { success: true, data: recAuxMaterialsSaveService.exportId(id) }
+    } catch (error) {
+      console.error('[ipc] recAuxMaterialsSave:exportId failed:', error)
       return { success: false, error: (error as Error).message }
     }
   })
