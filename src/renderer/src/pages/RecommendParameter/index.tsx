@@ -824,8 +824,8 @@ const RecommendParameter: React.FC = () => {
               size="large"
               type="dashed"
               onClick={async () => {
-                // const res = await window.electronAPI.recAuxMaterialsSaveAPI.query()
-                // setHistoryData(res.data)
+                const res = await window.electronAPI.recAuxMaterialsSaveAPI.query()
+                setHistoryData(res.data)
                 setHistoryModalOpen(true)
               }}
               style={{

@@ -1,6 +1,6 @@
 import React, { useRef } from 'react'
 import { Button, message, Modal, Popconfirm } from 'antd'
-import {  ProTable } from '@ant-design/pro-components'
+import { ProTable } from '@ant-design/pro-components'
 import type { ActionType, ProColumns } from '@ant-design/pro-components'
 
 export type CalculationModalProps = {
@@ -190,19 +190,11 @@ const HistoryModal: React.FC<CalculationModalProps> = ({
         onCancel={onCancel}
       >
         <ProTable
-          headerTitle="基准数据表格"
+          // headerTitle="基准数据表格"
           columns={columns}
           actionRef={actionRef}
           dataSource={historyData}
-          request={async (params, sorter, filter) => {
-            // console.log(params, sorter, filter)
-            if (type) {
-              return await window.electronAPI.simulationPredictionSaveAPI.query()
-            } else {
-              return await window.electronAPI.recAuxMaterialsSaveAPI.query()
-            }
-          }}
-          rowKey="id"
+          rowKey="key"
           pagination={{
             showQuickJumper: true
           }}
