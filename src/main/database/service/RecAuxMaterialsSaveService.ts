@@ -35,19 +35,6 @@ export class RecAuxMaterialsSaveService {
   }
 
   public async create(auxMaterialsDto: schema.AuxMaterialsDto): Promise<any> {
-    auxMaterialsDto.recommendedValue = [
-      {
-        key: '1759211849435',
-        filterVentilation: '1',
-        filterPressureDrop: '1',
-        permeability: '1',
-        quantitative: '1',
-        citrate: '1',
-        tar: '1',
-        nicotine: '1',
-        co: '1'
-      }
-    ]
     const aux = this.mapAuxMaterialsDtoToSave(auxMaterialsDto)
     return this.createRecAuxMaterials(aux)
   }
@@ -135,7 +122,7 @@ export class RecAuxMaterialsSaveService {
     const timestamp = Date.now()
     const { filePath } = await dialog.showSaveDialog({
       title: '导出 Excel',
-      defaultPath: `data_${timestamp}.xlsx`,
+      defaultPath: `推荐辅材参数_${timestamp}.xlsx`,
       filters: [{ name: 'Excel 文件', extensions: ['xlsx'] }]
     })
 

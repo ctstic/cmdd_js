@@ -105,7 +105,7 @@ export class SimulationPredictionSaveService {
     const timestamp = Date.now()
     const { filePath } = await dialog.showSaveDialog({
       title: '导出 Excel',
-      defaultPath: `data_${timestamp}.xlsx`,
+      defaultPath: `仿真预测_${timestamp}.xlsx`,
       filters: [{ name: 'Excel 文件', extensions: ['xlsx'] }]
     })
 

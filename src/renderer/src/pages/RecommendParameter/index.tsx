@@ -310,7 +310,6 @@ const RecommendParameter: React.FC = () => {
       setBrandNameOption(
         optionData.data.map((item) => ({ label: item.mark, value: item.mark })) || []
       )
-      // console.log(optionData, 'bb')
     } catch {
       info('error', '网络错误！')
     }
@@ -323,7 +322,6 @@ const RecommendParameter: React.FC = () => {
       setBrandNameSmokeOption(
         smokeOptionData.data.map((item) => ({ label: item.mark, value: item.mark })) || []
       )
-      // console.log(smokeOptionData, 'aa')
     } catch {
       info('error', '网络错误！')
     }
@@ -429,24 +427,26 @@ const RecommendParameter: React.FC = () => {
     const rangeValues = rangeForm.getFieldsValue(true)
 
     // // 打印所有表单的值
-    console.log('基准卷烟辅材参数:', baseValues)
+    // console.log('基准卷烟辅材参数:', baseValues)
     // console.log('目标主流烟气:', targetValues)
     // console.log('成分权重设置:', weightValues)
     // console.log('辅材参数个性化设计范围:', rangeValues)
 
     if (Object.keys(baseValues).length !== 9) {
-      info('warning', '请正确输入基准参数')
+      info('warning', '请正确输入基准参数！')
     } else if (Object.keys(targetValues).length !== 4) {
-      info('warning', '请正确输入目标主流烟气')
+      info('warning', '请正确输入目标主流烟气！')
     } else if (Object.keys(weightValues).length !== 4) {
-      info('warning', '请正确输入成分权重设置')
+      info('warning', '请正确输入成分权重设置！')
     } else if (
       weightForm.getFieldValue('coWeight') +
         weightForm.getFieldValue('nicotineWeight') +
         weightForm.getFieldValue('tarWeight') >
       1
     ) {
-      info('warning', '主流烟气权重之和不大于1')
+      info('warning', '主流烟气权重之和不大于1!')
+    } else if (selectType === '') {
+      info('warning', '请选择类型！')
     } else {
       const res = await window.electronAPI.rec.auxMaterials({
         count: rangeValues.size,
@@ -471,7 +471,6 @@ const RecommendParameter: React.FC = () => {
           prediction: item.prediction
         }))
         setTableData(transformedData)
-        console.log(transformedData, 'transformedData')
 
         // baseForm.resetFields()
         // targetForm.resetFields()
@@ -527,7 +526,7 @@ const RecommendParameter: React.FC = () => {
       render: (text) => <span>{(Number(text) * 100).toFixed(2)}%</span>
     },
     {
-      title: '焦油',
+      title: '焦油（mg/支）',
       dataIndex: 'tar',
       render: (_, record) => {
         const tarPercentageChange = calculatePercentageChange(record.prediction[2], record.tar)
@@ -540,7 +539,7 @@ const RecommendParameter: React.FC = () => {
       }
     },
     {
-      title: '烟碱',
+      title: '烟碱（mg/支）',
       dataIndex: 'nicotine',
       render: (_, record) => {
         const nicotinePercentageChange = calculatePercentageChange(
@@ -556,7 +555,7 @@ const RecommendParameter: React.FC = () => {
       }
     },
     {
-      title: 'CO',
+      title: 'CO（mg/支）',
       dataIndex: 'co',
       render: (_, record) => {
         const coPercentageChange = calculatePercentageChange(record.prediction[0], record.co)
@@ -760,24 +759,26 @@ const RecommendParameter: React.FC = () => {
               type="dashed"
               onClick={async () => {
                 try {
+                  if (!tableData.length) {
+                    info('warning', '请先进行计算！')
+                    return
+                  }
                   const baseValues = baseForm.getFieldsValue(true)
                   const targetValues = targetForm.getFieldsValue(true)
                   const weightValues = weightForm.getFieldsValue(true)
                   const rangeValues = rangeForm.getFieldsValue(true)
-                  const res2 = {
+                  const params = {
                     count: rangeValues.size,
                     specimenName: selectType,
                     standardParams: baseValues,
                     targetParams: { ...targetValues, ...weightValues },
-                    standardDesignParams: rangeValues
+                    standardDesignParams: rangeValues,
+                    recommendedValue: tableData
                   }
-                   console.log(res2, 'resresres')
-                  await window.electronAPI.recAuxMaterialsSaveAPI.create(res2)
+                  await window.electronAPI.recAuxMaterialsSaveAPI.create(params)
                   // console.log(res, 'resresres')
                   info('success', '保存成功！')
-                } catch (error) {
-                  console.log(error, 'aaaa')
-
+                } catch {
                   info('error', '网络错误！')
                 }
               }}
@@ -795,6 +796,10 @@ const RecommendParameter: React.FC = () => {
               type="dashed"
               onClick={async () => {
                 try {
+                  if (!tableData.length) {
+                    info('warning', '请先进行计算！')
+                    return
+                  }
                   const baseValues = baseForm.getFieldsValue(true)
                   const targetValues = targetForm.getFieldsValue(true)
                   const weightValues = weightForm.getFieldsValue(true)
@@ -805,9 +810,9 @@ const RecommendParameter: React.FC = () => {
                     specimenName: selectType,
                     standardParams: baseValues,
                     targetParams: { ...targetValues, ...weightValues },
-                    standardDesignParams: rangeValues
+                    standardDesignParams: rangeValues,
+                    recommendedValue: tableData
                   })
-                  console.log(res, '导出成功')
                   info('success', '导出成功！')
                 } catch {
                   info('error', '网络错误！')
@@ -868,7 +873,6 @@ const RecommendParameter: React.FC = () => {
           ) {
             return false
           }
-          // console.log(filterVentilation, filterPressureDrop, permeability, quantitative, citrate,111);
 
           const res = await window.electronAPI.ramMark.createRamMark({
             mark: values,
@@ -893,7 +897,6 @@ const RecommendParameter: React.FC = () => {
           if (co === undefined || nicotine === undefined || tar === undefined) {
             return false
           }
-          // console.log(co, nicotine, tar, 111)
           const res = await window.electronAPI.rfgMark.createRfgMark({
             mark: values,
             co,

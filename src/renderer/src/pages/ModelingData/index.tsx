@@ -58,12 +58,10 @@ const ModelingData: React.FC = () => {
     try {
       const typeData = await window.electronAPI.cigarettes.getCigarettesType('')
       setTypeData(typeData.data || [])
-      console.log(typeData, typeData.data[0], 'typeData')
 
       if (typeData.data.length) {
         setSelectedItem(typeData.data[0])
         const result = await window.electronAPI.cigarettes.query('', typeData.data[0])
-        console.log(result.data, 'result.dataresult.dataresult.data')
         setTableData(result.data || [])
       }
     } catch {
@@ -300,7 +298,6 @@ const ModelingData: React.FC = () => {
                   cursor: 'pointer'
                 }}
                 onClick={async () => {
-                  console.log(item, 'item')
                   setSelectedItem(item)
                   const result = await window.electronAPI.cigarettes.query('', item)
                   setTableData(result.data || [])
@@ -340,7 +337,7 @@ const ModelingData: React.FC = () => {
         </Card>
       </Flex>
       <ModalForm
-        title={'上传aaa'}
+        title={'上传科研建模数据'}
         formRef={restFormRef}
         open={uploadModal}
         onFinish={async (values) => {

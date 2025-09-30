@@ -66,6 +66,8 @@ const SimulatingForecast: React.FC = () => {
   const [notificationApi, contextHolder] = notification.useNotification()
   const [form] = Form.useForm()
   const actionRef = useRef<any>(null)
+  const [predictionData, setPredictionData] = useState<any>([])
+
   const [brandNameOpen, setBrandNameOpen] = useState<boolean>(false)
   const [brandNameSmokeOpen, setBrandNameSmokeOpen] = useState<boolean>(false)
   const [brandNameOption, setBrandNameOption] = useState<{ label: string; value: string }[]>([])
@@ -74,8 +76,10 @@ const SimulatingForecast: React.FC = () => {
   >([])
   const [brandNameData, setBrandNameData] = useState<any>([])
   const [brandNameSmokeData, setBrandNameSmokeData] = useState<object>({})
+
   const [typeData, setTypeData] = useState<{ label: string; value: string }[]>([])
   const [selectType, setSelectType] = useState<string>('')
+
   const [historyModalOpen, setHistoryModalOpen] = useState<boolean>(false)
   const [historyData, setHistoryData] = useState<[]>([])
 
@@ -100,7 +104,6 @@ const SimulatingForecast: React.FC = () => {
       setBrandNameSmokeOption(
         smokeOptionData.data.map((item) => ({ label: item.mark, value: item.mark })) || []
       )
-      console.log(smokeOptionData, 'smokeOptionData2')
     } catch {
       notificationApi.error({
         message: '网络错误！'
@@ -183,8 +186,11 @@ const SimulatingForecast: React.FC = () => {
           notificationApi.error({
             message: '请正确填写预测结果数据表格'
           })
+        } else if (selectType === '') {
+          notificationApi.error({
+            message: '请选择类型！'
+          })
         } else {
-          // console.log(selectType, 'selectTypeselectType')
           // console.log('🚀 ~ handleSubmit ~ inputParams:', inputParams)
           // console.log('🚀 ~ handleSubmit ~ formValues:', formValues)
           // 调用接口
@@ -195,13 +201,13 @@ const SimulatingForecast: React.FC = () => {
           })
 
           // 判断返回数据是否存在
-          console.log('🚀 ~ handleSubmit ~ res.data:aaa', res.data)
           if (res.data.data && Array.isArray(res.data.data) && res.data.data.length > 0) {
             notificationApi.success({
               message: '计算成功'
             })
             // 确保将返回的预测数据更新到表格中
             const predictionData = res.data.data.map((item: any, index: number) => {
+              //? 之前table是展开格式时，根据kay取返回的数据，现在应该不需要了
               const params = inputParams.find((params) => params.key === item.key)
               actionRef.current.setRowsData(index, {
                 tar: Number(item.tar) || 0,
@@ -222,6 +228,7 @@ const SimulatingForecast: React.FC = () => {
                 co: Number(item.co) || 0
               }
             })
+            setPredictionData(predictionData)
             actionRef.current.setData(predictionData)
           } else {
             notificationApi.error({
@@ -466,9 +473,14 @@ const SimulatingForecast: React.FC = () => {
               type="dashed"
               onClick={async () => {
                 try {
+                  if (!predictionData.length) {
+                    notificationApi.warning({
+                      message: '请先进行计算！'
+                    })
+                    return
+                  }
                   const formValues = await form.validateFields()
                   const dataSource = actionRef.current.getData()
-                  // console.log(dataSource, 'dataSource')
 
                   const res = await window.electronAPI.simulationPredictionSaveAPI.create({
                     specimenName: selectType,
@@ -480,8 +492,6 @@ const SimulatingForecast: React.FC = () => {
                     message: '保存成功！'
                   })
                 } catch (error) {
-                  console.log(error, 'error111')
-
                   notificationApi.error({
                     message: '网络错误！'
                   })
@@ -501,22 +511,24 @@ const SimulatingForecast: React.FC = () => {
               type="dashed"
               onClick={async () => {
                 try {
+                  if (!predictionData.length) {
+                    notificationApi.warning({
+                      message: '请先进行计算！'
+                    })
+                    return
+                  }
                   const formValues = await form.validateFields()
                   const dataSource = actionRef.current.getData()
-                  // console.log(dataSource, 'dataSource')
 
                   const res = await window.electronAPI.simulation.exportResult({
                     specimenName: selectType,
                     standardParams: formValues,
                     predictionParams: dataSource
                   })
-                  console.log(res, 'resresres111')
                   notificationApi.success({
                     message: '保存成功！'
                   })
-                } catch (error) {
-                  console.log(error, 'error222')
-
+                } catch {
                   notificationApi.error({
                     message: '网络错误！'
                   })
@@ -569,7 +581,6 @@ const SimulatingForecast: React.FC = () => {
           ) {
             return false
           }
-          // console.log(filterVentilation, filterPressureDrop, permeability, quantitative, citrate,111);
 
           const res = await window.electronAPI.ramMark.createRamMark({
             mark: values,
@@ -594,7 +605,6 @@ const SimulatingForecast: React.FC = () => {
           if (co === undefined || nicotine === undefined || tar === undefined) {
             return false
           }
-          // console.log(co, nicotine, tar, 111)
           const res = await window.electronAPI.rfgMark.createRfgMark({
             mark: values,
             co,
