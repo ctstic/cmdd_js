@@ -52,7 +52,7 @@ export class SimulationPredictionSaveService {
       profile: scientificData.predictionParams
     }
     const safeObj = JSON.parse(JSON.stringify(sima))
-    this.createSimulationPrediction(safeObj)
+    return this.createSimulationPrediction(safeObj)
   }
 
   /**

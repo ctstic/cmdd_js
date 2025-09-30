@@ -35,8 +35,21 @@ export class RecAuxMaterialsSaveService {
   }
 
   public async create(auxMaterialsDto: schema.AuxMaterialsDto): Promise<any> {
+    auxMaterialsDto.recommendedValue = [
+      {
+        key: '1759211849435',
+        filterVentilation: '1',
+        filterPressureDrop: '1',
+        permeability: '1',
+        quantitative: '1',
+        citrate: '1',
+        tar: '1',
+        nicotine: '1',
+        co: '1'
+      }
+    ]
     const aux = this.mapAuxMaterialsDtoToSave(auxMaterialsDto)
-    this.createRecAuxMaterials(aux)
+    return this.createRecAuxMaterials(aux)
   }
 
   /**
@@ -54,9 +67,9 @@ export class RecAuxMaterialsSaveService {
         permeability, quantitative, citrate, tar, nicotine, co, target_tar,
         target_nicotine, target_co, tar_weight, nicotine_weight, co_weight,
         filter_ventilation_ranger, filter_pressure_drop_ranger, permeability_ranger,
-        quantitative_ranger, citrate_ranger, potassium_ratio_ranger, profile,
+        quantitative_ranger, citrate_ranger, profile,
         created_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `
       )
       .run(

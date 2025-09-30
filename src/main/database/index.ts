@@ -159,7 +159,7 @@ class DatabaseService {
       this.sqlite.exec(`
         CREATE TABLE IF NOT EXISTS simulation_prediction_save (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
-          specimen_name TEXT NOT NULL UNIQUE,
+          specimen_name TEXT NOT NULL,
           filter_ventilation TEXT NOT NULL,
           filter_pressure_drop INTEGER NOT NULL,
           permeability TEXT NOT NULL,
@@ -177,7 +177,7 @@ class DatabaseService {
       this.sqlite.exec(`
         CREATE TABLE IF NOT EXISTS rec_aux_materials_save (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
-          specimen_name TEXT NOT NULL UNIQUE,
+          specimen_name TEXT NOT NULL,
           recommend_number TEXT NOT NULL,
           filter_ventilation TEXT NOT NULL,
           filter_pressure_drop INTEGER NOT NULL,
