@@ -1,6 +1,7 @@
 import { schema } from '..'
 import { harmfulService } from './harmfulService'
 import { simulationPredictionService } from './simulationPredictionService'
+import { recAuxMaterialsSaveService } from './RecAuxMaterialsSaveService'
 
 // 工具方法：区间 + 步长 → 数组
 function generateRange(start: number, end: number, step: number): number[] {
@@ -44,7 +45,7 @@ export class RecAuxMaterials {
       parseFloat((v / 100).toFixed(3))
     ) as [number, number]
     // 1️⃣ 获取最新批次的有害成分系数
-    const harmfulConstants = harmfulService.getLatestBatchCoefficients(dto.cigarettesType)
+    const harmfulConstants = harmfulService.getLatestBatchCoefficients(dto.specimenName)
 
     if (!harmfulConstants || harmfulConstants.length === 0) {
       result.errors = '未找到最新批次的有害成分系数数据'
@@ -138,6 +139,11 @@ export class RecAuxMaterials {
     result.success = true
     result.data = topResults
     return result
+  }
+
+  public async exportResult(auxMaterialsDto: schema.AuxMaterialsDto): Promise<any> {
+    const aux = recAuxMaterialsSaveService.mapAuxMaterialsDtoToSave(auxMaterialsDto)
+    recAuxMaterialsSaveService.export(aux)
   }
 }
 

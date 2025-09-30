@@ -49,6 +49,7 @@ export interface SimulationAPI {
 /** 辅材推荐模块 API 定义 */
 export interface RecAuxMaterialsAPI {
   auxMaterials: (dto: schema.AuxMaterialsDto) => Promise<APIResponse<any>>
+  exportResult: (dto: schema.AuxMaterialsDto) => Promise<APIResponse<any>>
 }
 
 /** 基准卷烟主流烟气牌号模块 API 定义 */
@@ -78,6 +79,7 @@ export interface RecAuxMaterialsSaveAPI {
   getId: (id: number) => Promise<APIResponse<{ result: schema.RecAuxMaterialsSave }>>
   create: (obj: schema.AuxMaterialsDto) => Promise<APIResponse<void>>
   delete: (id: number) => Promise<APIResponse<void>>
+  exportId: (id: number) => Promise<APIResponse<any>>
 }
 
 /**
