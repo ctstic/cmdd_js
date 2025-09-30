@@ -304,7 +304,8 @@ export function registerIPC(): void {
    */
   ipcMain.handle('simulationPredictionSave:create', async (_evt, dto: schema.ScientificDataDto) => {
     try {
-      return { success: true, data: simulationPredictionSaveService.create(dto) }
+      const result = await simulationPredictionSaveService.create(dto)
+      return { success: true, data: JSON.parse(JSON.stringify(result)) }
     } catch (error) {
       console.error('[ipc] simulationPredictionSave:create failed:', error)
       return { success: false, error: (error as Error).message }
@@ -373,7 +374,8 @@ export function registerIPC(): void {
    */
   ipcMain.handle('recAuxMaterialsSave:create', async (_evt, dto: schema.AuxMaterialsDto) => {
     try {
-      return { success: true, data: recAuxMaterialsSaveService.create(dto) }
+      const result = await recAuxMaterialsSaveService.create(dto)
+      return { success: true, data: JSON.parse(JSON.stringify(result)) }
     } catch (error) {
       console.error('[ipc] recAuxMaterialsSave:create failed:', error)
       return { success: false, error: (error as Error).message }

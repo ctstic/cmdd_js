@@ -764,13 +764,15 @@ const RecommendParameter: React.FC = () => {
                   const targetValues = targetForm.getFieldsValue(true)
                   const weightValues = weightForm.getFieldsValue(true)
                   const rangeValues = rangeForm.getFieldsValue(true)
-                  await window.electronAPI.recAuxMaterialsSaveAPI.create({
+                  const res2 = {
                     count: rangeValues.size,
                     specimenName: selectType,
                     standardParams: baseValues,
                     targetParams: { ...targetValues, ...weightValues },
                     standardDesignParams: rangeValues
-                  })
+                  }
+                   console.log(res2, 'resresres')
+                  await window.electronAPI.recAuxMaterialsSaveAPI.create(res2)
                   // console.log(res, 'resresres')
                   info('success', '保存成功！')
                 } catch (error) {
