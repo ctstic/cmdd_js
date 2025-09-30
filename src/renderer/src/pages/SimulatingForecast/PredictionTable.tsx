@@ -102,17 +102,17 @@ const PredictionTable: React.FC<PredictionTableProps> = ({ actionRef }) => {
       dataIndex: 'foreCast',
       children: [
         {
-          title: '焦油',
+          title: '焦油（mg/支）',
           dataIndex: 'tar',
           readonly: true
         },
         {
-          title: '烟碱',
+          title: '烟碱（mg/支）',
           dataIndex: 'nicotine',
           readonly: true
         },
         {
-          title: 'CO',
+          title: 'CO（mg/支）',
           dataIndex: 'co',
           readonly: true
         }

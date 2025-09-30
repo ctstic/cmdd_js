@@ -194,7 +194,7 @@ const HistoryModal: React.FC<CalculationModalProps> = ({
           columns={columns}
           actionRef={actionRef}
           dataSource={historyData}
-          rowKey="key"
+          rowKey="id"
           pagination={{
             showQuickJumper: true
           }}
