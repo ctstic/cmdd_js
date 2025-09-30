@@ -1,17 +1,23 @@
 import React, { useRef } from 'react'
-import { message } from 'antd'
-import { ModalForm, ProFormText, ProTable } from '@ant-design/pro-components'
-import type { ProColumns, ProFormInstance } from '@ant-design/pro-components'
+import { Button, message, Modal, Popconfirm } from 'antd'
+import {  ProTable } from '@ant-design/pro-components'
+import type { ActionType, ProColumns } from '@ant-design/pro-components'
 
 export type CalculationModalProps = {
   modalOpen: boolean
   onCancel: () => void
-  title: string
+  type: number
+  historyData: any
 }
 
-const HistoryModal: React.FC<CalculationModalProps> = ({ title, modalOpen, onCancel }) => {
+const HistoryModal: React.FC<CalculationModalProps> = ({
+  type,
+  historyData,
+  modalOpen,
+  onCancel
+}) => {
   const [messageApi, contextHolder] = message.useMessage()
-  const restFormRef = useRef<ProFormInstance>()
+  const actionRef = useRef<ActionType>()
 
   const info = (type: 'info' | 'success' | 'error' | 'warning' | 'loading', msg: string) => {
     messageApi.open({
@@ -54,12 +60,76 @@ const HistoryModal: React.FC<CalculationModalProps> = ({ title, modalOpen, onCan
     {
       title: 'CO',
       dataIndex: 'co'
+    },
+    {
+      title: '操作',
+      valueType: 'option',
+      render: (_, record) => {
+        return (
+          <>
+            <Button
+              type="link"
+              onClick={async () => {
+                try {
+                  if (type) {
+                    const res = await window.electronAPI.simulationPredictionSaveAPI.exportId(
+                      record.id
+                    )
+                  } else {
+                    const res = await window.electronAPI.recAuxMaterialsSaveAPI.exportId(record.id)
+                  }
+                  // console.log(res, 'resresres')
+
+                  info('success', '导出成功！')
+                  // if (actionRef.current) {
+                  //   actionRef.current.reload()
+                  // }
+                  return true
+                } catch {
+                  info('error', '导出失败，请重试！')
+                  return false
+                }
+              }}
+            >
+              导出
+            </Button>
+            <Popconfirm
+              key="remove"
+              title="确认要删除吗？"
+              okText="是"
+              cancelText="否"
+              onConfirm={async () => {
+                try {
+                  if (type) {
+                    await window.electronAPI.simulationPredictionSaveAPI.delete(record.id)
+                  } else {
+                    await window.electronAPI.recAuxMaterialsSaveAPI.delete(record.id)
+                  }
+                  info('success', '删除成功！')
+                  if (actionRef.current) {
+                    actionRef.current.reload()
+                  }
+                  return true
+                } catch {
+                  info('error', '删除失败，请重试！')
+                  return false
+                }
+              }}
+            >
+              <Button type="link" danger>
+                删除
+              </Button>
+            </Popconfirm>
+          </>
+        )
+      }
     }
   ]
 
-  const expandedRowRender = () => {
+  const expandedRowRender = (record) => {
     return (
       <ProTable
+        rowKey="key"
         columns={[
           {
             title: '滤嘴通风率',
@@ -99,8 +169,8 @@ const HistoryModal: React.FC<CalculationModalProps> = ({ title, modalOpen, onCan
         headerTitle="预测数据表格"
         search={false}
         options={false}
-        dataSource={data}
-        pagination={false}
+        dataSource={record.profile}
+        // pagination={false}
       />
     )
   }
@@ -108,32 +178,31 @@ const HistoryModal: React.FC<CalculationModalProps> = ({ title, modalOpen, onCan
   return (
     <>
       {contextHolder}
-      <ModalForm
-        title={`${title} -- 保存此牌号数据`}
-        formRef={restFormRef}
+      <Modal
+        width="80%"
+        title={type ? '历史数据信息' : '历史数据信息'}
         open={modalOpen}
-        onFinish={async (values) => {
-          console.log(values, 'values')
-          onCancel()
-          info('success', '保存成功！')
-        }}
-        modalProps={{
-          destroyOnClose: true,
-          onCancel: () => onCancel()
-        }}
+        footer={
+          <Button type="primary" onClick={onCancel}>
+            关闭
+          </Button>
+        }
+        onCancel={onCancel}
       >
-        <ProTable<TableListItem>
+        <ProTable
           headerTitle="基准数据表格"
           columns={columns}
-          request={(params, sorter, filter) => {
-            // 表单搜索项会从 params 传入，传递给后端接口。
-            console.log(params, sorter, filter)
-            return Promise.resolve({
-              data: tableListDataSource,
-              success: true
-            })
+          actionRef={actionRef}
+          dataSource={historyData}
+          request={async (params, sorter, filter) => {
+            // console.log(params, sorter, filter)
+            if (type) {
+              return await window.electronAPI.simulationPredictionSaveAPI.query()
+            } else {
+              return await window.electronAPI.recAuxMaterialsSaveAPI.query()
+            }
           }}
-          rowKey="key"
+          rowKey="id"
           pagination={{
             showQuickJumper: true
           }}
@@ -142,7 +211,7 @@ const HistoryModal: React.FC<CalculationModalProps> = ({ title, modalOpen, onCan
           dateFormatter="string"
           options={false}
         />
-      </ModalForm>
+      </Modal>
     </>
   )
 }

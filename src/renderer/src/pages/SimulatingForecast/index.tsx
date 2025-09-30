@@ -20,6 +20,7 @@ import {
 } from '@ant-design/icons'
 import PredictionTable from './PredictionTable'
 import BrandNameModal from './BrandNameModal'
+import HistoryModal from '../RecommendParameter/HistoryModal'
 
 const { Title, Text } = Typography
 
@@ -75,6 +76,8 @@ const SimulatingForecast: React.FC = () => {
   const [brandNameSmokeData, setBrandNameSmokeData] = useState<object>({})
   const [typeData, setTypeData] = useState<{ label: string; value: string }[]>([])
   const [selectType, setSelectType] = useState<string>('')
+  const [historyModalOpen, setHistoryModalOpen] = useState<boolean>(false)
+  const [historyData, setHistoryData] = useState<[]>([])
 
   const handleBrandName = async (): Promise<void> => {
     try {
@@ -462,16 +465,27 @@ const SimulatingForecast: React.FC = () => {
               size="large"
               type="dashed"
               onClick={async () => {
-                const formValues = await form.validateFields()
-                const dataSource = actionRef.current.getData()
-                console.log(dataSource, 'dataSource')
+                try {
+                  const formValues = await form.validateFields()
+                  const dataSource = actionRef.current.getData()
+                  // console.log(dataSource, 'dataSource')
 
-                const res = await window.electronAPI.simulationPredictionSaveAPI.create({
-                  specimenName: selectType,
-                  standardParams: formValues,
-                  predictionParams: dataSource
-                })
-                console.log(res, 'resresres')
+                  const res = await window.electronAPI.simulationPredictionSaveAPI.create({
+                    specimenName: selectType,
+                    standardParams: formValues,
+                    predictionParams: dataSource
+                  })
+                  // console.log(res, 'resresres')
+                  notificationApi.success({
+                    message: '保存成功！'
+                  })
+                } catch (error) {
+                  console.log(error, 'error111')
+
+                  notificationApi.error({
+                    message: '网络错误！'
+                  })
+                }
               }}
               style={{
                 background: '#92d96f',
@@ -485,7 +499,29 @@ const SimulatingForecast: React.FC = () => {
             <Button
               size="large"
               type="dashed"
-              onClick={handleReset}
+              onClick={async () => {
+                try {
+                  const formValues = await form.validateFields()
+                  const dataSource = actionRef.current.getData()
+                  // console.log(dataSource, 'dataSource')
+
+                  const res = await window.electronAPI.simulation.exportResult({
+                    specimenName: selectType,
+                    standardParams: formValues,
+                    predictionParams: dataSource
+                  })
+                  console.log(res, 'resresres111')
+                  notificationApi.success({
+                    message: '保存成功！'
+                  })
+                } catch (error) {
+                  console.log(error, 'error222')
+
+                  notificationApi.error({
+                    message: '网络错误！'
+                  })
+                }
+              }}
               style={{
                 background: '#a689cf',
                 borderColor: '#a689cf',
@@ -498,7 +534,11 @@ const SimulatingForecast: React.FC = () => {
             <Button
               size="large"
               type="dashed"
-              onClick={handleReset}
+              onClick={async () => {
+                // const res = await window.electronAPI.simulationPredictionSaveAPI.query()
+                // setHistoryData(res.data)
+                setHistoryModalOpen(true)
+              }}
               style={{
                 background: '#ffdd8e',
                 borderColor: '#ffdd8e',
@@ -564,6 +604,14 @@ const SimulatingForecast: React.FC = () => {
           setBrandNameSmokeOpen(false)
           handleBrandNameSmoke()
         }}
+      />
+      <HistoryModal
+        modalOpen={historyModalOpen}
+        onCancel={() => {
+          setHistoryModalOpen(false)
+        }}
+        type={1}
+        historyData={historyData}
       />
     </div>
   )
