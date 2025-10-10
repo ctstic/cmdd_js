@@ -81,7 +81,6 @@ const SimulatingForecast: React.FC = () => {
   const [selectType, setSelectType] = useState<string>(undefined)
 
   const [historyModalOpen, setHistoryModalOpen] = useState<boolean>(false)
-  const [historyData, setHistoryData] = useState<[]>([])
 
   const handleBrandName = async (): Promise<void> => {
     try {
@@ -582,8 +581,6 @@ const SimulatingForecast: React.FC = () => {
               size="large"
               type="dashed"
               onClick={async () => {
-                const res = await window.electronAPI.simulationPredictionSaveAPI.query()
-                setHistoryData(res.data)
                 setHistoryModalOpen(true)
               }}
               style={{
@@ -656,7 +653,6 @@ const SimulatingForecast: React.FC = () => {
           setHistoryModalOpen(false)
         }}
         type={1}
-        historyData={historyData}
       />
     </div>
   )

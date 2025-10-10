@@ -1,4 +1,4 @@
-import React, { useRef } from 'react'
+import React, { useEffect, useRef } from 'react'
 import { Button, message, Modal, Popconfirm } from 'antd'
 import { ProTable } from '@ant-design/pro-components'
 import type { ActionType, ProColumns } from '@ant-design/pro-components'
@@ -10,12 +10,7 @@ export type CalculationModalProps = {
   historyData: any
 }
 
-const HistoryModal: React.FC<CalculationModalProps> = ({
-  type,
-  historyData,
-  modalOpen,
-  onCancel
-}) => {
+const HistoryModal: React.FC<CalculationModalProps> = ({ type, modalOpen, onCancel }) => {
   const [messageApi, contextHolder] = message.useMessage()
   const actionRef = useRef<ActionType>()
 
@@ -30,7 +25,7 @@ const HistoryModal: React.FC<CalculationModalProps> = ({
     {
       title: '滤嘴通风率',
       dataIndex: 'filterVentilation',
-      render: (text) => <span>{(Number(text) * 100).toFixed(2)}%</span>
+      render: (text) => <span>{Number(text).toFixed(2)}%</span>
     },
     {
       title: '滤棒压降 (Pa)',
@@ -47,7 +42,7 @@ const HistoryModal: React.FC<CalculationModalProps> = ({
     {
       title: '柠檬酸根 (含量)',
       dataIndex: 'citrate',
-      render: (text) => <span>{(Number(text) * 100).toFixed(2)}%</span>
+      render: (text) => <span>{Number(text).toFixed(2)}%</span>
     },
     {
       title: '焦油',
@@ -179,7 +174,7 @@ const HistoryModal: React.FC<CalculationModalProps> = ({
       {contextHolder}
       <Modal
         width="80%"
-        title={type ? '历史数据信息' : '历史数据信息'}
+        title={type ? '仿真预测历史数据信息' : '推荐辅材参数历史数据信息'}
         open={modalOpen}
         footer={
           <Button type="primary" onClick={onCancel}>
@@ -192,7 +187,11 @@ const HistoryModal: React.FC<CalculationModalProps> = ({
           // headerTitle="基准数据表格"
           columns={columns}
           actionRef={actionRef}
-          dataSource={historyData}
+          request={async () => {
+            return type
+              ? await window.electronAPI.simulationPredictionSaveAPI.query()
+              : await window.electronAPI.recAuxMaterialsSaveAPI.query()
+          }}
           rowKey="id"
           pagination={{
             showQuickJumper: true

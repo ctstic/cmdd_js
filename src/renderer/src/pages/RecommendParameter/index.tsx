@@ -186,7 +186,6 @@ const RecommendParameter: React.FC = () => {
   const [messageApi, contextHolder] = message.useMessage()
   const { styles } = useStyle()
   const [historyModalOpen, setHistoryModalOpen] = useState<boolean>(false)
-  const [historyData, setHistoryData] = useState<[]>([])
   const [brandNameOpen, setBrandNameOpen] = useState<boolean>(false)
   const [brandNameSmokeOpen, setBrandNameSmokeOpen] = useState<boolean>(false)
   const [brandNameOption, setBrandNameOption] = useState<{ label: string; value: string }[]>([])
@@ -850,8 +849,6 @@ const RecommendParameter: React.FC = () => {
               size="large"
               type="dashed"
               onClick={async () => {
-                const res = await window.electronAPI.recAuxMaterialsSaveAPI.query()
-                setHistoryData(res.data)
                 setHistoryModalOpen(true)
               }}
               style={{
@@ -872,7 +869,6 @@ const RecommendParameter: React.FC = () => {
           setHistoryModalOpen(false)
         }}
         type={0}
-        historyData={historyData}
       />
       <BrandNameModal
         title="基准卷烟辅材参数"
