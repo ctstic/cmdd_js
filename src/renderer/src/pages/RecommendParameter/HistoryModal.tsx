@@ -71,21 +71,20 @@ const HistoryModal: React.FC<CalculationModalProps> = ({
               type="link"
               onClick={async () => {
                 try {
+                  // 根据`type`决定调用哪个API进行导出
+                  console.log('🚀 ~ type:', type)
                   if (type) {
-                    const res = await window.electronAPI.simulationPredictionSaveAPI.exportId(
-                      record.id
-                    )
+                    await window.electronAPI.simulationPredictionSaveAPI.exportId(record.id)
                   } else {
-                    const res = await window.electronAPI.recAuxMaterialsSaveAPI.exportId(record.id)
+                    await window.electronAPI.recAuxMaterialsSaveAPI.exportId(record.id)
                   }
-                  // console.log(res, 'resresres')
 
+                  // 导出成功后弹出提示
                   info('success', '导出成功！')
-                  // if (actionRef.current) {
-                  //   actionRef.current.reload()
-                  // }
                   return true
-                } catch {
+                } catch (error) {
+                  // 打印错误信息，方便调试
+                  console.error('导出失败，错误详情：', error)
                   info('error', '导出失败，请重试！')
                   return false
                 }
@@ -134,7 +133,7 @@ const HistoryModal: React.FC<CalculationModalProps> = ({
           {
             title: '滤嘴通风率',
             dataIndex: 'filterVentilation',
-            render: (text) => <span>{(Number(text) * 100).toFixed(2)}%</span>
+            render: (text) => <span>{Number(text).toFixed(2)}%</span>
           },
           {
             title: '滤棒压降 (Pa)',
@@ -151,7 +150,7 @@ const HistoryModal: React.FC<CalculationModalProps> = ({
           {
             title: '柠檬酸根 (含量)',
             dataIndex: 'citrate',
-            render: (text) => <span>{(Number(text) * 100).toFixed(2)}%</span>
+            render: (text) => <span>{Number(text).toFixed(2)}%</span>
           },
           {
             title: '焦油',

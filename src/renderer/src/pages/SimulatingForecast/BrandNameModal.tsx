@@ -7,19 +7,17 @@ export type CalculationModalProps = {
   modalOpen: boolean
   onCancel: () => void
   title: string
- onSubmit: (values:string) => void
+  onSubmit: (values: string) => void
 }
 
 const BrandNameModal: React.FC<CalculationModalProps> = ({
   title,
   modalOpen,
   onSubmit,
-  onCancel,
-  // type
+  onCancel
 }) => {
   const [messageApi, contextHolder] = message.useMessage()
   const restFormRef = useRef<ProFormInstance>()
-  // console.log(form.getFieldsValue(), 'paramsparamsparamsparams')
 
   const info = (type: 'info' | 'success' | 'error' | 'warning' | 'loading', msg: string) => {
     messageApi.open({
@@ -36,6 +34,7 @@ const BrandNameModal: React.FC<CalculationModalProps> = ({
         formRef={restFormRef}
         open={modalOpen}
         onFinish={async (values) => {
+          console.log('🚀 ~ async ~ values:', values)
           onSubmit(values.brandName)
         }}
         modalProps={{
@@ -43,7 +42,13 @@ const BrandNameModal: React.FC<CalculationModalProps> = ({
           onCancel: () => onCancel()
         }}
       >
-        <ProFormText width="md" name="brandName" label="牌号名称" placeholder="请输入牌号名称" />
+        <ProFormText
+          width="md"
+          name="brandName"
+          label="牌号名称"
+          placeholder="请输入牌号名称"
+          rules={[{ required: true, message: '牌号名称是必填项' }]}
+        />
       </ModalForm>
     </>
   )

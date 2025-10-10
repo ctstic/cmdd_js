@@ -78,7 +78,7 @@ const SimulatingForecast: React.FC = () => {
   const [brandNameSmokeData, setBrandNameSmokeData] = useState<object>({})
 
   const [typeData, setTypeData] = useState<{ label: string; value: string }[]>([])
-  const [selectType, setSelectType] = useState<string>('')
+  const [selectType, setSelectType] = useState<string>(undefined)
 
   const [historyModalOpen, setHistoryModalOpen] = useState<boolean>(false)
   const [historyData, setHistoryData] = useState<[]>([])
@@ -129,13 +129,17 @@ const SimulatingForecast: React.FC = () => {
   }, [])
 
   // 可复用的卡片组件
-  const StyledCard = ({ title, icon, children, color = '#1890ff' }) => {
+  const StyledCard = ({ title, icon, children, color = '#1890ff', rightAction }) => {
     const cardHeaderStyle = {
+      display: 'flex',
+      justifyContent: 'space-between', // Distribute space between title, icon, and action
+      alignItems: 'center',
       background: `linear-gradient(90deg, ${color}20 0%, #ffffff 100%)`,
       padding: '16px 24px',
       borderRadius: '12px 12px 0 0',
       borderBottom: `2px solid ${color}40`
     }
+
     return (
       <Card
         style={{
@@ -148,12 +152,17 @@ const SimulatingForecast: React.FC = () => {
         bodyStyle={{ padding: 0 }}
       >
         <div style={cardHeaderStyle}>
-          {React.cloneElement(icon, {
-            style: { marginRight: 12, color: color, fontSize: '18px' }
-          })}
-          <Text strong style={{ fontSize: '18px', color: color }}>
-            {title}
-          </Text>
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            {React.cloneElement(icon, {
+              style: { marginRight: 12, color: color, fontSize: '18px' }
+            })}
+            <Text strong style={{ fontSize: '18px', color: color }}>
+              {title}
+            </Text>
+          </div>
+          {rightAction && (
+            <div style={{ display: 'flex', alignItems: 'center' }}>{rightAction}</div>
+          )}
         </div>
         <div style={{ padding: '24px' }}>{children}</div>
       </Card>
@@ -182,13 +191,13 @@ const SimulatingForecast: React.FC = () => {
         }))
         const jsonString = JSON.stringify(inputParams)
         const isNaN = jsonString.includes('null')
-        if (inputParams.length === 0 || isNaN) {
-          notificationApi.error({
-            message: '请正确填写预测结果数据表格'
-          })
-        } else if (selectType === '') {
+        if (selectType === undefined) {
           notificationApi.error({
             message: '请选择类型！'
+          })
+        } else if (inputParams.length === 0 || isNaN) {
+          notificationApi.error({
+            message: '请正确填写预测结果数据表格'
           })
         } else {
           // console.log('🚀 ~ handleSubmit ~ inputParams:', inputParams)
@@ -284,6 +293,12 @@ const SimulatingForecast: React.FC = () => {
     })
   }
 
+  // 保存牌号是否存在对比
+  const checkFormValues = (fields: FormFieldConfig[], formValues: { [key: string]: any }) => {
+    // 遍历 fields 数组，检查 formValues 中是否存在对应的键，并且值不是 undefined, null 或空字符串
+    return fields.every((field) => formValues[field.name] != null && formValues[field.name] !== '')
+  }
+
   return (
     <div style={{ minHeight: 'calc(100vh - 145px)' }}>
       {contextHolder}
@@ -315,8 +330,9 @@ const SimulatingForecast: React.FC = () => {
           基于多维数据的智能化预测分析
         </Text>
       </Card>
+
       <Flex align="center" justify="start" gap={2}>
-        <span style={{ fontSize: '14px', color: '#333', fontWeight: 500 }}>请选择类型：</span>
+        <span style={{ fontSize: '14px', color: '#333', fontWeight: 500 }}>请选择模型类型：</span>
         <Select
           style={{
             marginBottom: '10px',
@@ -325,7 +341,7 @@ const SimulatingForecast: React.FC = () => {
             boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
           }}
           showSearch
-          placeholder="请选择类型"
+          placeholder="请选择模型"
           optionFilterProp="label"
           options={typeData}
           allowClear
@@ -340,7 +356,26 @@ const SimulatingForecast: React.FC = () => {
       <Form form={form} layout="vertical">
         <Flex gap={20}>
           {/* 辅材参数 */}
-          <StyledCard title="基准卷烟辅材参数" icon={<ExperimentOutlined />}>
+          <StyledCard
+            title="基准卷烟辅材参数"
+            icon={<ExperimentOutlined />}
+            rightAction={
+              <Button
+                type="primary"
+                onClick={() => {
+                  if (checkFormValues(baseMaterialFields, form.getFieldsValue())) {
+                    setBrandNameOpen(true)
+                  } else {
+                    notificationApi.error({
+                      message: '请输入完整的基准卷烟辅材参数'
+                    })
+                  }
+                }}
+              >
+                保存当前参数
+              </Button>
+            }
+          >
             <Row gutter={[16, 16]}>
               {baseMaterialFields.map((field) => (
                 <Col span={8} key={field.name}>
@@ -360,33 +395,43 @@ const SimulatingForecast: React.FC = () => {
                 </Col>
               ))}
               <Col span={8}>
-                <Form.Item name="name" label="牌号名称">
-                  <Flex gap={8} align="flex-end">
-                    <Select
-                      showSearch
-                      placeholder="请选择牌号名称"
-                      optionFilterProp="label"
-                      onChange={onChange}
-                      // onSearch={onSearch}
-                      options={brandNameOption}
-                      allowClear
-                    />
-                    <Button
-                      type="primary"
-                      onClick={() => {
-                        setBrandNameOpen(true)
-                      }}
-                    >
-                      保存
-                    </Button>
-                  </Flex>
+                <Form.Item name="fc-name" label="选择牌号">
+                  <Select
+                    showSearch
+                    placeholder="请选择牌号名称"
+                    optionFilterProp="label"
+                    onChange={onChange}
+                    // onSearch={onSearch}
+                    options={brandNameOption}
+                    allowClear
+                  />
                 </Form.Item>
               </Col>
             </Row>
           </StyledCard>
 
           {/* 主流烟气 */}
-          <StyledCard title="基准卷烟主流烟气" icon={<SafetyCertificateOutlined />} color="#fa8c16">
+          <StyledCard
+            title="基准卷烟主流烟气"
+            icon={<SafetyCertificateOutlined />}
+            color="#fa8c16"
+            rightAction={
+              <Button
+                type="primary"
+                onClick={() => {
+                  if (checkFormValues(harmfulFields, form.getFieldsValue())) {
+                    setBrandNameSmokeOpen(true)
+                  } else {
+                    notificationApi.error({
+                      message: '请输入完整的基准卷烟主流烟气'
+                    })
+                  }
+                }}
+              >
+                保存当前参数
+              </Button>
+            }
+          >
             <Row gutter={[16, 16]}>
               {harmfulFields.map((field) => (
                 <Col span={8} key={field.name}>
@@ -406,25 +451,15 @@ const SimulatingForecast: React.FC = () => {
                 </Col>
               ))}
               <Col span={8}>
-                <Form.Item name="name" label="牌号名称">
-                  <Flex gap={8} align="flex-end">
-                    <Select
-                      showSearch
-                      placeholder="请选择牌号名称"
-                      optionFilterProp="label"
-                      onChange={onChangeSmoke}
-                      options={brandNameSmokeOption}
-                      allowClear
-                    />
-                    <Button
-                      type="primary"
-                      onClick={() => {
-                        setBrandNameSmokeOpen(true)
-                      }}
-                    >
-                      保存
-                    </Button>
-                  </Flex>
+                <Form.Item name="jz-name" label="选择牌号">
+                  <Select
+                    showSearch
+                    placeholder="请选择牌号名称"
+                    optionFilterProp="label"
+                    onChange={onChangeSmoke}
+                    options={brandNameSmokeOption}
+                    allowClear
+                  />
                 </Form.Item>
               </Col>
             </Row>

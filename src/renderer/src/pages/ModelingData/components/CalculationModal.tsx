@@ -132,18 +132,20 @@ const CalculationModal: React.FC<CalculationModalProps> = ({
     {
       title: '操作',
       key: 'option',
+      fixed: 'right',
       render: (_, record) => {
         return (
           <>
             <Popconfirm
               key="remove"
-              title={`确认要删除 ${record.batchNo} 吗?`}
+              title={`确认要删除批次 ${record.batchNo} 吗? 这将会删除所有相同批次的的系数！`}
               okText="是"
               cancelText="否"
               onConfirm={async () => {
                 try {
                   await window.electronAPI.harmful.delete(record.id)
-                  const res = await window.electronAPI.harmful.query('')
+                  const res = await window.electronAPI.harmful.query('', selectedItem)
+                  console.log('🚀 ~ res:', res)
                   info('success', '删除所有相同批次号成功')
                   setModalData(res.data)
                   return true

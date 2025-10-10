@@ -150,7 +150,7 @@ const PredictionTable: React.FC<PredictionTableProps> = ({ actionRef }) => {
         <EditableProTable<DataSourceType>
           // expandedRowKeys={expandedRowKeys}
           className={styles.customTable}
-          scroll={{ x: 960, y: 55 * 8 }}
+          scroll={{ x: 960 }}
           bordered
           editableFormRef={editableTableRef}
           columns={columns}

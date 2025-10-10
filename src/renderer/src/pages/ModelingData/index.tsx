@@ -53,7 +53,6 @@ const ModelingData: React.FC = () => {
     })
   }
 
-
   const handleData = async (): Promise<void> => {
     try {
       const typeData = await window.electronAPI.cigarettes.getCigarettesType('')
@@ -74,21 +73,35 @@ const ModelingData: React.FC = () => {
   }, [])
 
   const handleDownload = async () => {
-    // 1) 取出打包资源（Vite 的 import.meta.url 可生成正确路径）
-    const url = new URL('../../assets/软件数据模板.xlsx', import.meta.url).href
-    const res = await fetch(url)
-    if (!res.ok) throw new Error('资源读取失败')
-    const blob = await res.blob()
+    try {
+      // 1) 取出打包资源（Vite 的 import.meta.url 可生成正确路径）
+      const url = new URL('../../assets/软件数据模板.xlsx', import.meta.url).href
+      const res = await fetch(url)
+      if (!res.ok) throw new Error('资源读取失败')
+      const blob = await res.blob()
 
-    // 2) 生成临时下载链接并触发保存（落到系统默认“下载”目录）
-    const objectUrl = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = objectUrl
-    a.download = '模板文件.xlsx' // 你想要的文件名
-    document.body.appendChild(a)
-    a.click()
-    a.remove()
-    URL.revokeObjectURL(objectUrl)
+      // 2) 生成临时下载链接并触发保存（落到系统默认“下载”目录）
+      const objectUrl = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = objectUrl
+      a.download = '模板文件.xlsx' // 你想要的文件名
+      document.body.appendChild(a)
+
+      // 等待用户点击“保存”后再触发提示
+      a.click()
+
+      // 移除临时链接和撤销对象URL
+      a.remove()
+      URL.revokeObjectURL(objectUrl)
+
+      // 设置延时，等待下载动作完成后再显示成功提示
+      setTimeout(() => {
+        info('success', '模板下载成功')
+      }, 500) // 延时 500ms 以确保文件下载操作已经被触发
+    } catch (error) {
+      // 捕获任何错误并显示错误提示
+      info('error', error.message || '模板下载失败')
+    }
   }
 
   const columns: TableProps<DataType>['columns'] = [
@@ -298,6 +311,8 @@ const ModelingData: React.FC = () => {
                   cursor: 'pointer'
                 }}
                 onClick={async () => {
+                  console.log(item)
+
                   setSelectedItem(item)
                   const result = await window.electronAPI.cigarettes.query('', item)
                   setTableData(result.data || [])
@@ -317,7 +332,7 @@ const ModelingData: React.FC = () => {
         </Card>
 
         <Card
-          title="表格标题"
+          title={selectedItem}
           bordered={false}
           style={{
             flex: 1,
@@ -337,7 +352,7 @@ const ModelingData: React.FC = () => {
         </Card>
       </Flex>
       <ModalForm
-        title={'上传科研建模数据'}
+        title={'导入科研建模数据'}
         formRef={restFormRef}
         open={uploadModal}
         onFinish={async (values) => {
@@ -353,13 +368,20 @@ const ModelingData: React.FC = () => {
 
           const arrayBuffer = await values.upload[0].originFileObj.arrayBuffer()
           const uint8Array = new Uint8Array(arrayBuffer)
+
+          console.log({
+            specimenName: values.specimenName,
+            name: values.upload[0].originFileObj,
+            buffer: uint8Array
+          })
+
           const result = await window.electronAPI.cigarettes.importFromWebFile({
             specimenName: values.specimenName,
             name: values.upload[0].originFileObj,
             buffer: uint8Array
           })
 
-          if (result.data.errors?.length === 0) {          
+          if (result.data.errors?.length === 0) {
             info('success', `导入成功`)
             handleData()
             setUploadModal(false)
@@ -378,22 +400,22 @@ const ModelingData: React.FC = () => {
           rules={[
             {
               required: true,
-              message: '请上传文件！'
+              message: '请输入类别名称！'
             }
           ]}
           name="specimenName"
           label="类别名称"
-          placeholder="请输入牌号名称"
+          placeholder="请输入类别名称"
         />
         <ProFormUploadButton
           accept=".xlsx,.xls"
           name="upload"
-          label="上传xlsx数据"
+          label="导入科研建模数据"
           max={1}
           rules={[
             {
               required: true,
-              message: '请上传文件！'
+              message: '请选择科研建模数据文件！'
             }
           ]}
           fieldProps={{
