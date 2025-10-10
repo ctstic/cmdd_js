@@ -367,7 +367,7 @@ const SimulatingForecast: React.FC = () => {
                     setBrandNameOpen(true)
                   } else {
                     notificationApi.error({
-                      message: '请输入完整的基准卷烟辅材参数'
+                      message: '请输入完整的基准卷烟辅材参数！'
                     })
                   }
                 }}
@@ -423,7 +423,7 @@ const SimulatingForecast: React.FC = () => {
                     setBrandNameSmokeOpen(true)
                   } else {
                     notificationApi.error({
-                      message: '请输入完整的基准卷烟主流烟气'
+                      message: '请输入完整的基准卷烟主流烟气！'
                     })
                   }
                 }}

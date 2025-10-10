@@ -165,7 +165,7 @@ const HistoryModal: React.FC<CalculationModalProps> = ({
             dataIndex: 'co'
           }
         ]}
-        headerTitle="预测数据表格"
+        headerTitle="预测推荐辅材参数表格"
         search={false}
         options={false}
         dataSource={record.profile}

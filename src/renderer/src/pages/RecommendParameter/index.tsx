@@ -139,41 +139,38 @@ const RangeSliders = ({ fields, form }) => {
 }
 
 // 可复用的卡片组件
-const StyledCard = ({ title, icon, children, color = '#1890ff', style = {}, mark = '' }) => {
+const StyledCard = ({ title, icon, children, color = '#1890ff', rightAction }) => {
   const cardHeaderStyle = {
+    display: 'flex',
+    justifyContent: 'space-between', // Distribute space between title, icon, and action
+    alignItems: 'center',
     background: `linear-gradient(90deg, ${color}20 0%, #ffffff 100%)`,
-    padding: '10px 24px',
+    padding: '16px 24px',
     borderRadius: '12px 12px 0 0',
     borderBottom: `2px solid ${color}40`
   }
-  const markStyle = {
-    background: `${color}15`,
-    color: 'red',
-    fontSize: '12px',
-    fontWeight: '600',
-    padding: '4px 8px',
-    borderRadius: '4px',
-    marginLeft: '8px'
-  }
+
   return (
     <Card
       style={{
-        marginBottom: 15,
+        marginBottom: 10,
         borderRadius: 16,
         boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
         border: `1px solid ${color}30`,
-        ...style
+        flex: 1
       }}
       bodyStyle={{ padding: 0 }}
     >
       <div style={cardHeaderStyle}>
-        {React.cloneElement(icon, {
-          style: { marginRight: 12, color: color, fontSize: '18px' }
-        })}
-        <Text strong style={{ fontSize: '18px', color: color }}>
-          {title}
-        </Text>
-        {mark && <span style={markStyle}>{mark}</span>}
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          {React.cloneElement(icon, {
+            style: { marginRight: 12, color: color, fontSize: '18px' }
+          })}
+          <Text strong style={{ fontSize: '18px', color: color }}>
+            {title}
+          </Text>
+        </div>
+        {rightAction && <div style={{ display: 'flex', alignItems: 'center' }}>{rightAction}</div>}
       </div>
       <div style={{ padding: '24px' }}>{children}</div>
     </Card>
@@ -199,7 +196,7 @@ const RecommendParameter: React.FC = () => {
   const [brandNameData, setBrandNameData] = useState<any>([])
   const [brandNameSmokeData, setBrandNameSmokeData] = useState<object>({})
   const [typeData, setTypeData] = useState<{ label: string; value: string }[]>([])
-  const [selectType, setSelectType] = useState<string>('')
+  const [selectType, setSelectType] = useState<string>(undefined)
 
   // 第一  二步输入框
   const FormFieldGroup = ({
@@ -219,7 +216,7 @@ const RecommendParameter: React.FC = () => {
               <Form.Item
                 style={{ marginBottom: field.name === 'size' ? 10 : 0 }}
                 initialValue={defaultValue === undefined ? '' : defaultValue}
-                required={true}
+                rules={[{ required: true, message: `请输入${field.label}` }]}
                 name={field.name}
                 label={
                   <Text strong style={{ color: '#262626', marginBottom: 8, display: 'block' }}>
@@ -242,7 +239,7 @@ const RecommendParameter: React.FC = () => {
           {brandName && (
             <Col xs={24} sm={24} md={cols}>
               <Form.Item
-                name=""
+                name={type == 1 ? 'fc-name' : 'jz-name'}
                 label={
                   <Text strong style={{ color: '#262626', marginBottom: 8, display: 'block' }}>
                     牌号名称
@@ -282,18 +279,6 @@ const RecommendParameter: React.FC = () => {
                     // onSearch={onSearch}
                     options={type == 1 ? brandNameOption : brandNameSmokeOption}
                   />
-                  <Button
-                    type="primary"
-                    onClick={() => {
-                      if (type == 1) {
-                        setBrandNameOpen(true)
-                      } else {
-                        setBrandNameSmokeOpen(true)
-                      }
-                    }}
-                  >
-                    保存
-                  </Button>
                 </Flex>
               </Form.Item>
             </Col>
@@ -421,32 +406,26 @@ const RecommendParameter: React.FC = () => {
 
   const handleSubmit = async () => {
     // 获取每一步表单的所有值
-    const baseValues = baseForm.getFieldsValue(true)
-    const targetValues = targetForm.getFieldsValue(true)
-    const weightValues = weightForm.getFieldsValue(true)
-    const rangeValues = rangeForm.getFieldsValue(true)
+    const baseValues = baseForm.validateFields()
+    const targetValues = targetForm.validateFields()
+    const weightValues = weightForm.validateFields()
+    const rangeValues = rangeForm.validateFields()
 
-    // // 打印所有表单的值
-    // console.log('基准卷烟辅材参数:', baseValues)
-    // console.log('目标主流烟气:', targetValues)
-    // console.log('成分权重设置:', weightValues)
-    // console.log('辅材参数个性化设计范围:', rangeValues)
+    // 打印所有表单的值
+    console.log('基准卷烟辅材参数:', baseValues)
+    console.log('目标主流烟气:', targetValues)
+    console.log('成分权重设置:', weightValues)
+    console.log('辅材参数个性化设计范围:', rangeValues)
 
-    if (Object.keys(baseValues).length !== 9) {
-      info('warning', '请正确输入基准参数！')
-    } else if (Object.keys(targetValues).length !== 4) {
-      info('warning', '请正确输入目标主流烟气！')
-    } else if (Object.keys(weightValues).length !== 4) {
-      info('warning', '请正确输入成分权重设置！')
-    } else if (
+    if (
       weightForm.getFieldValue('coWeight') +
         weightForm.getFieldValue('nicotineWeight') +
         weightForm.getFieldValue('tarWeight') >
       1
     ) {
       info('warning', '主流烟气权重之和不大于1!')
-    } else if (selectType === '') {
-      info('warning', '请选择类型！')
+    } else if (selectType === undefined) {
+      info('warning', '请选择模型类型！')
     } else {
       const res = await window.electronAPI.rec.auxMaterials({
         count: rangeValues.size,
@@ -570,6 +549,12 @@ const RecommendParameter: React.FC = () => {
     }
   ]
 
+  // 保存牌号是否存在对比
+  const checkFormValues = (fields: FormFieldConfig[], formValues: { [key: string]: any }) => {
+    // 遍历 fields 数组，检查 formValues 中是否存在对应的键，并且值不是 undefined, null 或空字符串
+    return fields.every((field) => formValues[field.name] != null && formValues[field.name] !== '')
+  }
+
   return (
     <div style={{ minHeight: 'calc(100vh - 145px)' }}>
       {contextHolder}
@@ -601,7 +586,7 @@ const RecommendParameter: React.FC = () => {
         </Text>
       </Card>
       <Flex align="center" justify="start" gap={2}>
-        <span style={{ fontSize: '14px', color: '#333', fontWeight: 500 }}>请选择类型：</span>
+        <span style={{ fontSize: '14px', color: '#333', fontWeight: 500 }}>请选择模型类型：</span>
         <Select
           style={{
             marginBottom: '10px',
@@ -610,7 +595,7 @@ const RecommendParameter: React.FC = () => {
             boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
           }}
           showSearch
-          placeholder="请选择类型"
+          placeholder="请选择模型类型"
           optionFilterProp="label"
           options={typeData}
           allowClear
@@ -623,7 +608,24 @@ const RecommendParameter: React.FC = () => {
       </Flex>
       <Row gutter={[24, 16]}>
         <Col xs={16} md={8}>
-          <StyledCard title="基准卷烟主流烟气" icon={<SafetyCertificateOutlined />}>
+          <StyledCard
+            title="基准卷烟主流烟气"
+            icon={<SafetyCertificateOutlined />}
+            rightAction={
+              <Button
+                type="primary"
+                onClick={() => {
+                  if (checkFormValues(harmfulFields, baseForm.getFieldsValue())) {
+                    setBrandNameSmokeOpen(true)
+                  } else {
+                    message.error('请输入完整的基准卷烟主流烟气！')
+                  }
+                }}
+              >
+                保存当前参数
+              </Button>
+            }
+          >
             <FormFieldGroup
               fields={harmfulFields}
               form={baseForm}
@@ -660,7 +662,24 @@ const RecommendParameter: React.FC = () => {
           </StyledCard>
         </Col>
         <Col xs={32} md={16}>
-          <StyledCard title="基准卷烟辅材参数" icon={<ExperimentOutlined />}>
+          <StyledCard
+            title="基准卷烟辅材参数"
+            icon={<ExperimentOutlined />}
+            rightAction={
+              <Button
+                type="primary"
+                onClick={() => {
+                  if (checkFormValues(baseMaterialFields, baseForm.getFieldsValue())) {
+                    setBrandNameOpen(true)
+                  } else {
+                    message.error('请输入完整的基准卷烟辅材参数！')
+                  }
+                }}
+              >
+                保存当前参数
+              </Button>
+            }
+          >
             <FormFieldGroup
               fields={baseMaterialFields}
               form={baseForm}
@@ -760,7 +779,7 @@ const RecommendParameter: React.FC = () => {
               onClick={async () => {
                 try {
                   if (!tableData.length) {
-                    info('warning', '请先进行计算！')
+                    info('warning', '请先进行生成推荐数据！')
                     return
                   }
                   const baseValues = baseForm.getFieldsValue(true)
@@ -797,7 +816,7 @@ const RecommendParameter: React.FC = () => {
               onClick={async () => {
                 try {
                   if (!tableData.length) {
-                    info('warning', '请先进行计算！')
+                    info('warning', '请先进行生成推荐数据！')
                     return
                   }
                   const baseValues = baseForm.getFieldsValue(true)
