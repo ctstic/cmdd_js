@@ -159,7 +159,7 @@ const ModelingData: React.FC = () => {
       }
     },
     {
-      title: '滤嘴通风率',
+      title: '滤嘴通风率 (%)',
       dataIndex: 'filterVentilation',
       render: (text) => <span>{(Number(text) * 100).toFixed(2)}%</span>
     },
@@ -176,7 +176,7 @@ const ModelingData: React.FC = () => {
       dataIndex: 'quantitative'
     },
     {
-      title: '柠檬酸根 (含量)',
+      title: '柠檬酸根(含量) (%)',
       dataIndex: 'citrate',
       render: (text) => <span>{(Number(text) * 100).toFixed(2)}%</span>
     },
@@ -213,6 +213,7 @@ const ModelingData: React.FC = () => {
                   if (res.success) {
                     info('success', '删除成功')
                     setTableData((prevData) => prevData.filter((item) => item.id !== record.id))
+                    handleData()
                   } else {
                     info('error', '删除失败，请重试')
                   }

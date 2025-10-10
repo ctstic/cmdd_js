@@ -19,7 +19,7 @@ const TestResultModal: React.FC<TestResultModalProps> = ({ data, modalOpen, onCa
     { name: '滤棒压降', value: data.filterPressureDrop, unit: 'Pa' },
     { name: '透气度', value: data.permeability, unit: 'CU' },
     { name: '定量', value: data.quantitative, unit: 'g/m²' },
-    { name: '柠檬酸根', value: data.citrate, unit: '含量' },
+    { name: '柠檬酸根(含量)', value: data.citrate, unit: '%' },
     { name: '钾盐占比', value: data.potassiumRatio, unit: '' }
   ]
 

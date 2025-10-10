@@ -331,7 +331,7 @@ const SimulatingForecast: React.FC = () => {
       </Card>
 
       <Flex align="center" justify="start" gap={2}>
-        <span style={{ fontSize: '14px', color: '#333', fontWeight: 500 }}>请选择模型类型：</span>
+        <span style={{ fontSize: '14px', color: '#333', fontWeight: 500 }}>请选择模型类别：</span>
         <Select
           style={{
             marginBottom: '10px',
@@ -560,7 +560,7 @@ const SimulatingForecast: React.FC = () => {
                     predictionParams: dataSource
                   })
                   notificationApi.success({
-                    message: '保存成功！'
+                    message: '导出成功！'
                   })
                 } catch {
                   notificationApi.error({
@@ -622,8 +622,18 @@ const SimulatingForecast: React.FC = () => {
             quantitative,
             citrate
           })
+          console.log(res, 'resresres')
+          if (!res.success) {
+            notificationApi.error({
+              message: res.error
+            })
+            return false
+          }
           setBrandNameOpen(false)
           handleBrandName()
+          notificationApi.success({
+            message: '保存成功！'
+          })
         }}
       />
       <BrandNameModal
@@ -643,8 +653,17 @@ const SimulatingForecast: React.FC = () => {
             nicotine,
             tar
           })
+          if (!res.success) {
+            notificationApi.error({
+              message: res.error
+            })
+            return false
+          }
           setBrandNameSmokeOpen(false)
           handleBrandNameSmoke()
+          notificationApi.success({
+            message: '保存成功！'
+          })
         }}
       />
       <HistoryModal

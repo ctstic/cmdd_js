@@ -83,6 +83,20 @@ export class HarmfulService {
   }
 
   /**
+   * 删除卷烟类型记录
+   * @param specimenName 样品名称
+   */
+  public async deleteBySpecimenName(specimenName: string): Promise<void> {
+    const result = this.sqlite
+      .prepare('DELETE FROM harmful_constants WHERE specimen_name = ?')
+      .run(specimenName)
+
+    if (result.changes === 0) {
+      throw new Error('卷烟数据不存在')
+    }
+  }
+
+  /**
    * 生成有害成分系数
    * 基于现有卷烟数据，使用多元线性回归算法生成系数
    */

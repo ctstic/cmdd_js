@@ -482,7 +482,7 @@ const RecommendParameter: React.FC = () => {
 
   const columns: TableProps<DataType>['columns'] = [
     {
-      title: '滤嘴通风率',
+      title: '滤嘴通风率 (%)',
       dataIndex: 'filterVentilation',
       render: (text) => <span>{(Number(text) * 100).toFixed(2)}%</span>
     },
@@ -499,7 +499,7 @@ const RecommendParameter: React.FC = () => {
       dataIndex: 'quantitative'
     },
     {
-      title: '柠檬酸根 (含量)',
+      title: '柠檬酸根(含量) (%)',
       dataIndex: 'citrate',
       render: (text) => <span>{(Number(text) * 100).toFixed(2)}%</span>
     },
