@@ -75,7 +75,14 @@ export class CigarettesService {
    * @param id 卷烟数据ID
    */
   public async deleteCigarettes(id: number): Promise<void> {
+    let cigarettes = this.sqlite.prepare('SELECT * FROM cigarettes WHERE id = ?').get(id) as Record<string, unknown>
+    cigarettes = this.mapToCigarettes(cigarettes)
+    const length = this.getCigarettesAll(cigarettes.specimenName as string).length
+    console.log(length)
     const result = this.sqlite.prepare('DELETE FROM cigarettes WHERE id = ?').run(id)
+    if (length == 1) {
+      harmfulService.deleteBySpecimenName(cigarettes.specimenName as string)
+    }
     if (result.changes === 0) {
       throw new Error('卷烟数据不存在')
     }
@@ -91,6 +98,7 @@ export class CigarettesService {
     const result = this.sqlite
       .prepare('DELETE FROM cigarettes WHERE specimen_name = ?')
       .run(specimenName)
+    harmfulService.deleteBySpecimenName(specimenName)
     if (result.changes === 0) {
       throw new Error('卷烟数据不存在')
     }

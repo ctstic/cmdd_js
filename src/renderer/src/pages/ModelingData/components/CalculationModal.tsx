@@ -110,19 +110,19 @@ const CalculationModal: React.FC<CalculationModalProps> = ({
       dataIndex: 'filterVentCoef'
     },
     {
-      title: '滤棒压降 (Pa) 系数',
+      title: '滤棒压降系数',
       dataIndex: 'filterPressureCoef'
     },
     {
-      title: '透气度 (CU) 系数',
+      title: '透气度系数',
       dataIndex: 'permeabilityCoef'
     },
     {
-      title: '定量 (g/m²) 系数',
+      title: '定量系数',
       dataIndex: 'quantitativeCoef'
     },
     {
-      title: '柠檬酸根 (含量) 系数',
+      title: '柠檬酸根(含量)系数',
       dataIndex: 'citrateCoef'
     },
     // {
@@ -138,7 +138,7 @@ const CalculationModal: React.FC<CalculationModalProps> = ({
           <>
             <Popconfirm
               key="remove"
-              title={`确认要删除批次 ${record.batchNo} 吗? 这将会删除所有相同批次的的系数！`}
+              title={`确认要删除批次 ${record.batchNo} 吗? 这将会删除所有相同批次系数！`}
               okText="是"
               cancelText="否"
               onConfirm={async () => {

@@ -23,7 +23,7 @@ const HistoryModal: React.FC<CalculationModalProps> = ({ type, modalOpen, onCanc
 
   const columns: ProColumns<TableListItem>[] = [
     {
-      title: '滤嘴通风率',
+      title: '滤嘴通风率 (%)',
       dataIndex: 'filterVentilation',
       render: (text) => <span>{Number(text).toFixed(2)}%</span>
     },
@@ -40,7 +40,7 @@ const HistoryModal: React.FC<CalculationModalProps> = ({ type, modalOpen, onCanc
       dataIndex: 'quantitative'
     },
     {
-      title: '柠檬酸根 (含量)',
+      title: '柠檬酸根(含量) (%)',
       dataIndex: 'citrate',
       render: (text) => <span>{Number(text).toFixed(2)}%</span>
     },
@@ -143,7 +143,7 @@ const HistoryModal: React.FC<CalculationModalProps> = ({ type, modalOpen, onCanc
             dataIndex: 'quantitative'
           },
           {
-            title: '柠檬酸根 (含量)',
+            title: '柠檬酸根(含量) (%)',
             dataIndex: 'citrate',
             render: (text) => <span>{Number(text).toFixed(2)}%</span>
           },
