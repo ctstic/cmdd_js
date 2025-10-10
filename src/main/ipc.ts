@@ -314,7 +314,8 @@ export function registerIPC(): void {
 
   ipcMain.handle('simulationPredictionSave:exportId', async (_evt, id: number) => {
     try {
-      return { success: true, data: simulationPredictionSaveService.exportId(id) }
+      const result = simulationPredictionSaveService.exportId(id)
+      return { success: true, data: JSON.parse(JSON.stringify(result)) }
     } catch (error) {
       console.error('[ipc] simulationPredictionSave:exportId failed:', error)
       return { success: false, error: (error as Error).message }
@@ -350,7 +351,8 @@ export function registerIPC(): void {
 
   ipcMain.handle('recAuxMaterialsSave:exportId', async (_evt, id: number) => {
     try {
-      return { success: true, data: recAuxMaterialsSaveService.exportId(id) }
+      const result = recAuxMaterialsSaveService.exportId(id)
+      return { success: true, data: JSON.parse(JSON.stringify(result)) }
     } catch (error) {
       console.error('[ipc] recAuxMaterialsSave:exportId failed:', error)
       return { success: false, error: (error as Error).message }

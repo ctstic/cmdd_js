@@ -147,12 +147,6 @@ export class SimulationPredictionService {
     targetPredictions: number[],
     predictionParam: schema.StandardParams
   ): schema.StandardParams {
-    // const processedData: schema.PredictionResults = {
-    //   key: key,
-    //   tar: '',
-    //   nicotine: '',
-    //   co: ''
-    // }
 
     // 格式化数字并计算比例的辅助函数
     const formatNumber = (num: number): number => parseFloat(num.toFixed(2))

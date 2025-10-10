@@ -13,8 +13,20 @@ export class RecAuxMaterialsSaveService {
     const results = this.sqlite
       .prepare('SELECT * FROM rec_aux_materials_save ORDER BY created_at DESC')
       .all() as Record<string, unknown>[]
-
-    return results.map((result) => this.mapToRecAuxMaterialsSave(result))
+    return results.map((result) => {
+      const profile =
+        typeof result.profile === 'string'
+          ? JSON.parse(result.profile)
+          : Array.isArray(result.profile)
+            ? result.profile
+            : []
+      result.profile = profile.map((result2) => ({
+        ...result2,
+        filterVentilation: result2.filterVentilation * 100,
+        citrate: result2.citrate * 100
+      }))
+      return this.mapToRecAuxMaterialsSave(result)
+    })
   }
 
   /**
@@ -136,6 +148,7 @@ export class RecAuxMaterialsSaveService {
         : Array.isArray(dto.profile)
           ? dto.profile
           : []
+
     const sheetData1: any[][] = [
       [
         '模型类别',
@@ -220,11 +233,11 @@ export class RecAuxMaterialsSaveService {
         'CO(mg/支)'
       ],
       ...profile.map((result) => [
-        result.filterVentilation,
+        result.filterVentilation * 100,
         result.filterPressureDrop,
         result.permeability,
         result.quantitative,
-        result.citrate,
+        result.citrate * 100,
         result.tar,
         result.nicotine,
         result.co
@@ -269,12 +282,20 @@ export class RecAuxMaterialsSaveService {
     // 2. 合并单元格（第一行合并）
     // decode_range/encode_cell 不用，这里直接写
     worksheet1['!merges'] = [
+      { s: { r: 0, c: 0 }, e: { r: 1, c: 0 } }, // ✅ 第一列（第1行到第2行）垂直合并
       { s: { r: 0, c: 1 }, e: { r: 0, c: 3 } }, // "基准卷烟主流烟气" 跨 3 列
       { s: { r: 0, c: 4 }, e: { r: 0, c: 6 } }, // "目标主流烟气" 跨 3 列
       { s: { r: 0, c: 7 }, e: { r: 0, c: 9 } }, // "主流烟气权重设置" 跨 3 列
       { s: { r: 0, c: 10 }, e: { r: 0, c: 14 } }, // "基准卷烟辅材参数" 跨 5 列
       { s: { r: 0, c: 15 }, e: { r: 0, c: 20 } } // "辅材参数个性化设计范围" 跨 6 列
     ]
+
+    for (const cell in worksheet1) {
+      if (cell[0] === '!') continue
+      worksheet1[cell].s = {
+        alignment: { horizontal: 'center', vertical: 'center' }
+      }
+    }
 
     // 给表头加样式（加粗+居中+背景色）
     for (let R = 0; R <= 1; ++R) {
@@ -284,7 +305,13 @@ export class RecAuxMaterialsSaveService {
           worksheet1[cellAddress].s = {
             font: { bold: true, color: { rgb: '000000' } },
             alignment: { horizontal: 'center', vertical: 'center' },
-            fill: { fgColor: { rgb: 'DDDDDD' } } // 灰色背景
+            fill: { fgColor: { rgb: 'DDDDDD' } }, // 灰色背景
+            border: {
+              top: { style: 'thin', color: { rgb: '000000' } },
+              bottom: { style: 'thin', color: { rgb: '000000' } },
+              left: { style: 'thin', color: { rgb: '000000' } },
+              right: { style: 'thin', color: { rgb: '000000' } }
+            }
           }
         }
       }
@@ -310,6 +337,13 @@ export class RecAuxMaterialsSaveService {
       { wch: 20 }
     ]
 
+    for (const cell in worksheet2) {
+      if (cell[0] === '!') continue
+      worksheet2[cell].s = {
+        alignment: { horizontal: 'center', vertical: 'center' }
+      }
+    }
+
     // 只给第一行表头加样式（加粗+居中+灰色背景）
     for (let C = 0; C <= 20; ++C) {
       const cellAddress = XLSX.utils.encode_cell({ r: 0, c: C }) // 第一行 R=0
@@ -317,7 +351,13 @@ export class RecAuxMaterialsSaveService {
         worksheet2[cellAddress].s = {
           font: { bold: true, color: { rgb: '000000' } }, // 黑色加粗
           alignment: { horizontal: 'center', vertical: 'center' }, // 居中
-          fill: { fgColor: { rgb: 'DDDDDD' } } // 灰色背景
+          fill: { fgColor: { rgb: 'DDDDDD' } }, // 灰色背景
+          border: {
+            top: { style: 'thin', color: { rgb: '000000' } },
+            bottom: { style: 'thin', color: { rgb: '000000' } },
+            left: { style: 'thin', color: { rgb: '000000' } },
+            right: { style: 'thin', color: { rgb: '000000' } }
+          }
         }
       }
     }

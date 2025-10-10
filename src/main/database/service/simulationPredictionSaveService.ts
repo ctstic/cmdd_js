@@ -118,14 +118,14 @@ export class SimulationPredictionSaveService {
     const dtoOrdered = dto.map((item) => ({
       模型类别: item.模型类别,
       数据类别: item.数据类别,
-      滤嘴通风率: item.滤嘴通风率,
-      滤棒压降: item.滤棒压降,
-      透气度: item.透气度,
-      定量: item.定量,
-      柠檬酸根: item.柠檬酸根,
-      焦油: item.焦油,
-      烟碱: item.烟碱,
-      CO: item.CO
+      '滤嘴通风率 (%)': item.滤嘴通风率,
+      '滤棒压降 (Pa)': item.滤棒压降,
+      '透气度 (CU)': item.透气度,
+      '定量 (g/m²)': item.定量,
+      '柠檬酸根(含量) (%)': item.柠檬酸根,
+      '焦油 (mg/支)': item.焦油,
+      '烟碱 (mg/支)': item.烟碱,
+      'CO (mg/支)': item.CO
     }))
 
     // 2️⃣ 转换成 worksheet
@@ -133,14 +133,14 @@ export class SimulationPredictionSaveService {
       header: [
         '模型类别',
         '数据类别',
-        '滤嘴通风率',
-        '滤棒压降',
-        '透气度',
-        '定量',
-        '柠檬酸根',
-        '焦油',
-        '烟碱',
-        'CO'
+        '滤嘴通风率 (%)',
+        '滤棒压降 (Pa)',
+        '透气度 (CU)',
+        '定量 (g/m²)',
+        '柠檬酸根(含量) (%)',
+        '焦油 (mg/支)',
+        '烟碱 (mg/支)',
+        'CO (mg/支)'
       ]
     })
 
@@ -162,6 +162,13 @@ export class SimulationPredictionSaveService {
       { hpt: 25 }, // 第一行表头 25 磅
       { hpt: 18 } // 数据行 18 磅
     ]
+
+    for (const cell in worksheet) {
+      if (cell[0] === '!') continue
+      worksheet[cell].s = {
+        alignment: { horizontal: 'center', vertical: 'center' }
+      }
+    }
     // 只给第一行表头加样式（加粗+居中+灰色背景）
     for (let C = 0; C <= 20; ++C) {
       const cellAddress = XLSX.utils.encode_cell({ r: 0, c: C }) // 第一行 R=0
@@ -169,11 +176,16 @@ export class SimulationPredictionSaveService {
         worksheet[cellAddress].s = {
           font: { bold: true, color: { rgb: '000000' } }, // 黑色加粗
           alignment: { horizontal: 'center', vertical: 'center' }, // 居中
-          fill: { fgColor: { rgb: 'DDDDDD' } } // 灰色背景
+          fill: { fgColor: { rgb: 'DDDDDD' } }, // 灰色背景
+          border: {
+            top: { style: 'thin', color: { rgb: '000000' } },
+            bottom: { style: 'thin', color: { rgb: '000000' } },
+            left: { style: 'thin', color: { rgb: '000000' } },
+            right: { style: 'thin', color: { rgb: '000000' } }
+          }
         }
       }
     }
-
     const workbook = XLSX.utils.book_new()
     XLSX.utils.book_append_sheet(workbook, worksheet, '仿真预测数据')
 
@@ -197,6 +209,9 @@ export class SimulationPredictionSaveService {
       return { success: false, error: '数据不存在' }
     }
     const exports: schema.exportSimDto[] = []
+    result.specimenName = result.specimen_name as string
+    result.filterVentilation = result.filter_ventilation as string
+    result.filterPressureDrop = result.filter_pressure_drop as number
     exports.push(this.mapToExportSimDto(result, '基准数据'))
     const profile =
       typeof result.profile === 'string'
@@ -204,8 +219,9 @@ export class SimulationPredictionSaveService {
         : Array.isArray(result.profile)
           ? result.profile
           : []
-    profile.map((result) => {
-      exports.push(this.mapToExportSimDto(result, '预测数据'))
+    profile.map((result2) => {
+      result2.specimenName = result.specimen_name as string
+      exports.push(this.mapToExportSimDto(result2, '预测数据'))
     })
     const safeExports = JSON.parse(JSON.stringify(exports))
     this.export(safeExports)
