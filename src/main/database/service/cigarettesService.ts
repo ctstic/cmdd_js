@@ -6,6 +6,7 @@
 
 import { db, schema } from '..'
 import * as XLSX from 'xlsx'
+import { harmfulService } from './harmfulService'
 
 /**
  * 卷烟数据业务逻辑服务类
@@ -275,6 +276,8 @@ export class CigarettesService {
           this.createCigarettes(data[key])
         }
       }
+      //生成默认计算系数
+      harmfulService.generate(specimenName)
     } catch (error) {
       result.errors.push(
         `Excel文件处理失败：${error instanceof Error ? error.message : String(error)}`

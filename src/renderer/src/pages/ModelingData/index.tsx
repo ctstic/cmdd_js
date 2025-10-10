@@ -377,7 +377,7 @@ const ModelingData: React.FC = () => {
 
           const result = await window.electronAPI.cigarettes.importFromWebFile({
             specimenName: values.specimenName,
-            name: values.upload[0].originFileObj,
+            name: values.upload[0].originFileObj.name,
             buffer: uint8Array
           })
 
