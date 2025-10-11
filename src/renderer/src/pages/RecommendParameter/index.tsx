@@ -405,10 +405,10 @@ const RecommendParameter: React.FC = () => {
 
   const handleSubmit = async () => {
     // 获取每一步表单的所有值
-    const baseValues = baseForm.validateFields()
-    const targetValues = targetForm.validateFields()
-    const weightValues = weightForm.validateFields()
-    const rangeValues = rangeForm.validateFields()
+    const baseValues = await baseForm.validateFields()
+    const targetValues = await targetForm.validateFields()
+    const weightValues = await weightForm.validateFields()
+    const rangeValues = await rangeForm.validateFields()
 
     // 打印所有表单的值
     console.log('基准卷烟辅材参数:', baseValues)
@@ -433,7 +433,6 @@ const RecommendParameter: React.FC = () => {
         targetParams: { ...targetValues, ...weightValues },
         standardDesignParams: rangeValues
       })
-
       if (res.data.data && Array.isArray(res.data.data) && res.data.data.length > 0) {
         // 数据更新
         const transformedData = res.data.data.map((item, index) => ({
@@ -897,8 +896,13 @@ const RecommendParameter: React.FC = () => {
             quantitative,
             citrate
           })
+          if (!res.success) {
+            info('error', res.error)
+            return false
+          }
           setBrandNameOpen(false)
           handleBrandName()
+          info('success', '保存成功！')
         }}
       />
       <BrandNameModal
@@ -918,8 +922,13 @@ const RecommendParameter: React.FC = () => {
             nicotine,
             tar
           })
+          if (!res.success) {
+            info('error', res.error)
+            return false
+          }
           setBrandNameSmokeOpen(false)
           handleBrandNameSmoke()
+          info('success', '保存成功！')
         }}
       />
     </div>
