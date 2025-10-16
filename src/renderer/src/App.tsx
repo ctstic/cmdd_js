@@ -26,13 +26,17 @@ const BasicLayout: React.FC = () => {
     token: { colorBgContainer, borderRadiusLG }
   } = theme.useToken()
 
-  const username = 'Admin'
+  const username = localStorage.getItem('username') || sessionStorage.getItem('username') || '用户'
 
-  const menuItems: { key: string; label: string }[] = [
-    { key: 'modelingData', label: '科研建模数据' },
-    { key: 'simulatingForecast', label: '仿真预测' },
-    { key: 'recommendParameter', label: '推荐辅材参数' }
+  const menuItems: { key: string; label: string; roles?: string[] }[] = [
+    { key: 'modelingData', label: '科研建模数据', roles: ['admin'] },
+    { key: 'simulatingForecast', label: '仿真预测', roles: ['admin', 'user'] },
+    { key: 'recommendParameter', label: '推荐辅材参数', roles: ['admin', 'user'] }
   ]
+  const role = localStorage.getItem('role') || sessionStorage.getItem('role') || 'user'
+
+  // 根据角色过滤菜单
+  const visibleMenu = menuItems.filter((item) => !item.roles || item.roles.includes(role))
 
   useEffect(() => {
     const authedLocal = localStorage.getItem('isAuthenticated') === 'true'
@@ -46,8 +50,10 @@ const BasicLayout: React.FC = () => {
   const handleLogout = (): void => {
     localStorage.removeItem('isAuthenticated')
     localStorage.removeItem('username')
+    localStorage.removeItem('role')
     sessionStorage.removeItem('isAuthenticated')
     sessionStorage.removeItem('username')
+    sessionStorage.removeItem('role')
     navigate('/login')
   }
 
@@ -101,7 +107,7 @@ const BasicLayout: React.FC = () => {
           </div>
 
           <nav aria-label="主导航" style={{ display: 'flex', gap: 24, justifySelf: 'center' }}>
-            {menuItems.map((item) => (
+            {visibleMenu.map((item) => (
               <NavLink key={item.key} to={item.key} style={navLinkStyle}>
                 {item.label}
               </NavLink>
