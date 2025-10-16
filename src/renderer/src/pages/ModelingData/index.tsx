@@ -168,15 +168,15 @@ const ModelingData: React.FC = () => {
       dataIndex: 'filterPressureDrop'
     },
     {
-      title: '透气度 (CU)',
+      title: '卷烟纸透气度 (CU)',
       dataIndex: 'permeability'
     },
     {
-      title: '定量 (g/m²)',
+      title: '卷烟纸定量 (g/m²)',
       dataIndex: 'quantitative'
     },
     {
-      title: '柠檬酸根(含量) (%)',
+      title: '卷烟纸阻燃剂含量 (%)',
       dataIndex: 'citrate',
       render: (text) => <span>{(Number(text) * 100).toFixed(2)}%</span>
     },
@@ -185,15 +185,15 @@ const ModelingData: React.FC = () => {
       dataIndex: 'potassiumRatio'
     },
     {
-      title: '焦油（mg/支）',
+      title: '焦油 (mg/支)',
       dataIndex: 'tar'
     },
     {
-      title: '烟碱（mg/支）',
+      title: '烟碱 (mg/支)',
       dataIndex: 'nicotine'
     },
     {
-      title: 'CO（mg/支）',
+      title: 'CO (mg/支)',
       dataIndex: 'co'
     },
     {

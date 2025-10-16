@@ -72,23 +72,23 @@ const PredictionTable: React.FC<PredictionTableProps> = ({ actionRef }) => {
       dataIndex: 'data',
       children: [
         {
-          title: '滤嘴通风率（%）',
+          title: '滤嘴通风率 (%)',
           dataIndex: 'filterVentilation'
         },
         {
-          title: '滤棒压降（Pa）',
+          title: '滤棒压降 (Pa)',
           dataIndex: 'filterPressureDrop'
         },
         {
-          title: '透气度（CU）',
+          title: '卷烟纸透气度 (CU)',
           dataIndex: 'permeability'
         },
         {
-          title: '定量（g/m²）',
+          title: '卷烟纸定量 (g/m²)',
           dataIndex: 'quantitative'
         },
         {
-          title: '柠檬酸根（含量）（%）',
+          title: '卷烟纸阻燃剂含量 (%)',
           dataIndex: 'citrate'
         }
         // {
@@ -102,17 +102,17 @@ const PredictionTable: React.FC<PredictionTableProps> = ({ actionRef }) => {
       dataIndex: 'foreCast',
       children: [
         {
-          title: '焦油（mg/支）',
+          title: '焦油 (mg/支)',
           dataIndex: 'tar',
           readonly: true
         },
         {
-          title: '烟碱（mg/支）',
+          title: '烟碱 (mg/支)',
           dataIndex: 'nicotine',
           readonly: true
         },
         {
-          title: 'CO（mg/支）',
+          title: 'CO (mg/支)',
           dataIndex: 'co',
           readonly: true
         }

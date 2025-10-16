@@ -337,9 +337,9 @@ const RecommendParameter: React.FC = () => {
   const baseMaterialFields = [
     { name: 'filterVentilation', label: '滤嘴通风率', unit: '%' },
     { name: 'filterPressureDrop', label: '滤棒压降', unit: 'Pa' },
-    { name: 'permeability', label: '透气度', unit: 'CU' },
-    { name: 'quantitative', label: '定量', unit: 'g/m²' },
-    { name: 'citrate', label: '柠檬酸根(含量)', unit: '%' }
+    { name: 'permeability', label: '卷烟纸透气度', unit: 'CU' },
+    { name: 'quantitative', label: '卷烟纸定量', unit: 'g/m²' },
+    { name: 'citrate', label: '卷烟纸阻燃剂含量', unit: '%' }
   ]
 
   // 基准卷烟主流烟气数据
@@ -376,7 +376,7 @@ const RecommendParameter: React.FC = () => {
     },
     {
       name: 'permeability',
-      label: '透气度',
+      label: '卷烟纸透气度',
       min: 30,
       max: 80,
       step: 5,
@@ -385,7 +385,7 @@ const RecommendParameter: React.FC = () => {
     },
     {
       name: 'quantitative',
-      label: '定量',
+      label: '卷烟纸定量',
       min: 24,
       max: 36,
       step: 2,
@@ -394,7 +394,7 @@ const RecommendParameter: React.FC = () => {
     },
     {
       name: 'citrate',
-      label: '柠檬酸根(含量)',
+      label: '卷烟纸阻燃剂含量',
       min: 0.2,
       max: 3,
       step: 0.4,
@@ -490,15 +490,15 @@ const RecommendParameter: React.FC = () => {
       dataIndex: 'filterPressureDrop'
     },
     {
-      title: '透气度 (CU)',
+      title: '卷烟纸透气度(CU)',
       dataIndex: 'permeability'
     },
     {
-      title: '定量 (g/m²)',
+      title: '卷烟纸定量 (g/m²)',
       dataIndex: 'quantitative'
     },
     {
-      title: '柠檬酸根(含量) (%)',
+      title: '卷烟纸阻燃剂含量 (%)',
       dataIndex: 'citrate',
       render: (text) => <span>{(Number(text) * 100).toFixed(2)}%</span>
     },
