@@ -110,21 +110,29 @@ export class RecAuxMaterials {
                 quantitative: qt.toString(),
                 citrate: ct.toString()
               }
+              const formatNumber = (num: number): number => parseFloat(num.toFixed(2))
               // 调用预测服务
               const prediction = await simulationPredictionService.predictBaseline(
                 designParams,
                 coefficients
               )
+              prediction.forEach((value, index) => {
+                if (index === 0) {
+                  prediction[0] = formatNumber(scaledPrediction.co * value)
+                } else if (index === 1) {
+                  prediction[1] = formatNumber(scaledPrediction.nicotine * value)
+                } else {
+                  prediction[2] = formatNumber(scaledPrediction.tar * value)
+                }
+              })
               // 计算与目标的加权误差
               const diff =
                 Number(targetParams.tarWeight) *
-                  Math.abs((scaledPrediction.tar * prediction[2]) / Number(targetParams.tar) - 1) +
+                  Math.abs(prediction[2] / Number(targetParams.tar) - 1) +
                 Number(targetParams.nicotineWeight) *
-                  Math.abs(
-                    (scaledPrediction.nicotine * prediction[1]) / Number(targetParams.nicotine) - 1
-                  ) +
+                  Math.abs(prediction[1] / Number(targetParams.nicotine) - 1) +
                 Number(targetParams.coWeight) *
-                  Math.abs((scaledPrediction.co * prediction[0]) / Number(targetParams.co) - 1)
+                  Math.abs(prediction[0] / Number(targetParams.co) - 1)
               // 存储结果
               results.push({ designParams, prediction, diff })
             }

@@ -46,9 +46,9 @@ interface FormFieldConfig {
 const baseMaterialFields: FormFieldConfig[] = [
   { name: 'filterVentilation', label: '滤嘴通风率', unit: '%' },
   { name: 'filterPressureDrop', label: '滤棒压降', unit: 'Pa' },
-  { name: 'permeability', label: '透气度', unit: 'CU' },
-  { name: 'quantitative', label: '定量', unit: 'g/m²' },
-  { name: 'citrate', label: '柠檬酸根(含量)', unit: '%' }
+  { name: 'permeability', label: '卷烟纸透气度', unit: 'CU' },
+  { name: 'quantitative', label: '卷烟纸定量', unit: 'g/m²' },
+  { name: 'citrate', label: '卷烟纸阻燃剂含量', unit: '%' }
   // { name: 'potassiumRatio', label: '钾盐占比', unit: '%' }
 ]
 

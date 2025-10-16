@@ -114,15 +114,15 @@ const CalculationModal: React.FC<CalculationModalProps> = ({
       dataIndex: 'filterPressureCoef'
     },
     {
-      title: '透气度系数',
+      title: '卷烟纸透气度系数',
       dataIndex: 'permeabilityCoef'
     },
     {
-      title: '定量系数',
+      title: '卷烟纸定量系数',
       dataIndex: 'quantitativeCoef'
     },
     {
-      title: '柠檬酸根(含量)系数',
+      title: '卷烟纸阻燃剂含量系数',
       dataIndex: 'citrateCoef'
     },
     // {

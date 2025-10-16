@@ -209,14 +209,14 @@ export class CigarettesService {
       // 验证必需的列是否存在
       const requiredColumns = [
         '编号',
-        '滤嘴通风率%',
+        '滤嘴通风率(%)',
         '滤棒压降(Pa)',
-        '透气度/CU',
-        '定量g/m2',
-        '柠檬酸根(设计值）%',
+        '卷烟纸透气度(CU)',
+        '卷烟纸定量(g/m²)',
+        '卷烟纸阻燃剂含量(%)',
         '钾盐占比',
-        '焦油mg/支',
-        '烟碱mg/支',
+        '焦油(mg/支)',
+        '烟碱(mg/支)',
         'CO(mg/支)'
       ]
 
@@ -228,9 +228,9 @@ export class CigarettesService {
             (h.includes('编号') && col.includes('编号')) ||
             (h.includes('滤嘴通风') && col.includes('滤嘴通风')) ||
             (h.includes('滤棒压降') && col.includes('滤棒压降')) ||
-            (h.includes('透气度') && col.includes('透气度')) ||
-            (h.includes('定量') && col.includes('定量')) ||
-            (h.includes('柠檬酸') && col.includes('柠檬酸')) ||
+            (h.includes('卷烟纸透气度') && col.includes('卷烟纸透气度')) ||
+            (h.includes('卷烟纸定量') && col.includes('卷烟纸定量')) ||
+            (h.includes('卷烟纸阻燃剂含量') && col.includes('卷烟纸阻燃剂含量')) ||
             (h.includes('钾盐') && col.includes('钾盐')) ||
             (h.includes('焦油') && col.includes('焦油')) ||
             (h.includes('烟碱') && col.includes('烟碱')) ||
@@ -253,15 +253,15 @@ export class CigarettesService {
           code: String(row[columnIndexes['编号']] || '').trim(),
           specimenName: specimenName,
           filterVentilation: String(
-            Number(row[columnIndexes['滤嘴通风率%']]).toFixed(3) || ''
+            Number(row[columnIndexes['滤嘴通风率(%)']]).toFixed(3) || ''
           ).trim(),
           filterPressureDrop: Number(row[columnIndexes['滤棒压降(Pa)']] || ''),
-          permeability: String(row[columnIndexes['透气度/CU']] || '').trim(),
-          quantitative: String(row[columnIndexes['定量g/m2']] || '').trim(),
-          citrate: String(Number(row[columnIndexes['柠檬酸根(设计值）%']]).toFixed(3) || '').trim(),
+          permeability: String(row[columnIndexes['卷烟纸透气度(CU)']] || '').trim(),
+          quantitative: String(row[columnIndexes['卷烟纸定量(g/m²)']] || '').trim(),
+          citrate: String(Number(row[columnIndexes['卷烟纸阻燃剂含量(%)']] || '').toFixed(3)).trim(),
           potassiumRatio: String(row[columnIndexes['钾盐占比']] || '').trim(),
-          tar: String(row[columnIndexes['焦油mg/支']] || '').trim(),
-          nicotine: String(row[columnIndexes['烟碱mg/支']] || '').trim(),
+          tar: String(row[columnIndexes['焦油(mg/支)']] || '').trim(),
+          nicotine: String(row[columnIndexes['烟碱(mg/支)']] || '').trim(),
           co: String(row[columnIndexes['CO(mg/支)']] || '').trim(),
           createdAt: new Date(),
           updatedAt: new Date()

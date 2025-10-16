@@ -201,9 +201,9 @@ export class SimulationPredictionService {
       数据类别: datatype as string,
       滤嘴通风率: result.filterVentilation as string,
       滤棒压降: result.filterPressureDrop as string,
-      透气度: result.permeability as string,
-      定量: result.quantitative as string,
-      柠檬酸根: result.citrate as string,
+      卷烟纸透气度: result.permeability as string,
+      卷烟纸定量: result.quantitative as string,
+      卷烟纸阻燃剂含量: result.citrate as string,
       焦油: result.tar as string,
       烟碱: result.nicotine as string,
       CO: result.co as string
