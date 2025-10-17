@@ -1,9 +1,9 @@
 import { LineChartOutlined } from '@ant-design/icons'
 import type { EditableFormInstance, ProColumns } from '@ant-design/pro-components'
 import { EditableProTable } from '@ant-design/pro-components'
-import { Card, Typography } from 'antd'
 import React, { useState, useRef, useImperativeHandle } from 'react'
 import { createStyles } from 'antd-style'
+import { StyledCard } from '@renderer/components/base'
 
 const useStyle = createStyles(({ css, token }) => {
   const { antCls } = token
@@ -22,9 +22,6 @@ const useStyle = createStyles(({ css, token }) => {
     `
   }
 })
-
-const { Text } = Typography
-
 interface DataSourceType {
   key: string
   filterVentilation: string | number
@@ -41,13 +38,6 @@ interface DataSourceType {
 interface PredictionTableProps {
   actionRef?: React.Ref<any>
   // expandedRowKeys: React.Key[]
-}
-
-const cardHeaderStyle = {
-  background: `linear-gradient(90deg, #52c41a20 0%, #ffffff 100%)`,
-  padding: '16px 24px',
-  borderRadius: '12px 12px 0 0',
-  borderBottom: `2px solid #52c41a40`
 }
 
 const PredictionTable: React.FC<PredictionTableProps> = ({ actionRef }) => {
@@ -128,54 +118,35 @@ const PredictionTable: React.FC<PredictionTableProps> = ({ actionRef }) => {
   ]
 
   return (
-    <Card
-      style={{
-        marginBottom: 10,
-        borderRadius: 16,
-        boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-        border: '1px solid #52c41a30',
-        flex: 1
-      }}
-      bodyStyle={{ padding: 0 }}
-    >
-      <div style={cardHeaderStyle}>
-        {React.cloneElement(<LineChartOutlined />, {
-          style: { marginRight: 12, color: '#52c41a', fontSize: '18px' }
-        })}
-        <Text strong style={{ fontSize: '18px', color: '#52c41a' }}>
-          预测卷烟辅材参数
-        </Text>
-      </div>
-      <div style={{ padding: '24px' }}>
-        <EditableProTable<DataSourceType>
-          // expandedRowKeys={expandedRowKeys}
-          className={styles.customTable}
-          scroll={{ x: 960 }}
-          bordered
-          editableFormRef={editableTableRef}
-          columns={columns}
-          recordCreatorProps={{
-            // position:'top',
-            newRecordType: 'dataSource',
-            record: () => ({ key: Date.now() })
-          }}
-          rowKey="key"
-          value={dataSource}
-          onChange={setDataSource}
-          editable={{
-            type: 'multiple',
-            editableKeys,
-            actionRender: (row, config, defaultDoms) => {
-              return [defaultDoms.delete]
-            },
-            onValuesChange: (record, recordList) => {
-              setDataSource(recordList)
-            },
-            onChange: setEditableRowKeys
-          }}
-        />
-      </div>
-    </Card>
+    <StyledCard title="基准卷烟主流烟气" icon={<LineChartOutlined />} color="#52c41a">
+      <EditableProTable<DataSourceType>
+        // expandedRowKeys={expandedRowKeys}
+        className={styles.customTable}
+        scroll={{ x: 960 }}
+        bordered
+        editableFormRef={editableTableRef}
+        columns={columns}
+        recordCreatorProps={{
+          // position:'top',
+          newRecordType: 'dataSource',
+          record: () => ({ key: Date.now() })
+        }}
+        rowKey="key"
+        value={dataSource}
+        onChange={setDataSource}
+        editable={{
+          type: 'multiple',
+          editableKeys,
+          actionRender: (row, config, defaultDoms) => {
+            return [defaultDoms.delete]
+          },
+          onValuesChange: (record, recordList) => {
+            setDataSource(recordList)
+          },
+          onChange: setEditableRowKeys
+        }}
+      />
+    </StyledCard>
   )
 }
 

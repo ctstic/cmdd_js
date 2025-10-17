@@ -1,179 +1,32 @@
-import React, { useEffect, useRef, useState } from 'react'
-import {
-  Card,
-  Row,
-  Col,
-  Typography,
-  Button,
-  Space,
-  Form,
-  InputNumber,
-  notification,
-  Flex,
-  Select
-} from 'antd'
-import {
-  CalculatorOutlined,
-  ExperimentOutlined,
-  SafetyCertificateOutlined,
-  LineChartOutlined
-} from '@ant-design/icons'
+import { ExperimentOutlined } from '@ant-design/icons'
+import { HeaderTitleCard, OptButton, StyledCard } from '@renderer/components/base'
+import { Affix, Card, Col, Form, InputNumber, notification, Row, Space } from 'antd'
+import React, { useRef, useState } from 'react'
+import { baseMaterialFields, harmfulFields } from '../formd'
 import PredictionTable from './PredictionTable'
-import BrandNameModal from './BrandNameModal'
+import ModelTypeSelect from '@renderer/components/ModelTypeSelect'
+import BrandSelectPanel from '@renderer/components/BrandSelectPanel'
 import HistoryModal from '../RecommendParameter/HistoryModal'
 
-const { Title, Text } = Typography
-
-const styles = {
-  headerGradient: {
-    background: 'linear-gradient(135deg, #1890ff 0%, #a3dcff 100%)'
-  },
-  cardHeader: {
-    background: 'linear-gradient(90deg, #a3dcff 0%, #ffffff 100%)',
-    padding: '12px 16px',
-    borderRadius: '12px 12px 0 0',
-    borderBottom: '2px solid #a3dcff'
-  }
-}
-
-interface FormFieldConfig {
-  name: string
-  label: string
-  unit?: string
-}
-
-// 基准卷烟辅材参数
-const baseMaterialFields: FormFieldConfig[] = [
-  { name: 'filterVentilation', label: '滤嘴通风率', unit: '%' },
-  { name: 'filterPressureDrop', label: '滤棒压降', unit: 'Pa' },
-  { name: 'permeability', label: '卷烟纸透气度', unit: 'CU' },
-  { name: 'quantitative', label: '卷烟纸定量', unit: 'g/m²' },
-  { name: 'citrate', label: '卷烟纸阻燃剂含量', unit: '%' }
-  // { name: 'potassiumRatio', label: '钾盐占比', unit: '%' }
-]
-
-// 基准卷烟有害成分
-const harmfulFields: FormFieldConfig[] = [
-  { name: 'tar', label: '焦油', unit: 'mg/支' },
-  { name: 'nicotine', label: '烟碱', unit: 'mg/支' },
-  { name: 'co', label: 'CO', unit: 'mg/支' }
-]
-
-// 公共必填规则
 const requiredRule = (label: string) => [{ required: true, message: `请输入${label}` }]
 
 const SimulatingForecast: React.FC = () => {
   const [notificationApi, contextHolder] = notification.useNotification()
-  const [form] = Form.useForm()
-  const actionRef = useRef<any>(null)
-  const [predictionData, setPredictionData] = useState<any>([])
-
-  const [brandNameOpen, setBrandNameOpen] = useState<boolean>(false)
-  const [brandNameSmokeOpen, setBrandNameSmokeOpen] = useState<boolean>(false)
-  const [brandNameOption, setBrandNameOption] = useState<{ label: string; value: string }[]>([])
-  const [brandNameSmokeOption, setBrandNameSmokeOption] = useState<
-    { label: string; value: string }[]
-  >([])
-  const [brandNameData, setBrandNameData] = useState<any>([])
-  const [brandNameSmokeData, setBrandNameSmokeData] = useState<object>({})
-
-  const [typeData, setTypeData] = useState<{ label: string; value: string }[]>([])
-  const [selectType, setSelectType] = useState<string>(undefined)
-
+  const [formRef] = Form.useForm()
+  const tableRef = useRef<any>(null)
+  // 当前计算的结果数据
+  const [previousData, setPreviousData] = useState<any>(null)
+  // 历史数据弹窗
   const [historyModalOpen, setHistoryModalOpen] = useState<boolean>(false)
 
-  const handleBrandName = async (): Promise<void> => {
-    try {
-      const optionData = await window.electronAPI.ramMark.query('')
-      setBrandNameData(optionData.data)
-      setBrandNameOption(
-        optionData.data.map((item) => ({ label: item.mark, value: item.mark })) || []
-      )
-    } catch {
-      notificationApi.error({
-        message: '网络错误！'
-      })
-    }
-  }
-
-  const handleBrandNameSmoke = async (): Promise<void> => {
-    try {
-      const smokeOptionData = await window.electronAPI.rfgMark.query('')
-      setBrandNameSmokeData(smokeOptionData.data)
-      setBrandNameSmokeOption(
-        smokeOptionData.data.map((item) => ({ label: item.mark, value: item.mark })) || []
-      )
-    } catch {
-      notificationApi.error({
-        message: '网络错误！'
-      })
-    }
-  }
-
-  const handleTypeData = async (): Promise<void> => {
-    try {
-      const typeData = await window.electronAPI.cigarettes.getCigarettesType('')
-      setTypeData(typeData.data.map((item) => ({ label: item, value: item })) || [])
-    } catch {
-      notificationApi.error({
-        message: '网络错误！'
-      })
-    }
-  }
-
-  useEffect(() => {
-    handleBrandName()
-    handleBrandNameSmoke()
-    handleTypeData()
-  }, [])
-
-  // 可复用的卡片组件
-  const StyledCard = ({ title, icon, children, color = '#1890ff', rightAction }) => {
-    const cardHeaderStyle = {
-      display: 'flex',
-      justifyContent: 'space-between', // Distribute space between title, icon, and action
-      alignItems: 'center',
-      background: `linear-gradient(90deg, ${color}20 0%, #ffffff 100%)`,
-      padding: '16px 24px',
-      borderRadius: '12px 12px 0 0',
-      borderBottom: `2px solid ${color}40`
-    }
-
-    return (
-      <Card
-        style={{
-          marginBottom: 10,
-          borderRadius: 16,
-          boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-          border: `1px solid ${color}30`,
-          flex: 1
-        }}
-        bodyStyle={{ padding: 0 }}
-      >
-        <div style={cardHeaderStyle}>
-          <div style={{ display: 'flex', alignItems: 'center' }}>
-            {React.cloneElement(icon, {
-              style: { marginRight: 12, color: color, fontSize: '18px' }
-            })}
-            <Text strong style={{ fontSize: '18px', color: color }}>
-              {title}
-            </Text>
-          </div>
-          {rightAction && (
-            <div style={{ display: 'flex', alignItems: 'center' }}>{rightAction}</div>
-          )}
-        </div>
-        <div style={{ padding: '24px' }}>{children}</div>
-      </Card>
-    )
-  }
-
+  // 计算
   const handleSubmit = async (): Promise<void> => {
     try {
-      const formValues = await form.validateFields()
-      if (actionRef.current) {
-        const dataSource = actionRef.current.getData()
-
+      // 获取表单数据
+      const formValues = await formRef.validateFields()
+      // 获取表格数据
+      if (tableRef.current) {
+        const dataSource = tableRef.current.getData()
         // 过滤数据，只传递输入参数，不传递预测结果
         const inputParams = dataSource.map((item) => ({
           key: item.key,
@@ -185,39 +38,34 @@ const SimulatingForecast: React.FC = () => {
           tar: '',
           nicotine: '',
           co: ''
-          // potassiumRatio: Number(item.potassiumRatio) //钾盐占比
-          // 不传递 tar, nicotine, co 字段
         }))
         const jsonString = JSON.stringify(inputParams)
-        const isNaN = jsonString.includes('null')
-        if (selectType === undefined) {
-          notificationApi.error({
-            message: '请选择类型！'
-          })
-        } else if (inputParams.length === 0 || isNaN) {
+        if (inputParams.length === 0 || jsonString.includes('null')) {
           notificationApi.error({
             message: '请正确填写预测结果数据表格'
           })
         } else {
-          // console.log('🚀 ~ handleSubmit ~ inputParams:', inputParams)
-          // console.log('🚀 ~ handleSubmit ~ formValues:', formValues)
           // 调用接口
           const res = await window.electronAPI.simulation.prediction({
-            specimenName: selectType,
+            specimenName: formValues.modelType,
             standardParams: formValues,
             predictionParams: inputParams
           })
 
-          // 判断返回数据是否存在
+          console.log(
+            '🚀 ~ handleSubmit ~ formValues.modelType:',
+            formValues.modelType,
+            formValues,
+            inputParams,
+            res
+          )
+
           if (res.data.data && Array.isArray(res.data.data) && res.data.data.length > 0) {
-            notificationApi.success({
-              message: '计算成功'
-            })
             // 确保将返回的预测数据更新到表格中
             const predictionData = res.data.data.map((item: any, index: number) => {
               //? 之前table是展开格式时，根据kay取返回的数据，现在应该不需要了
               const params = inputParams.find((params) => params.key === item.key)
-              actionRef.current.setRowsData(index, {
+              tableRef.current.setRowsData(index, {
                 tar: Number(item.tar) || 0,
                 nicotine: Number(item.nicotine) || 0,
                 co: Number(item.co) || 0
@@ -236,8 +84,10 @@ const SimulatingForecast: React.FC = () => {
                 co: Number(item.co) || 0
               }
             })
-            setPredictionData(predictionData)
-            actionRef.current.setData(predictionData)
+            tableRef.current.setData(predictionData)
+            notificationApi.success({
+              message: '计算成功'
+            })
           } else {
             notificationApi.error({
               message: res.data.errors
@@ -246,432 +96,244 @@ const SimulatingForecast: React.FC = () => {
         }
       }
     } catch (error) {
-      console.error('计算异常:', error)
-      // 4. 如果表单验证失败，或者接口调用失败，显示错误提示
       notificationApi.error({
         message: '计算异常，请检查表单填写'
       })
     }
   }
 
+  // 重置
   const handleReset = (): void => {
-    form.resetFields()
-    if (actionRef.current) {
-      actionRef.current.setData([])
+    formRef.resetFields()
+    if (tableRef.current) {
+      tableRef.current.setData([])
     }
-    // setForecastData([])
     notificationApi.success({
       message: '重置成功',
       description: '表单和表格数据已重置'
     })
   }
 
-  const onChangeSmoke = (value: string) => {
-    brandNameSmokeData.map((item) => {
-      if (value === item.mark) {
-        form.setFieldsValue({
-          tar: item.tar,
-          co: item.co,
-          nicotine: item.nicotine
+  // 合并并优化后的方法
+  const validateAndCompareData = async (): Promise<boolean> => {
+    try {
+      // 获取表单和表格数据
+      const formValues = await formRef.validateFields()
+      const dataSource = tableRef.current.getData()
+      console.log('🚀 ~ validateAndCompareData ~ formValues:', formValues, dataSource)
+
+      let isValid = true // 用于标识校验是否通过
+
+      // 校验表格数据
+      if (dataSource.length === 0) {
+        notificationApi.error({
+          message: '基础数据为空，请填写基础数据内容'
+        })
+        isValid = false
+      } else {
+        dataSource.forEach((data: any, index: number) => {
+          // 校验每个字段是否为空
+          for (const key in data) {
+            if (data[key] === null || data[key] === '' || data[key] === undefined) {
+              notificationApi.error({
+                message: '基础数据需要完整！'
+              })
+              isValid = false
+              return isValid // 一旦发现问题就停止循环并返回校验结果
+            }
+          }
+
+          // 检查是否与上次提交的数据完全一致
+          if (previousData && JSON.stringify(previousData) === JSON.stringify(data)) {
+            notificationApi.error({
+              message: '本次数据和上次保存数据一直，请修改后再次保存！'
+            })
+            isValid = false
+          }
+
+          // 更新上次的数据
+          setPreviousData(data)
         })
       }
-    })
+
+      // 返回最终校验结果
+      return isValid
+    } catch (error) {
+      notificationApi.error({
+        message: '请先进行一次计算！'
+      })
+      return false // 如果捕获到异常，则返回 false
+    }
   }
 
-  const onChange = (value: string) => {
-    brandNameData.map((item) => {
-      if (value === item.mark) {
-        form.setFieldsValue({
-          filterVentilation: item.filterVentilation,
-          filterPressureDrop: item.filterPressureDrop,
-          permeability: item.permeability,
-          quantitative: item.quantitative,
-          citrate: item.citrate
+  // 保存
+  const handleSave = async (): Promise<void> => {
+    validateAndCompareData()
+    // if () {
+    //   try {
+    //     const formValues = await formRef.validateFields()
+    //     const dataSource = tableRef.current.getData()
+    //     await window.electronAPI.simulationPredictionSaveAPI.create({
+    //       specimenName: formValues.modelType,
+    //       standardParams: formValues,
+    //       predictionParams: dataSource
+    //     })
+    //     notificationApi.success({
+    //       message: '保存成功！'
+    //     })
+    //   } catch (error) {
+    //     notificationApi.error({
+    //       message: '请先进行一次计算！'
+    //     })
+    //   }
+    // }
+  }
+
+  // 导出
+  const handleExport = async (): Promise<void> => {
+    if (validateAndCompareData) {
+      try {
+        const formValues = await formRef.validateFields()
+        const dataSource = tableRef.current.getData()
+
+        await window.electronAPI.simulation.exportResult({
+          specimenName: formValues.modelType,
+          standardParams: formValues,
+          predictionParams: dataSource
+        })
+        notificationApi.success({
+          message: '导出成功！'
+        })
+      } catch (error) {
+        notificationApi.error({
+          message: '请先进行一次计算！'
         })
       }
-    })
-  }
-
-  // 保存牌号是否存在对比
-  const checkFormValues = (fields: FormFieldConfig[], formValues: { [key: string]: any }) => {
-    // 遍历 fields 数组，检查 formValues 中是否存在对应的键，并且值不是 undefined, null 或空字符串
-    return fields.every((field) => formValues[field.name] != null && formValues[field.name] !== '')
+    }
   }
 
   return (
     <div style={{ minHeight: 'calc(100vh - 145px)' }}>
       {contextHolder}
-      {/* 标题 */}
-      <Card
-        style={{
-          marginBottom: 15,
-          ...styles.headerGradient,
-          color: 'white',
-          borderRadius: 16,
-          boxShadow: '0 8px 15px rgba(24, 144, 255, 0.3)',
-          border: 'none'
-        }}
-        bodyStyle={{ padding: '28px 32px' }}
-      >
-        <Title level={2} style={{ color: 'white', margin: 0, fontWeight: 700 }}>
-          <CalculatorOutlined style={{ marginRight: 16, fontSize: '32px' }} />
-          卷烟主流烟气仿真预测系统
-        </Title>
-        <Text
-          style={{
-            color: 'rgba(255,255,255,0.9)',
-            fontSize: '18px',
-            display: 'block',
-            marginTop: '8px'
-          }}
-        >
-          <LineChartOutlined style={{ marginRight: 8 }} />
-          基于多维数据的智能化预测分析
-        </Text>
-      </Card>
+      <HeaderTitleCard
+        color="#1890ff"
+        title1="卷烟主流烟气仿真预测系统"
+        title2="基于多维数据的智能化预测分析"
+      />
+      {/* 表单 */}
+      <Form form={formRef} layout="vertical">
+        <ModelTypeSelect form={formRef} />
 
-      <Flex align="center" justify="start" gap={2}>
-        <span style={{ fontSize: '14px', color: '#333', fontWeight: 500 }}>请选择模型类别：</span>
-        <Select
-          style={{
-            marginBottom: '10px',
-            minWidth: '200px',
-            borderRadius: '8px',
-            boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-          }}
-          showSearch
-          placeholder="请选择模型"
-          optionFilterProp="label"
-          options={typeData}
-          allowClear
-          onChange={(value) => {
-            setSelectType(value)
-          }}
-          value={selectType}
-          dropdownStyle={{ borderRadius: '8px' }}
-        />
-      </Flex>
-
-      <Form form={form} layout="vertical">
-        <Flex gap={20}>
-          {/* 辅材参数 */}
-          <StyledCard
-            title="基准卷烟辅材参数"
-            icon={<ExperimentOutlined />}
-            rightAction={
-              <Button
-                type="primary"
-                onClick={() => {
-                  if (checkFormValues(baseMaterialFields, form.getFieldsValue())) {
-                    setBrandNameOpen(true)
-                  } else {
-                    notificationApi.error({
-                      message: '请输入完整的基准卷烟辅材参数！'
-                    })
-                  }
-                }}
-              >
-                保存当前参数
-              </Button>
-            }
-          >
-            <Row gutter={[16, 16]}>
-              {baseMaterialFields.map((field) => (
-                <Col span={8} key={field.name}>
-                  <Form.Item
-                    name={field.name}
-                    label={`${field.label}${field.unit ? ` (${field.unit})` : ''}`}
-                    rules={requiredRule(field.label)}
-                  >
-                    <InputNumber
-                      style={{ width: '100%' }}
-                      min={0}
-                      step={0.01}
-                      precision={2}
-                      placeholder={`请输入${field.label}`}
-                    />
-                  </Form.Item>
-                </Col>
-              ))}
-              <Col span={8}>
-                <Form.Item name="fc-name" label="选择牌号">
-                  <Select
-                    showSearch
-                    placeholder="请选择牌号名称"
-                    optionFilterProp="label"
-                    onChange={onChange}
-                    // onSearch={onSearch}
-                    options={brandNameOption}
-                    allowClear
-                  />
-                </Form.Item>
-              </Col>
-            </Row>
-          </StyledCard>
-
-          {/* 主流烟气 */}
-          <StyledCard
-            title="基准卷烟主流烟气"
-            icon={<SafetyCertificateOutlined />}
-            color="#fa8c16"
-            rightAction={
-              <Button
-                type="primary"
-                onClick={() => {
-                  if (checkFormValues(harmfulFields, form.getFieldsValue())) {
-                    setBrandNameSmokeOpen(true)
-                  } else {
-                    notificationApi.error({
-                      message: '请输入完整的基准卷烟主流烟气！'
-                    })
-                  }
-                }}
-              >
-                保存当前参数
-              </Button>
-            }
-          >
-            <Row gutter={[16, 16]}>
-              {harmfulFields.map((field) => (
-                <Col span={8} key={field.name}>
-                  <Form.Item
-                    name={field.name}
-                    label={`${field.label}${field.unit ? ` (${field.unit})` : ''}`}
-                    rules={requiredRule(field.label)}
-                  >
-                    <InputNumber
-                      style={{ width: '100%' }}
-                      min={0}
-                      step={0.01}
-                      precision={2}
-                      placeholder={`请输入${field.label}`}
-                    />
-                  </Form.Item>
-                </Col>
-              ))}
-              <Col span={8}>
-                <Form.Item name="jz-name" label="选择牌号">
-                  <Select
-                    showSearch
-                    placeholder="请选择牌号名称"
-                    optionFilterProp="label"
-                    onChange={onChangeSmoke}
-                    options={brandNameSmokeOption}
-                    allowClear
-                  />
-                </Form.Item>
-              </Col>
-            </Row>
-          </StyledCard>
-        </Flex>
+        <Row gutter={10} style={{ marginBottom: 15 }}>
+          <Col span={16}>
+            <StyledCard
+              title="基准卷烟辅材参数"
+              icon={<ExperimentOutlined />}
+              rightAction={
+                <BrandSelectPanel
+                  type="fucai"
+                  formRef={formRef}
+                  FormFields={baseMaterialFields}
+                  width={200}
+                />
+              }
+            >
+              <Row gutter={10} justify="space-between">
+                {baseMaterialFields.map((field) => (
+                  <Col flex="20%" key={field.name}>
+                    <Form.Item
+                      name={field.name}
+                      label={`${field.label}${field.unit ? ` (${field.unit})` : ''}`}
+                      rules={requiredRule(field.label)}
+                    >
+                      <InputNumber
+                        style={{ width: '100%' }}
+                        min={0}
+                        step={0.01}
+                        precision={2}
+                        placeholder={`请输入${field.label}`}
+                      />
+                    </Form.Item>
+                  </Col>
+                ))}
+              </Row>
+            </StyledCard>
+          </Col>
+          <Col span={8}>
+            <StyledCard
+              title="基准卷烟主流烟气"
+              icon={<ExperimentOutlined />}
+              color="#fa8c16"
+              rightAction={
+                <BrandSelectPanel
+                  type="jizhun"
+                  formRef={formRef}
+                  FormFields={harmfulFields}
+                  width={150}
+                />
+              }
+            >
+              <Row gutter={10}>
+                {harmfulFields.map((field) => (
+                  <Col span={8} key={field.name}>
+                    <Form.Item
+                      name={field.name}
+                      label={`${field.label}${field.unit ? ` (${field.unit})` : ''}`}
+                      rules={requiredRule(field.label)}
+                    >
+                      <InputNumber
+                        style={{ width: '100%' }}
+                        min={0}
+                        step={0.01}
+                        precision={2}
+                        placeholder={`请输入${field.label}`}
+                      />
+                    </Form.Item>
+                  </Col>
+                ))}
+              </Row>
+            </StyledCard>
+          </Col>
+        </Row>
       </Form>
-      <PredictionTable actionRef={actionRef} />
+      {/* 预测 */}
+      <PredictionTable actionRef={tableRef} />
+      {/* 操作按钮 */}
+      <Affix offsetBottom={10}>
+        <Card
+          style={{
+            marginTop: 15,
+            borderRadius: 16,
+            boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+            border: '1px solid #e8e8e8'
+          }}
+          bodyStyle={{ padding: 0 }}
+        >
+          <div style={{ padding: 15, textAlign: 'center' }}>
+            <Space>
+              <OptButton title="计算" color="#2597ff" onClick={handleSubmit} />
+              <OptButton title="重置" color="#ffdd8e" onClick={handleReset} />
+              <OptButton title="保存" color="#92d96f" onClick={handleSave} />
+              <OptButton title="导出当前数据" color="#a689cf" onClick={handleExport} />
+              <OptButton
+                title="查看历史数据"
+                color="#ffdd8e"
+                onClick={() => {
+                  setHistoryModalOpen(true)
+                }}
+              />
+            </Space>
+          </div>
+        </Card>
+      </Affix>
 
-      <Card
-        style={{
-          borderRadius: 16,
-          boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-          border: '1px solid #e8e8e8'
-        }}
-        bodyStyle={{ padding: 0 }}
-      >
-        <div style={{ padding: '20px 24px', textAlign: 'center' }}>
-          <Space>
-            <Button
-              size="large"
-              type="primary"
-              onClick={handleSubmit}
-              style={{
-                background: '#2597ff',
-                borderColor: '#2597ff',
-                minWidth: 100
-              }}
-            >
-              计算
-            </Button>
-            <Button
-              size="large"
-              type="dashed"
-              onClick={handleReset}
-              style={{
-                background: '#ffdd8e',
-                borderColor: '#ffdd8e',
-                minWidth: 100,
-                color: 'white'
-              }}
-            >
-              重置
-            </Button>
-            <Button
-              size="large"
-              type="dashed"
-              onClick={async () => {
-                try {
-                  if (!predictionData.length) {
-                    notificationApi.warning({
-                      message: '请先进行计算！'
-                    })
-                    return
-                  }
-                  const formValues = await form.validateFields()
-                  const dataSource = actionRef.current.getData()
-
-                  const res = await window.electronAPI.simulationPredictionSaveAPI.create({
-                    specimenName: selectType,
-                    standardParams: formValues,
-                    predictionParams: dataSource
-                  })
-                  // console.log(res, 'resresres')
-                  notificationApi.success({
-                    message: '保存成功！'
-                  })
-                } catch (error) {
-                  notificationApi.error({
-                    message: '网络错误！'
-                  })
-                }
-              }}
-              style={{
-                background: '#92d96f',
-                borderColor: '#92d96f',
-                minWidth: 100,
-                color: 'white'
-              }}
-            >
-              保存
-            </Button>
-            <Button
-              size="large"
-              type="dashed"
-              onClick={async () => {
-                try {
-                  if (!predictionData.length) {
-                    notificationApi.warning({
-                      message: '请先进行计算！'
-                    })
-                    return
-                  }
-                  const formValues = await form.validateFields()
-                  const dataSource = actionRef.current.getData()
-
-                  const res = await window.electronAPI.simulation.exportResult({
-                    specimenName: selectType,
-                    standardParams: formValues,
-                    predictionParams: dataSource
-                  })
-                  notificationApi.success({
-                    message: '导出成功！'
-                  })
-                } catch {
-                  notificationApi.error({
-                    message: '网络错误！'
-                  })
-                }
-              }}
-              style={{
-                background: '#a689cf',
-                borderColor: '#a689cf',
-                minWidth: 100,
-                color: 'white'
-              }}
-            >
-              导出全部数据
-            </Button>
-            <Button
-              size="large"
-              type="dashed"
-              onClick={async () => {
-                setHistoryModalOpen(true)
-              }}
-              style={{
-                background: '#ffdd8e',
-                borderColor: '#ffdd8e',
-                minWidth: 100,
-                color: 'white'
-              }}
-            >
-              查看历史数据
-            </Button>
-          </Space>
-        </div>
-      </Card>
-      <BrandNameModal
-        title="基准卷烟辅材参数"
-        modalOpen={brandNameOpen}
-        onCancel={() => {
-          setBrandNameOpen(false)
-        }}
-        onSubmit={async (values) => {
-          const { filterVentilation, filterPressureDrop, permeability, quantitative, citrate } =
-            form.getFieldsValue()
-          if (
-            filterVentilation === undefined ||
-            filterPressureDrop === undefined ||
-            permeability === undefined ||
-            quantitative === undefined ||
-            citrate === undefined
-          ) {
-            return false
-          }
-
-          const res = await window.electronAPI.ramMark.createRamMark({
-            mark: values,
-            filterVentilation,
-            filterPressureDrop,
-            permeability,
-            quantitative,
-            citrate
-          })
-          console.log(res, 'resresres')
-          if (!res.success) {
-            notificationApi.error({
-              message: res.error
-            })
-            return false
-          }
-          setBrandNameOpen(false)
-          handleBrandName()
-          notificationApi.success({
-            message: '保存成功！'
-          })
-        }}
-      />
-      <BrandNameModal
-        title="基准卷烟主流烟气"
-        modalOpen={brandNameSmokeOpen}
-        onCancel={() => {
-          setBrandNameSmokeOpen(false)
-        }}
-        onSubmit={async (values) => {
-          const { co, nicotine, tar } = form.getFieldsValue()
-          if (co === undefined || nicotine === undefined || tar === undefined) {
-            return false
-          }
-          const res = await window.electronAPI.rfgMark.createRfgMark({
-            mark: values,
-            co,
-            nicotine,
-            tar
-          })
-          if (!res.success) {
-            notificationApi.error({
-              message: res.error
-            })
-            return false
-          }
-          setBrandNameSmokeOpen(false)
-          handleBrandNameSmoke()
-          notificationApi.success({
-            message: '保存成功！'
-          })
-        }}
-      />
+      {/*历史数据 */}
       <HistoryModal
+        type={1}
         modalOpen={historyModalOpen}
         onCancel={() => {
           setHistoryModalOpen(false)
         }}
-        type={1}
       />
     </div>
   )

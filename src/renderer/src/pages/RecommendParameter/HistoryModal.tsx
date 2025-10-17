@@ -1,18 +1,19 @@
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, useState, useRef } from 'react'
 import { Button, message, Modal, Popconfirm } from 'antd'
 import { ProTable } from '@ant-design/pro-components'
 import type { ActionType, ProColumns } from '@ant-design/pro-components'
 
 export type CalculationModalProps = {
+  type: number
   modalOpen: boolean
   onCancel: () => void
-  type: number
-  historyData: any
 }
 
 const HistoryModal: React.FC<CalculationModalProps> = ({ type, modalOpen, onCancel }) => {
   const [messageApi, contextHolder] = message.useMessage()
   const actionRef = useRef<ActionType>()
+  const [data, setData] = useState<any[]>([]) // 存储请求的数据
+  const [loading, setLoading] = useState(false)
 
   const info = (type: 'info' | 'success' | 'error' | 'warning' | 'loading', msg: string) => {
     messageApi.open({
@@ -21,7 +22,7 @@ const HistoryModal: React.FC<CalculationModalProps> = ({ type, modalOpen, onCanc
     })
   }
 
-  const columns: ProColumns<TableListItem>[] = [
+  const columns: ProColumns<any>[] = [
     {
       title: '滤嘴通风率 (%)',
       dataIndex: 'filterVentilation',
@@ -66,19 +67,15 @@ const HistoryModal: React.FC<CalculationModalProps> = ({ type, modalOpen, onCanc
               type="link"
               onClick={async () => {
                 try {
-                  // 根据`type`决定调用哪个API进行导出
-                  console.log('🚀 ~ type:', type)
+                  // 根据 `type` 决定调用哪个 API 进行导出
                   if (type) {
                     await window.electronAPI.simulationPredictionSaveAPI.exportId(record.id)
                   } else {
                     await window.electronAPI.recAuxMaterialsSaveAPI.exportId(record.id)
                   }
-
-                  // 导出成功后弹出提示
                   info('success', '导出成功！')
                   return true
                 } catch (error) {
-                  // 打印错误信息，方便调试
                   console.error('导出失败，错误详情：', error)
                   info('error', '导出失败，请重试！')
                   return false
@@ -164,10 +161,33 @@ const HistoryModal: React.FC<CalculationModalProps> = ({ type, modalOpen, onCanc
         search={false}
         options={false}
         dataSource={record.profile}
-        // pagination={false}
       />
     )
   }
+
+  // 请求数据的函数
+  const fetchData = async () => {
+    setLoading(true)
+    try {
+      const fetchedData = type
+        ? await window.electronAPI.simulationPredictionSaveAPI.query()
+        : await window.electronAPI.recAuxMaterialsSaveAPI.query()
+      setData(fetchedData.data || [])
+    } catch (error) {
+      info('error', '数据加载失败，请重试！')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // 在每次 `modalOpen` 状态变化时请求数据
+  useEffect(() => {
+    if (modalOpen) {
+      fetchData() // 每次打开时请求数据
+    } else {
+      setData([]) // 关闭时清空数据
+    }
+  }, [modalOpen, type]) // 监听 `modalOpen` 和 `type` 的变化
 
   return (
     <>
@@ -184,14 +204,8 @@ const HistoryModal: React.FC<CalculationModalProps> = ({ type, modalOpen, onCanc
         onCancel={onCancel}
       >
         <ProTable
-          // headerTitle="基准数据表格"
           columns={columns}
           actionRef={actionRef}
-          request={async () => {
-            return type
-              ? await window.electronAPI.simulationPredictionSaveAPI.query()
-              : await window.electronAPI.recAuxMaterialsSaveAPI.query()
-          }}
           rowKey="id"
           pagination={{
             showQuickJumper: true
@@ -200,6 +214,8 @@ const HistoryModal: React.FC<CalculationModalProps> = ({ type, modalOpen, onCanc
           search={false}
           dateFormatter="string"
           options={false}
+          loading={loading} // 显示加载状态
+          dataSource={data} // 设置表格数据源
         />
       </Modal>
     </>
