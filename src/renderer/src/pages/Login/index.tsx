@@ -23,17 +23,34 @@ const Page: React.FC = () => {
   const handleFinish = async (values: FormValues) => {
     const username = (values.username ?? '').trim()
     const password = (values.password ?? '').trim()
+    const users = [
+      {
+        username: 'admin',
+        password: 'admin',
+        role: 'admin'
+      },
+      { username: 'user', password: '123456', role: 'user' }
+    ]
 
-    if (username === 'admin' && password === 'admin') {
+    const matched = users.some((u) => u.username === username && u.password === password)
+
+    if (matched) {
+      const role = users.find((u) => u.username === username)?.role ?? ''
       if (values.autoLogin) {
         localStorage.setItem('isAuthenticated', 'true')
         localStorage.setItem('username', username)
+        localStorage.setItem('role', role)
       } else {
         sessionStorage.setItem('isAuthenticated', 'true')
         sessionStorage.setItem('username', username)
+        sessionStorage.setItem('role', role)
       }
       message.success('登录成功！')
-      navigate('/modelingData')
+      if (role === 'admin') {
+        navigate('/modelingData')
+      } else {
+        navigate('/simulatingForecast')
+      }
     } else {
       message.error('用户名或密码错误')
     }
