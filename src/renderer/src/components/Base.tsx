@@ -57,7 +57,7 @@ export const HeaderTitleCard: React.FC<HeaderTitleCardProps> = ({
         boxShadow: `0 8px 15px ${color}50`,
         border: 'none'
       }}
-      bodyStyle={{ padding: '28px 32px' }}
+      bodyStyle={{ padding: 20 }}
     >
       <Title level={2} style={{ color: 'white', margin: 0, fontWeight: 700 }}>
         <CalculatorOutlined style={{ marginRight: 16, fontSize: 32 }} />
@@ -93,7 +93,7 @@ export const StyledCard: React.FC<StyledCardProps> = ({
     justifyContent: 'space-between',
     alignItems: 'center',
     background: `linear-gradient(90deg, ${color}20 0%, #ffffff 100%)`,
-    padding: '16px 24px',
+    padding: '10px 24px',
     borderRadius: '12px 12px 0 0',
     borderBottom: `2px solid ${color}40`
   }

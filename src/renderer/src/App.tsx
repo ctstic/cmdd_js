@@ -140,7 +140,7 @@ const BasicLayout: React.FC = () => {
       <Content style={{ padding: 10, minHeight: 'calc(100vh - 80px)' }}>
         <div
           style={{
-            padding: 24,
+            padding: 10,
             minHeight: '100%',
             background: colorBgContainer,
             borderRadius: borderRadiusLG

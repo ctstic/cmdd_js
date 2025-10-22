@@ -1,7 +1,7 @@
 import { ExperimentOutlined } from '@ant-design/icons'
 import { HeaderTitleCard, OptButton, Ranges, StyledCard } from '@renderer/components/base'
 import ModelTypeSelect from '@renderer/components/ModelTypeSelect'
-import { Affix, Card, Col, Flex, Form, InputNumber, notification, Row, Space } from 'antd'
+import { Affix, Card, Col, Flex, Form, InputNumber, notification, Row, Space, Spin } from 'antd'
 import React, { useRef, useState } from 'react'
 import {
   baseMaterialFields,
@@ -18,6 +18,7 @@ import { fnv1a } from '@renderer/utils/common'
 const requiredRule = (label: string) => [{ required: true, message: `请输入${label}` }]
 
 const RecommendParameter: React.FC = () => {
+  const [loading, setLoading] = React.useState<boolean>(false)
   const [notificationApi, contextHolder] = notification.useNotification()
   const [baseForm] = Form.useForm() //基准卷烟辅材参数
   const [targetForm] = Form.useForm() //目标主流烟气
@@ -32,6 +33,8 @@ const RecommendParameter: React.FC = () => {
   // 计算
   const handleSubmit = async (): Promise<void> => {
     try {
+      setLoading(true)
+
       // 获取每一步表单的所有值
       const baseValues = await baseForm.validateFields()
       const targetValues = await targetForm.validateFields()
@@ -52,7 +55,7 @@ const RecommendParameter: React.FC = () => {
         standardDesignParams: rangeValues,
         recommendedValue: []
       })
-      console.log('🚀 ~ handleSubmit ~ res:', res)
+
       if (res.data.data && Array.isArray(res.data.data) && res.data.data.length > 0) {
         // 数据更新
         const transformedData = res.data.data.map((item, index) => ({
@@ -83,12 +86,16 @@ const RecommendParameter: React.FC = () => {
             tableData: transformedData
           })
         )
+
+        setLoading(false)
       } else {
+        setLoading(false)
         notificationApi.error({
           message: res.data.errors
         })
       }
     } catch (error) {
+      setLoading(false)
       notificationApi.error({
         message: '计算异常，请检查表单填写'
       })
@@ -204,239 +211,236 @@ const RecommendParameter: React.FC = () => {
 
   return (
     <div style={{ minHeight: 'calc(100vh - 145px)' }}>
-      {contextHolder}
-      <HeaderTitleCard
-        color="#1890ff"
-        title1="卷烟辅材参数推荐系统"
-        title2="基于多维数据的智能化推荐辅材参数"
-      />
-      {/* 主流 */}
-      <Form form={baseForm} layout="vertical">
-        <ModelTypeSelect form={baseForm} />
+      <Spin tip="正常生成推荐数据！" size="large" delay={500} spinning={loading}>
+        {contextHolder}
+        <HeaderTitleCard
+          color="#1890ff"
+          title1="卷烟辅材参数推荐系统"
+          title2="基于多维数据的智能化推荐辅材参数"
+        />
+        {/* 主流 */}
+        <Form form={baseForm} layout="vertical">
+          <ModelTypeSelect form={baseForm} />
+          <Row gutter={10} style={{ marginBottom: 15 }}>
+            <Col span={8}>
+              <StyledCard
+                title="基准卷烟主流烟气"
+                icon={<ExperimentOutlined />}
+                rightAction={
+                  <BrandSelectPanel
+                    type="jizhun"
+                    formRef={baseForm}
+                    FormFields={harmfulFields}
+                    width={200}
+                  />
+                }
+              >
+                <Row gutter={10} justify="space-between">
+                  {harmfulFields.map((field) => (
+                    <Col span={8} key={field.name}>
+                      <Form.Item
+                        name={field.name}
+                        label={`${field.label}${field.unit ? ` (${field.unit})` : ''}`}
+                        rules={requiredRule(field.label)}
+                      >
+                        <InputNumber
+                          style={{ width: '100%' }}
+                          min={0}
+                          step={0.01}
+                          precision={2}
+                          placeholder={`请输入${field.label}`}
+                        />
+                      </Form.Item>
+                    </Col>
+                  ))}
+                </Row>
+              </StyledCard>
+            </Col>
+            <Col span={16}>
+              <StyledCard
+                title="基准卷烟辅材参数"
+                icon={<ExperimentOutlined />}
+                rightAction={
+                  <BrandSelectPanel
+                    type="fucai"
+                    formRef={baseForm}
+                    FormFields={baseMaterialFields}
+                    width={200}
+                  />
+                }
+              >
+                <Row gutter={10} justify="space-between">
+                  {baseMaterialFields.map((field) => (
+                    <Col flex="20%" key={field.name}>
+                      <Form.Item
+                        name={field.name}
+                        label={`${field.label}${field.unit ? ` (${field.unit})` : ''}`}
+                        rules={requiredRule(field.label)}
+                      >
+                        <InputNumber
+                          style={{ width: '100%' }}
+                          min={0}
+                          step={0.01}
+                          precision={2}
+                          placeholder={`请输入${field.label}`}
+                        />
+                      </Form.Item>
+                    </Col>
+                  ))}
+                </Row>
+              </StyledCard>
+            </Col>
+          </Row>
+        </Form>
+        {/* 目标权重和间隔 */}
         <Row gutter={10} style={{ marginBottom: 15 }}>
           <Col span={8}>
-            <StyledCard
-              title="基准卷烟主流烟气"
-              icon={<ExperimentOutlined />}
-              rightAction={
-                <BrandSelectPanel
-                  type="jizhun"
-                  formRef={baseForm}
-                  FormFields={harmfulFields}
-                  width={200}
-                />
-              }
-            >
-              <Row gutter={10} justify="space-between">
-                {harmfulFields.map((field) => (
-                  <Col span={8} key={field.name}>
-                    <Form.Item
-                      name={field.name}
-                      label={`${field.label}${field.unit ? ` (${field.unit})` : ''}`}
-                      rules={requiredRule(field.label)}
-                    >
-                      <InputNumber
-                        style={{ width: '100%' }}
-                        min={0}
-                        step={0.01}
-                        precision={2}
-                        placeholder={`请输入${field.label}`}
-                      />
-                    </Form.Item>
-                  </Col>
-                ))}
-              </Row>
+            <StyledCard title="目标和权重主流烟气" icon={<ExperimentOutlined />} color="#fa8c16">
+              <Form form={targetForm} layout="vertical">
+                <Row gutter={10} justify="space-between">
+                  {targetHarmfulFields.map((field) => (
+                    <Col span={8} key={field.name}>
+                      <Form.Item
+                        name={field.name}
+                        label={`${field.label}${field.unit ? ` (${field.unit})` : ''}`}
+                        rules={requiredRule(field.label)}
+                      >
+                        <InputNumber
+                          style={{ width: '100%' }}
+                          min={0}
+                          step={0.01}
+                          precision={2}
+                          placeholder={`请输入${field.label}`}
+                        />
+                      </Form.Item>
+                    </Col>
+                  ))}
+                </Row>
+              </Form>
+              <Form form={weightForm} layout="vertical">
+                <Row gutter={10} justify="space-between">
+                  {harmfulWeightFields.map((field) => (
+                    <Col span={8} key={field.name}>
+                      <Form.Item
+                        name={field.name}
+                        label={`${field.label}${field.unit ? ` (${field.unit})` : ''}`}
+                        initialValue={0.33}
+                        rules={[
+                          { required: true, message: '请输入焦油权重' },
+                          ({ getFieldValue }) => ({
+                            validator(_, value) {
+                              const co = Number(getFieldValue('coWeight') || 0)
+                              const ni = Number(getFieldValue('nicotineWeight') || 0)
+                              const tar = Number(value || 0)
+                              const sum = Number((co + ni + tar).toFixed(2))
+                              if (sum > 1) {
+                                return Promise.reject(new Error('三项权重之和不能大于 1'))
+                              }
+                              return Promise.resolve()
+                            }
+                          })
+                        ]}
+                      >
+                        <InputNumber
+                          style={{ width: '100%' }}
+                          min={0}
+                          step={0.01}
+                          precision={2}
+                          placeholder={`请输入${field.label}`}
+                        />
+                      </Form.Item>
+                    </Col>
+                  ))}
+                </Row>
+              </Form>
             </StyledCard>
           </Col>
           <Col span={16}>
             <StyledCard
-              title="基准卷烟辅材参数"
+              title="辅材参数个性化设计范围"
               icon={<ExperimentOutlined />}
-              rightAction={
-                <BrandSelectPanel
-                  type="fucai"
-                  formRef={baseForm}
-                  FormFields={baseMaterialFields}
-                  width={200}
-                />
-              }
+              color="#52c41a"
             >
-              <Row gutter={10} justify="space-between">
-                {baseMaterialFields.map((field) => (
-                  <Col flex="20%" key={field.name}>
-                    <Form.Item
+              <Form form={rangeForm} layout="vertical">
+                <Flex gap={20} style={{ width: '100%' }}>
+                  <Form.Item
+                    name="size"
+                    label="生成推荐数量"
+                    rules={requiredRule('生成推荐数量')}
+                    initialValue={10}
+                    layout="horizontal"
+                    style={{ marginBottom: 10 }}
+                  >
+                    <InputNumber
+                      style={{ width: '100%' }}
+                      min={10} // ✅ 最小值
+                      max={100} // ✅ 最大值
+                      step={1}
+                      precision={0}
+                      placeholder="请输入生成推荐数量"
+                    />
+                  </Form.Item>
+                </Flex>
+                <Flex gap={20} style={{ width: '100%' }}>
+                  {rangeFields.map((field) => (
+                    <Ranges
+                      formRef={rangeForm}
+                      key={field.name}
                       name={field.name}
-                      label={`${field.label}${field.unit ? ` (${field.unit})` : ''}`}
-                      rules={requiredRule(field.label)}
-                    >
-                      <InputNumber
-                        style={{ width: '100%' }}
-                        min={0}
-                        step={0.01}
-                        precision={2}
-                        placeholder={`请输入${field.label}`}
-                      />
-                    </Form.Item>
-                  </Col>
-                ))}
-              </Row>
+                      unit={field.unit}
+                      label={field.label}
+                      min={field.min}
+                      max={field.max}
+                      step={field.step}
+                      defaultSection={field.defaultSection}
+                    />
+                  ))}
+                </Flex>
+              </Form>
             </StyledCard>
           </Col>
         </Row>
-      </Form>
-      {/* 目标权重和间隔 */}
-      <Row gutter={10} style={{ marginBottom: 15 }}>
-        <Col
-          span={8}
-          style={{
-            marginTop: 15
-          }}
-        >
-          <StyledCard title="目标和权重主流烟气" icon={<ExperimentOutlined />} color="#fa8c16">
-            <Form form={targetForm} layout="vertical">
-              <Row gutter={10} justify="space-between">
-                {targetHarmfulFields.map((field) => (
-                  <Col span={8} key={field.name}>
-                    <Form.Item
-                      name={field.name}
-                      label={`${field.label}${field.unit ? ` (${field.unit})` : ''}`}
-                      rules={requiredRule(field.label)}
-                    >
-                      <InputNumber
-                        style={{ width: '100%' }}
-                        min={0}
-                        step={0.01}
-                        precision={2}
-                        placeholder={`请输入${field.label}`}
-                      />
-                    </Form.Item>
-                  </Col>
-                ))}
-              </Row>
-            </Form>
-            <Form form={weightForm} layout="vertical">
-              <Row gutter={10} justify="space-between">
-                {harmfulWeightFields.map((field) => (
-                  <Col span={8} key={field.name}>
-                    <Form.Item
-                      name={field.name}
-                      label={`${field.label}${field.unit ? ` (${field.unit})` : ''}`}
-                      initialValue={0.33}
-                      rules={[
-                        { required: true, message: '请输入焦油权重' },
-                        ({ getFieldValue }) => ({
-                          validator(_, value) {
-                            const co = Number(getFieldValue('coWeight') || 0)
-                            const ni = Number(getFieldValue('nicotineWeight') || 0)
-                            const tar = Number(value || 0)
-                            const sum = Number((co + ni + tar).toFixed(2))
-                            if (sum > 1) {
-                              return Promise.reject(new Error('三项权重之和不能大于 1'))
-                            }
-                            return Promise.resolve()
-                          }
-                        })
-                      ]}
-                    >
-                      <InputNumber
-                        style={{ width: '100%' }}
-                        min={0}
-                        step={0.01}
-                        precision={2}
-                        placeholder={`请输入${field.label}`}
-                      />
-                    </Form.Item>
-                  </Col>
-                ))}
-              </Row>
-            </Form>
-          </StyledCard>
-        </Col>
-        <Col
-          span={16}
-          style={{
-            marginTop: 15
-          }}
-        >
-          <StyledCard title="辅材参数个性化设计范围" icon={<ExperimentOutlined />} color="#52c41a">
-            <Form form={rangeForm} layout="vertical">
-              <Flex gap={20} style={{ width: '100%' }}>
-                <Form.Item
-                  name="size"
-                  label="生成推荐数量"
-                  rules={requiredRule('生成推荐数量')}
-                  initialValue={10}
-                  layout="horizontal"
-                  style={{ marginBottom: 10 }}
-                >
-                  <InputNumber
-                    style={{ width: '100%' }}
-                    min={10} // ✅ 最小值
-                    max={100} // ✅ 最大值
-                    step={1}
-                    precision={0}
-                    placeholder="请输入生成推荐数量"
-                  />
-                </Form.Item>
-              </Flex>
-              <Flex gap={20} style={{ width: '100%' }}>
-                {rangeFields.map((field) => (
-                  <Ranges
-                    formRef={rangeForm}
-                    key={field.name}
-                    name={field.name}
-                    unit={field.unit}
-                    label={field.label}
-                    min={field.min}
-                    max={field.max}
-                    step={field.step}
-                    defaultSection={field.defaultSection}
-                  />
-                ))}
-              </Flex>
-            </Form>
-          </StyledCard>
-        </Col>
-      </Row>
-      {/* 表格 */}
-      <PredictionTable tableData={tableData} />
-      {/* 操作按钮 */}
-      <Affix offsetBottom={10}>
-        <Card
-          style={{
-            marginTop: 15,
-            borderRadius: 16,
-            boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-            border: '1px solid #e8e8e8'
-          }}
-          bodyStyle={{ padding: 0 }}
-        >
-          <div style={{ padding: 15, textAlign: 'center' }}>
-            <Space>
-              <OptButton title="提交并生成推荐" color="#2597ff" onClick={handleSubmit} />
-              <OptButton title="重置" color="#ffdd8e" onClick={handleReset} />
-              <OptButton title="保存" color="#92d96f" onClick={handleSave} />
-              <OptButton title="导出当前数据" color="#a689cf" onClick={handleExport} />
-              <OptButton
-                title="查看历史数据"
-                color="#ffdd8e"
-                onClick={() => {
-                  setHistoryModalOpen(true)
-                }}
-              />
-            </Space>
-          </div>
-        </Card>
-      </Affix>
+        {/* 表格 */}
+        <PredictionTable tableData={tableData} />
+        {/* 操作按钮 */}
+        <Affix offsetBottom={10}>
+          <Card
+            style={{
+              width: '100%',
+              marginTop: 15,
+              borderRadius: 16,
+              boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+              border: '1px solid #e8e8e8'
+            }}
+            bodyStyle={{ padding: 0 }}
+          >
+            <div style={{ padding: 10, textAlign: 'center' }}>
+              <Space>
+                <OptButton title="提交并生成推荐" color="#2597ff" onClick={handleSubmit} />
+                <OptButton title="重置" color="#ffdd8e" onClick={handleReset} />
+                <OptButton title="保存" color="#92d96f" onClick={handleSave} />
+                <OptButton title="导出当前数据" color="#a689cf" onClick={handleExport} />
+                <OptButton
+                  title="查看历史数据"
+                  color="#ffdd8e"
+                  onClick={() => {
+                    setHistoryModalOpen(true)
+                  }}
+                />
+              </Space>
+            </div>
+          </Card>
+        </Affix>
 
-      {/*历史数据 */}
-      <HistoryModal
-        type={0}
-        modalOpen={historyModalOpen}
-        onCancel={() => {
-          setHistoryModalOpen(false)
-        }}
-      />
+        {/*历史数据 */}
+        <HistoryModal
+          type={0}
+          modalOpen={historyModalOpen}
+          onCancel={() => {
+            setHistoryModalOpen(false)
+          }}
+        />
+      </Spin>
     </div>
   )
 }
