@@ -2,7 +2,7 @@ import { ExperimentOutlined } from '@ant-design/icons'
 import { HeaderTitleCard, OptButton, Ranges, StyledCard } from '@renderer/components/base'
 import ModelTypeSelect from '@renderer/components/ModelTypeSelect'
 import { Affix, Card, Col, Flex, Form, InputNumber, notification, Row, Space } from 'antd'
-import React, { useState } from 'react'
+import React, { useRef, useState } from 'react'
 import {
   baseMaterialFields,
   harmfulFields,
@@ -13,6 +13,7 @@ import {
 import PredictionTable from './PredictionTable'
 import BrandSelectPanel from '@renderer/components/BrandSelectPanel'
 import HistoryModal from './HistoryModal'
+import { fnv1a } from '@renderer/utils/common'
 
 const requiredRule = (label: string) => [{ required: true, message: `请输入${label}` }]
 
@@ -23,6 +24,8 @@ const RecommendParameter: React.FC = () => {
   const [weightForm] = Form.useForm() //成分权重设置
   const [rangeForm] = Form.useForm() //辅材参数个性化设计范围
   const [tableData, setTableData] = useState<any[]>([])
+  // 存储计算hash
+  const hashValue = useRef('')
   // 历史数据弹窗
   const [historyModalOpen, setHistoryModalOpen] = useState<boolean>(false)
 
@@ -69,6 +72,17 @@ const RecommendParameter: React.FC = () => {
         notificationApi.success({
           message: '参数推荐完成！'
         })
+
+        // 存储计算hash
+        hashValue.current = fnv1a(
+          JSON.stringify({
+            baseValues,
+            targetValues,
+            weightValues,
+            rangeValues,
+            tableData: transformedData
+          })
+        )
       } else {
         notificationApi.error({
           message: res.data.errors
@@ -94,24 +108,98 @@ const RecommendParameter: React.FC = () => {
     })
   }
 
+  // 保存和导出的校验
+  const validateAndCompareData = async (): Promise<boolean> => {
+    try {
+      // 获取每一步表单的所有值
+      const baseValues = await baseForm.validateFields()
+      const targetValues = await targetForm.validateFields()
+      const weightValues = await weightForm.validateFields()
+      const rangeValues = await rangeForm.validateFields()
+
+      const hash = fnv1a(
+        JSON.stringify({
+          baseValues,
+          targetValues,
+          weightValues,
+          rangeValues,
+          tableData
+        })
+      )
+
+      // 返回校验
+      return hash === hashValue.current
+    } catch (error) {
+      notificationApi.error({
+        message: '请检查表单填写！'
+      })
+      return false // 如果捕获到异常，则返回 false
+    }
+  }
+
+  // 保存
+  const handleSave = async (): Promise<void> => {
+    if (await validateAndCompareData()) {
+      try {
+        const baseValues = baseForm.getFieldsValue(true)
+        const targetValues = targetForm.getFieldsValue(true)
+        const weightValues = weightForm.getFieldsValue(true)
+        const rangeValues = rangeForm.getFieldsValue(true)
+        const params = {
+          count: rangeValues.size,
+          specimenName: baseValues.modelType,
+          standardParams: baseValues,
+          targetParams: { ...targetValues, ...weightValues },
+          standardDesignParams: rangeValues,
+          recommendedValue: tableData
+        }
+        await window.electronAPI.recAuxMaterialsSaveAPI.create(params)
+        notificationApi.success({
+          message: '保存成功！'
+        })
+      } catch (error) {
+        notificationApi.error({
+          message: '保存异常，请检查表单填写！'
+        })
+      }
+    } else {
+      notificationApi.error({
+        message: '修改值后必须重新计算才可以保存！'
+      })
+    }
+  }
+
   // 导出
   const handleExport = async (): Promise<void> => {
-    const baseValues = baseForm.getFieldsValue(true)
-    const targetValues = targetForm.getFieldsValue(true)
-    const weightValues = weightForm.getFieldsValue(true)
-    const rangeValues = rangeForm.getFieldsValue(true)
+    if (await validateAndCompareData()) {
+      try {
+        const baseValues = baseForm.getFieldsValue(true)
+        const targetValues = targetForm.getFieldsValue(true)
+        const weightValues = weightForm.getFieldsValue(true)
+        const rangeValues = rangeForm.getFieldsValue(true)
 
-    await window.electronAPI.rec.exportResult({
-      count: rangeValues.size,
-      specimenName: baseValues.modelType,
-      standardParams: baseValues,
-      targetParams: { ...targetValues, ...weightValues },
-      standardDesignParams: rangeValues,
-      recommendedValue: tableData
-    })
-    notificationApi.success({
-      message: '导出成功！'
-    })
+        await window.electronAPI.rec.exportResult({
+          count: rangeValues.size,
+          specimenName: baseValues.modelType,
+          standardParams: baseValues,
+          targetParams: { ...targetValues, ...weightValues },
+          standardDesignParams: rangeValues,
+          recommendedValue: tableData
+        })
+
+        notificationApi.success({
+          message: '导出成功！'
+        })
+      } catch (error) {
+        notificationApi.error({
+          message: '导出异常，请检查表单填写！'
+        })
+      }
+    } else {
+      notificationApi.error({
+        message: '修改值后必须重新计算才可以保存！'
+      })
+    }
   }
 
   return (
@@ -132,7 +220,7 @@ const RecommendParameter: React.FC = () => {
               icon={<ExperimentOutlined />}
               rightAction={
                 <BrandSelectPanel
-                  type="fucai"
+                  type="jizhun"
                   formRef={baseForm}
                   FormFields={harmfulFields}
                   width={200}
@@ -327,7 +415,7 @@ const RecommendParameter: React.FC = () => {
             <Space>
               <OptButton title="提交并生成推荐" color="#2597ff" onClick={handleSubmit} />
               <OptButton title="重置" color="#ffdd8e" onClick={handleReset} />
-              <OptButton title="保存" color="#92d96f" onClick={() => {}} />
+              <OptButton title="保存" color="#92d96f" onClick={handleSave} />
               <OptButton title="导出当前数据" color="#a689cf" onClick={handleExport} />
               <OptButton
                 title="查看历史数据"

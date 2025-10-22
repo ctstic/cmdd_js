@@ -7,6 +7,7 @@ import PredictionTable from './PredictionTable'
 import ModelTypeSelect from '@renderer/components/ModelTypeSelect'
 import BrandSelectPanel from '@renderer/components/BrandSelectPanel'
 import HistoryModal from '../RecommendParameter/HistoryModal'
+import { fnv1a } from '@renderer/utils/common'
 
 const requiredRule = (label: string) => [{ required: true, message: `请输入${label}` }]
 
@@ -14,8 +15,8 @@ const SimulatingForecast: React.FC = () => {
   const [notificationApi, contextHolder] = notification.useNotification()
   const [formRef] = Form.useForm()
   const tableRef = useRef<any>(null)
-  // 当前计算的结果数据
-  const [previousData, setPreviousData] = useState<any>(null)
+  // 存储计算hash
+  const hashValue = useRef('')
   // 历史数据弹窗
   const [historyModalOpen, setHistoryModalOpen] = useState<boolean>(false)
 
@@ -52,14 +53,6 @@ const SimulatingForecast: React.FC = () => {
             predictionParams: inputParams
           })
 
-          console.log(
-            '🚀 ~ handleSubmit ~ formValues.modelType:',
-            formValues.modelType,
-            formValues,
-            inputParams,
-            res
-          )
-
           if (res.data.data && Array.isArray(res.data.data) && res.data.data.length > 0) {
             // 确保将返回的预测数据更新到表格中
             const predictionData = res.data.data.map((item: any, index: number) => {
@@ -88,6 +81,8 @@ const SimulatingForecast: React.FC = () => {
             notificationApi.success({
               message: '计算成功'
             })
+            // 存储计算hash
+            hashValue.current = fnv1a(JSON.stringify({ formValues, predictionData }))
           } else {
             notificationApi.error({
               message: res.data.errors
@@ -97,7 +92,7 @@ const SimulatingForecast: React.FC = () => {
       }
     } catch (error) {
       notificationApi.error({
-        message: '计算异常，请检查表单填写'
+        message: '计算异常，请检查表单填写！'
       })
     }
   }
@@ -114,53 +109,19 @@ const SimulatingForecast: React.FC = () => {
     })
   }
 
-  // 合并并优化后的方法
+  // 保存和导出的校验
   const validateAndCompareData = async (): Promise<boolean> => {
     try {
       // 获取表单和表格数据
       const formValues = await formRef.validateFields()
-      const dataSource = tableRef.current.getData()
-      console.log('🚀 ~ validateAndCompareData ~ formValues:', formValues, dataSource)
+      const predictionData = tableRef.current.getData()
+      const hash = fnv1a(JSON.stringify({ formValues, predictionData }))
 
-      let isValid = true // 用于标识校验是否通过
-
-      // 校验表格数据
-      if (dataSource.length === 0) {
-        notificationApi.error({
-          message: '基础数据为空，请填写基础数据内容'
-        })
-        isValid = false
-      } else {
-        dataSource.forEach((data: any, index: number) => {
-          // 校验每个字段是否为空
-          for (const key in data) {
-            if (data[key] === null || data[key] === '' || data[key] === undefined) {
-              notificationApi.error({
-                message: '基础数据需要完整！'
-              })
-              isValid = false
-              return isValid // 一旦发现问题就停止循环并返回校验结果
-            }
-          }
-
-          // 检查是否与上次提交的数据完全一致
-          if (previousData && JSON.stringify(previousData) === JSON.stringify(data)) {
-            notificationApi.error({
-              message: '本次数据和上次保存数据一直，请修改后再次保存！'
-            })
-            isValid = false
-          }
-
-          // 更新上次的数据
-          setPreviousData(data)
-        })
-      }
-
-      // 返回最终校验结果
-      return isValid
+      // 返回校验
+      return hash === hashValue.current
     } catch (error) {
       notificationApi.error({
-        message: '请先进行一次计算！'
+        message: '请检查表单填写！'
       })
       return false // 如果捕获到异常，则返回 false
     }
@@ -182,9 +143,13 @@ const SimulatingForecast: React.FC = () => {
         })
       } catch (error) {
         notificationApi.error({
-          message: '请先进行一次计算！'
+          message: '保存异常，请检查表单填写！'
         })
       }
+    } else {
+      notificationApi.error({
+        message: '修改值后必须重新计算才可以保存！'
+      })
     }
   }
 
@@ -205,9 +170,13 @@ const SimulatingForecast: React.FC = () => {
         })
       } catch (error) {
         notificationApi.error({
-          message: '请先进行一次计算！'
+          message: '导出异常，请检查表单填写！'
         })
       }
+    } else {
+      notificationApi.error({
+        message: '修改值后必须重新计算才可以导出！'
+      })
     }
   }
 
