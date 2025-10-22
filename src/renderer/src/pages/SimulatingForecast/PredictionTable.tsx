@@ -1,5 +1,5 @@
-import { LineChartOutlined } from '@ant-design/icons'
-import type { EditableFormInstance, ProColumns } from '@ant-design/pro-components'
+import { ArrowDownOutlined, ArrowUpOutlined, LineChartOutlined } from '@ant-design/icons'
+import type { EditableFormInstance, FormInstance, ProColumns } from '@ant-design/pro-components'
 import { EditableProTable } from '@ant-design/pro-components'
 import React, { useState, useRef, useImperativeHandle } from 'react'
 import { createStyles } from 'antd-style'
@@ -36,11 +36,11 @@ interface DataSourceType {
 }
 
 interface PredictionTableProps {
+  formRef: FormInstance
   actionRef?: React.Ref<any>
-  // expandedRowKeys: React.Key[]
 }
 
-const PredictionTable: React.FC<PredictionTableProps> = ({ actionRef }) => {
+const PredictionTable: React.FC<PredictionTableProps> = ({ formRef, actionRef }) => {
   const [editableKeys, setEditableRowKeys] = useState<React.Key[]>([])
   const [dataSource, setDataSource] = useState<readonly DataSourceType[]>([])
   const editableTableRef = useRef<EditableFormInstance<DataSourceType>>()
@@ -55,6 +55,40 @@ const PredictionTable: React.FC<PredictionTableProps> = ({ actionRef }) => {
       }
     }
   }))
+
+  // 对比新旧值
+  const renderValueDiff = (newValue?: number, oldValue?: number) => {
+    // 如果都为空
+    if (newValue == null && oldValue == null)
+      return <span style={{ color: '#999' }}>请进行计算</span>
+
+    const diff = Number(newValue) - Number(oldValue)
+    let color = '#000000' // 默认绿色
+    let icon = null
+
+    if (!isNaN(diff)) {
+      if (diff > 0) {
+        color = '#ff4d4f' // 上升红
+        icon = <ArrowUpOutlined style={{ marginLeft: 4 }} />
+      } else if (diff < 0) {
+        color = '#52c41a' // 下降绿
+        icon = <ArrowDownOutlined style={{ marginLeft: 4 }} />
+      }
+    }
+
+    return (
+      <span style={{ display: 'flex', alignItems: 'center' }}>
+        {newValue ?? '未计算'}
+        {!isNaN(diff) && diff !== 0 && (
+          <span style={{ marginLeft: 4, color }}>
+            {icon}
+            {diff > 0 ? '+' : ''}
+            {diff.toFixed(2)}
+          </span>
+        )}
+      </span>
+    )
+  }
 
   const columns: ProColumns<DataSourceType>[] = [
     {
@@ -81,10 +115,6 @@ const PredictionTable: React.FC<PredictionTableProps> = ({ actionRef }) => {
           title: '卷烟纸阻燃剂含量 (%)',
           dataIndex: 'citrate'
         }
-        // {
-        //   title: '钾盐占比（%）',
-        //   dataIndex: 'potassiumRatio'
-        // },
       ]
     },
     {
@@ -94,17 +124,26 @@ const PredictionTable: React.FC<PredictionTableProps> = ({ actionRef }) => {
         {
           title: '焦油 (mg/支)',
           dataIndex: 'tar',
-          readonly: true
+          readonly: true,
+          renderFormItem: (_, { record }) => {
+            return renderValueDiff(record?.tar as number, formRef?.getFieldValue?.('tar'))
+          }
         },
         {
           title: '烟碱 (mg/支)',
           dataIndex: 'nicotine',
-          readonly: true
+          readonly: true,
+          renderFormItem: (_, { record }) => {
+            return renderValueDiff(record?.nicotine as number, formRef?.getFieldValue?.('nicotine'))
+          }
         },
         {
           title: 'CO (mg/支)',
           dataIndex: 'co',
-          readonly: true
+          readonly: true,
+          renderFormItem: (_, { record }) => {
+            return renderValueDiff(record?.co as number, formRef?.getFieldValue?.('co'))
+          }
         }
       ]
     },

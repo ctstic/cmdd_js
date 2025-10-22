@@ -44,6 +44,7 @@ const SimulatingForecast: React.FC = () => {
         }))
         const jsonString = JSON.stringify(inputParams)
         if (inputParams.length === 0 || jsonString.includes('null')) {
+          setLoading(false)
           notificationApi.error({
             message: '请正确填写预测结果数据表格'
           })
@@ -272,7 +273,7 @@ const SimulatingForecast: React.FC = () => {
           </Row>
         </Form>
         {/* 预测 */}
-        <PredictionTable actionRef={tableRef} />
+        <PredictionTable formRef={formRef} actionRef={tableRef} />
         {/* 操作按钮 */}
         <Affix offsetBottom={10}>
           <Card
