@@ -19,6 +19,9 @@ const ModelTypeSelect: React.FC<ModelTypeSelectProps> = ({
   const [typeData, setTypeData] = useState<{ label: string; value: string }[]>([])
   const [api, contextHolder] = useNotification()
 
+  // ✅ 监听该字段的当前值（会在 resetFields() 后变为 undefined）
+  const currentValue = Form.useWatch(name, form)
+
   // 获取模型类别
   const handleTypeData = async (): Promise<void> => {
     try {
@@ -26,20 +29,30 @@ const ModelTypeSelect: React.FC<ModelTypeSelectProps> = ({
       const formatted = typeData.data.map((item: string) => ({ label: item, value: item })) || []
       setTypeData(formatted)
 
-      // ✅ 如果有数据，默认选中第一项
+      // 首次加载时，如果没值，默认选中第一项
       if (formatted.length > 0) {
-        form?.setFieldValue(name, formatted[0].value)
+        const v = form?.getFieldValue(name)
+        if (v == null || v === '') {
+          form?.setFieldValue(name, formatted[0].value)
+        }
       }
     } catch {
-      api.error({
-        message: '网络错误！'
-      })
+      api.error({ message: '网络错误！' })
     }
   }
 
   useEffect(() => {
     handleTypeData()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  // ✅ 核心：当表单被 reset 后，currentValue 会变成 undefined，
+  // 这里自动把它恢复为默认值（例如列表第一项）
+  useEffect(() => {
+    if ((currentValue == null || currentValue === '') && typeData.length > 0) {
+      form?.setFieldValue(name, typeData[0].value)
+    }
+  }, [currentValue, typeData, form, name])
 
   return (
     <>
