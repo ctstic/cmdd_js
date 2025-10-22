@@ -168,30 +168,29 @@ const SimulatingForecast: React.FC = () => {
 
   // 保存
   const handleSave = async (): Promise<void> => {
-    validateAndCompareData()
-    // if () {
-    //   try {
-    //     const formValues = await formRef.validateFields()
-    //     const dataSource = tableRef.current.getData()
-    //     await window.electronAPI.simulationPredictionSaveAPI.create({
-    //       specimenName: formValues.modelType,
-    //       standardParams: formValues,
-    //       predictionParams: dataSource
-    //     })
-    //     notificationApi.success({
-    //       message: '保存成功！'
-    //     })
-    //   } catch (error) {
-    //     notificationApi.error({
-    //       message: '请先进行一次计算！'
-    //     })
-    //   }
-    // }
+    if (await validateAndCompareData()) {
+      try {
+        const formValues = await formRef.validateFields()
+        const dataSource = tableRef.current.getData()
+        await window.electronAPI.simulationPredictionSaveAPI.create({
+          specimenName: formValues.modelType,
+          standardParams: formValues,
+          predictionParams: dataSource
+        })
+        notificationApi.success({
+          message: '保存成功！'
+        })
+      } catch (error) {
+        notificationApi.error({
+          message: '请先进行一次计算！'
+        })
+      }
+    }
   }
 
   // 导出
   const handleExport = async (): Promise<void> => {
-    if (validateAndCompareData) {
+    if (await validateAndCompareData()) {
       try {
         const formValues = await formRef.validateFields()
         const dataSource = tableRef.current.getData()

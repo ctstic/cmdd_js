@@ -1,5 +1,5 @@
 import React, { CSSProperties, ReactNode } from 'react'
-import { Button, Card, Typography } from 'antd'
+import { Button, Card, Form, FormInstance, Slider, Typography } from 'antd'
 import { CalculatorOutlined, LineChartOutlined } from '@ant-design/icons'
 
 const { Text, Title } = Typography
@@ -23,6 +23,17 @@ interface OptButtonProps {
   title?: string
   color?: string
   onClick?: () => void
+}
+
+interface RangesProps {
+  formRef: FormInstance
+  name?: string
+  label?: string
+  unit?: string
+  min?: number
+  max?: number
+  step?: number
+  defaultSection?: number[]
 }
 
 // ===================== HeaderTitleCard =====================
@@ -150,4 +161,81 @@ export const OptButton: React.FC<OptButtonProps> = ({
     </Button>
   )
 }
+
+export const Ranges: React.FC<RangesProps> = ({
+  formRef,
+  name = '步骤',
+  label = '步骤',
+  unit = '步骤',
+  min = 0,
+  max = 0,
+  step = 0,
+  defaultSection = [0]
+}) => {
+  const [value, setValue] = React.useState(defaultSection) // 使用 React state 管理值
+
+  const onSliderChange = (value: any) => {
+    setValue(value) // 更新 Slider 的值
+    formRef?.setFieldsValue({ [name]: value }) // 更新 Form 中的值
+  }
+
+  return (
+    <div
+      key={name}
+      style={{
+        padding: '10px',
+        background: 'rgba(82, 196, 26, 0.05)',
+        borderRadius: '8px',
+        border: '1px solid #e8f5e6',
+        width: '20%',
+        marginBottom: 10
+      }}
+    >
+      <Form.Item
+        name={name}
+        label={
+          <Text strong style={{ color: '#262626' }}>
+            {label}
+            {unit ? `(${unit})` : ''}
+          </Text>
+        }
+        initialValue={defaultSection}
+        style={{ margin: 0 }}
+      >
+        <Slider
+          range
+          min={min}
+          max={max}
+          value={value} // 绑定值
+          onChange={onSliderChange} // 处理值变化
+          step={step}
+          style={{ marginTop: 0 }}
+        />
+      </Form.Item>
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          marginTop: 0,
+          fontSize: '12px',
+          color: '#8c8c8c'
+        }}
+      >
+        <span>
+          最小值
+          <br />
+          {min}
+          {unit}
+        </span>
+        <span>
+          最大值
+          <br />
+          {max}
+          {unit}
+        </span>
+      </div>
+    </div>
+  )
+}
+
 // ===================== 可继续扩展更多小组件 =====================
