@@ -1,4 +1,4 @@
-import { ArrowDownOutlined, ArrowUpOutlined, LineChartOutlined } from '@ant-design/icons'
+import { ArrowDownOutlined, ArrowUpOutlined, ProfileOutlined } from '@ant-design/icons'
 import type { EditableFormInstance, FormInstance, ProColumns } from '@ant-design/pro-components'
 import { EditableProTable } from '@ant-design/pro-components'
 import React, { useState, useRef, useImperativeHandle } from 'react'
@@ -157,7 +157,7 @@ const PredictionTable: React.FC<PredictionTableProps> = ({ formRef, actionRef })
   ]
 
   return (
-    <StyledCard title="基准卷烟主流烟气" icon={<LineChartOutlined />} color="#52c41a">
+    <StyledCard title="仿真预测结果" icon={<ProfileOutlined />} color="#52c41a">
       <EditableProTable<DataSourceType>
         // expandedRowKeys={expandedRowKeys}
         className={styles.customTable}

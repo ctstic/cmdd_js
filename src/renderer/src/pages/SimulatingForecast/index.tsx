@@ -241,7 +241,6 @@ const SimulatingForecast: React.FC = () => {
               <StyledCard
                 title="基准卷烟主流烟气"
                 icon={<ExperimentOutlined />}
-                color="#fa8c16"
                 rightAction={
                   <BrandSelectPanel
                     type="jizhun"

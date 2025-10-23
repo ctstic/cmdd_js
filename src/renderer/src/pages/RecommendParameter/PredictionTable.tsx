@@ -1,4 +1,4 @@
-import { LineChartOutlined } from '@ant-design/icons'
+import { ProfileOutlined } from '@ant-design/icons'
 import { StyledCard } from '@renderer/components/base'
 import { Empty, Table, TableProps } from 'antd'
 import { createStyles } from 'antd-style'
@@ -83,7 +83,7 @@ const PredictionTable: React.FC<{ tableData: DataType[] }> = ({ tableData }) => 
     }
   ]
   return (
-    <StyledCard title="推荐辅材参数表格" icon={<LineChartOutlined />} color="#52c41a">
+    <StyledCard title="辅材参数推荐结果" icon={<ProfileOutlined />} color="#52c41a">
       <Table
         className={styles.customTable}
         scroll={{ x: 960, y: 600 }}

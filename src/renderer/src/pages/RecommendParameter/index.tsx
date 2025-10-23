@@ -1,4 +1,4 @@
-import { ExperimentOutlined } from '@ant-design/icons'
+import { ExperimentOutlined, UngroupOutlined } from '@ant-design/icons'
 import { HeaderTitleCard, OptButton, Ranges, StyledCard } from '@renderer/components/base'
 import ModelTypeSelect from '@renderer/components/ModelTypeSelect'
 import { Affix, Card, Col, Flex, Form, InputNumber, notification, Row, Space, Spin } from 'antd'
@@ -298,7 +298,7 @@ const RecommendParameter: React.FC = () => {
         {/* 目标权重和间隔 */}
         <Row gutter={10} style={{ marginBottom: 15 }}>
           <Col span={8}>
-            <StyledCard title="目标和权重主流烟气" icon={<ExperimentOutlined />} color="#fa8c16">
+            <StyledCard title="目标和权重主流烟气" icon={<UngroupOutlined />} color="#fa8c16">
               <Form form={targetForm} layout="vertical">
                 <Row gutter={10} justify="space-between">
                   {targetHarmfulFields.map((field) => (
@@ -359,11 +359,7 @@ const RecommendParameter: React.FC = () => {
             </StyledCard>
           </Col>
           <Col span={16}>
-            <StyledCard
-              title="辅材参数个性化设计范围"
-              icon={<ExperimentOutlined />}
-              color="#52c41a"
-            >
+            <StyledCard title="辅材参数个性化设计范围" icon={<UngroupOutlined />} color="#fa8c16">
               <Form form={rangeForm} layout="vertical">
                 <Flex gap={20} style={{ width: '100%' }}>
                   <Form.Item

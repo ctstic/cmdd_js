@@ -46,8 +46,8 @@ if (!gotLock) {
  */
 function createMainWindow(): BrowserWindow {
   const win = new BrowserWindow({
-    width: 1100,
-    height: 760,
+    width: 1700,
+    height: 900,
     show: false, // 等页面准备好后再展示，避免白屏闪烁
     autoHideMenuBar: true, // 隐藏菜单栏（可按 Alt 显示）
     ...(process.platform === 'linux' ? { icon } : {}),
