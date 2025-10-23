@@ -171,6 +171,7 @@ const RecommendParameter: React.FC = () => {
       } else {
         notificationApi.error({
           message: '请勿重复保存数据！'
+        })
       }
     } else {
       notificationApi.error({
