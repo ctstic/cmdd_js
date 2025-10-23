@@ -264,14 +264,18 @@ const ModelingData: React.FC = () => {
           okText="是"
           cancelText="否"
           onConfirm={async () => {
-            try {
-              const res = await window.electronAPI.cigarettes.deleteCigarettesType(selectedItem)
-              info('success', '删除成功')
-              if (res.success) {
-                handleData()
+            if (typeData.length > 1) {
+              try {
+                const res = await window.electronAPI.cigarettes.deleteCigarettesType(selectedItem)
+                info('success', '删除成功')
+                if (res.success) {
+                  handleData()
+                }
+              } catch {
+                info('error', '删除失败，请重试')
               }
-            } catch {
-              info('error', '删除失败，请重试')
+            } else {
+              info('error', '类别信息应至少存在一条！')
             }
           }}
         >
