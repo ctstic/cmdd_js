@@ -97,14 +97,16 @@ const CalculationModal: React.FC<CalculationModalProps> = ({
       dataIndex: 'specimenName'
     },
     {
-      title: '有害成分类型',
+      title: '主流烟气',
       dataIndex: 'type',
-      filters: [
-        { text: 'tar', value: 'tar' },
-        { text: 'nicotine', value: 'nicotine' },
-        { text: 'co', value: 'co' }
-      ],
-      onFilter: (value, record) => record.type === value
+      render: (text) => {
+        if (text === 'tar') {
+          return <span>焦油</span>
+        } else if (text === 'nicotine') {
+          return <span>烟碱</span>
+        }
+        return <span>CO</span>
+      }
     },
     {
       title: '常量',

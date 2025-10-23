@@ -215,7 +215,7 @@ const RecommendParameter: React.FC = () => {
 
   return (
     <div style={{ minHeight: 'calc(100vh - 145px)' }}>
-      <Spin tip="正常生成推荐数据！" size="large" delay={500} spinning={loading}>
+      <Spin tip="正在生成推荐数据！" size="large" delay={500} spinning={loading}>
         {contextHolder}
         <HeaderTitleCard
           color="#1890ff"
