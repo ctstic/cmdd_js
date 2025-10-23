@@ -66,6 +66,11 @@ const HistoryModal: React.FC<CalculationModalProps> = ({ type, modalOpen, onCanc
   // 基本字段columns，父级表格columns
   const baseColumns: ProColumns<any>[] = [
     {
+      title: '序号',
+      render: (text, record, index) => `${index + 1}`
+    },
+
+    {
       title: '基准 滤嘴通风率 (%)',
       dataIndex: 'filterVentilation',
       render: (text) => <span>{Number(text).toFixed(2)}%</span>
@@ -141,6 +146,11 @@ const HistoryModal: React.FC<CalculationModalProps> = ({ type, modalOpen, onCanc
 
   // 子表格columns，包含预测结果等
   const expandedColumns: ProColumns<any>[] = [
+    {
+      title: '序号',
+      render: (text, record, index) => `${index + 1}`
+    },
+
     {
       title: '滤嘴通风率 (%)',
       dataIndex: 'filterVentilation',

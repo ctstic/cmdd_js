@@ -83,6 +83,11 @@ const CalculationModal: React.FC<CalculationModalProps> = ({
 
   const columns: TableProps<DataType> = [
     {
+      title: '序号',
+      width: 80,
+      render: (text, record, index) => `${index + 1}`
+    },
+    {
       title: '批次号',
       dataIndex: 'batchNo',
       ...getColumnSearchProps()

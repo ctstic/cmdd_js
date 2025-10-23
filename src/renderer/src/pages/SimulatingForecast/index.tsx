@@ -18,6 +18,7 @@ const SimulatingForecast: React.FC = () => {
   const tableRef = useRef<any>(null)
   // 存储计算hash
   const hashValue = useRef('')
+  const [isSaved, setIsSaved] = useState<boolean>(false)
   // 历史数据弹窗
   const [historyModalOpen, setHistoryModalOpen] = useState<boolean>(false)
 
@@ -86,7 +87,7 @@ const SimulatingForecast: React.FC = () => {
             })
             // 存储计算hash
             hashValue.current = fnv1a(JSON.stringify({ formValues, predictionData }))
-
+            setIsSaved(true)
             setLoading(false)
           } else {
             setLoading(false)
@@ -118,44 +119,45 @@ const SimulatingForecast: React.FC = () => {
 
   // 保存和导出的校验
   const validateAndCompareData = async (): Promise<boolean> => {
-    try {
-      // 获取表单和表格数据
-      const formValues = await formRef.validateFields()
-      const predictionData = tableRef.current.getData()
-      const hash = fnv1a(JSON.stringify({ formValues, predictionData }))
+    // 获取表单和表格数据
+    const formValues = await formRef.validateFields()
+    const predictionData = tableRef.current.getData()
+    const hash = fnv1a(JSON.stringify({ formValues, predictionData }))
 
-      // 返回校验
-      return hash === hashValue.current
-    } catch (error) {
-      notificationApi.error({
-        message: '请检查数据填写是否完整！'
-      })
-      return false // 如果捕获到异常，则返回 false
-    }
+    // 返回校验
+    return hash === hashValue.current
   }
 
   // 保存
   const handleSave = async (): Promise<void> => {
     if (await validateAndCompareData()) {
-      try {
-        const formValues = await formRef.validateFields()
-        const dataSource = tableRef.current.getData()
-        await window.electronAPI.simulationPredictionSaveAPI.create({
-          specimenName: formValues.modelType,
-          standardParams: formValues,
-          predictionParams: dataSource
-        })
-        notificationApi.success({
-          message: '保存成功！'
-        })
-      } catch (error) {
+      if (isSaved) {
+        try {
+          const formValues = await formRef.validateFields()
+          const dataSource = tableRef.current.getData()
+          await window.electronAPI.simulationPredictionSaveAPI.create({
+            specimenName: formValues.modelType,
+            standardParams: formValues,
+            predictionParams: dataSource
+          })
+          notificationApi.success({
+            message: '保存成功！'
+          })
+          setIsSaved(false)
+        } catch (error) {
+          setIsSaved(false)
+          notificationApi.error({
+            message: '保存异常，请检查表单填写！'
+          })
+        }
+      } else {
         notificationApi.error({
-          message: '保存异常，请检查数据填写是否完整！'
+          message: '请勿重复保存数据！'
         })
       }
     } else {
       notificationApi.error({
-        message: '参数修改后必须重新计算数据才可以保存！'
+        message: '保存异常，请检查数据填写是否完整！'
       })
     }
   }

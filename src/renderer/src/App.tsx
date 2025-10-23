@@ -1,6 +1,6 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import {
-  HashRouter as Router, // ✅ 用 HashRouter
+  HashRouter as Router,
   Routes,
   Route,
   Navigate,
@@ -22,6 +22,9 @@ const { Content } = Layout
 // ===== 布局组件 =====
 const BasicLayout: React.FC = () => {
   const navigate = useNavigate()
+  const [role, setRole] = useState<string | null>(
+    localStorage.getItem('role') || sessionStorage.getItem('role') || 'user'
+  )
   const {
     token: { colorBgContainer, borderRadiusLG }
   } = theme.useToken()
@@ -33,7 +36,6 @@ const BasicLayout: React.FC = () => {
     { key: 'simulatingForecast', label: '仿真预测', roles: ['admin', 'user'] },
     { key: 'recommendParameter', label: '推荐辅材参数', roles: ['admin', 'user'] }
   ]
-  const role = localStorage.getItem('role') || sessionStorage.getItem('role') || 'user'
 
   // 根据角色过滤菜单
   const visibleMenu = menuItems.filter((item) => !item.roles || item.roles.includes(role))
@@ -58,12 +60,12 @@ const BasicLayout: React.FC = () => {
   }
 
   const navLinkStyle = ({ isActive }: { isActive: boolean }): React.CSSProperties => ({
-    display: 'inline-block', // ✅ 让区域变成块状
-    minWidth: 100, // ✅ 设定最小宽度
+    display: 'inline-block',
+    minWidth: 100,
     textAlign: 'center',
     color: '#fff',
     backgroundColor: isActive ? '#1890ff' : 'transparent',
-    padding: '10px 20px', // ✅ 内边距比原来大
+    padding: '10px 20px',
     textDecoration: 'none',
     fontSize: 16,
     fontWeight: isActive ? 700 : 500,
@@ -155,16 +157,33 @@ const BasicLayout: React.FC = () => {
 
 // ===== 路由配置 =====
 const AppRoutes: React.FC = () => {
+  const role = localStorage.getItem('role') || sessionStorage.getItem('role') || 'user'
+
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
       <Route path="/" element={<BasicLayout />}>
-        <Route index element={<Navigate to="modelingData" replace />} />
+        <Route
+          index
+          element={
+            // 根据角色跳转
+            role === 'user' ? (
+              <Navigate to="simulatingForecast" replace />
+            ) : (
+              <Navigate to="modelingData" replace />
+            )
+          }
+        />
         <Route path="home" element={<Home />} />
         <Route path="modelingData" element={<ModelingData />} />
         <Route path="simulatingForecast" element={<SimulatingForecast />} />
         <Route path="recommendParameter" element={<RecommendParameter />} />
-        <Route path="*" element={<Navigate to="modelingData" replace />} />
+        <Route
+          path="*"
+          element={
+            <Navigate to={role === 'user' ? 'simulatingForecast' : 'modelingData'} replace />
+          }
+        />
       </Route>
     </Routes>
   )

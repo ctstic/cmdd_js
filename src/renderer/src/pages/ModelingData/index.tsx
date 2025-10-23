@@ -106,6 +106,11 @@ const ModelingData: React.FC = () => {
 
   const columns: TableProps<DataType>['columns'] = [
     {
+      title: '序号',
+      width: 80,
+      render: (text, record, index) => `${index + 1}`
+    },
+    {
       title: '编号',
       dataIndex: 'code',
       render: (text, record) => (

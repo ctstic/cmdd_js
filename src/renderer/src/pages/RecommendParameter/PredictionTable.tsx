@@ -40,6 +40,11 @@ const PredictionTable: React.FC<{ tableData: DataType[] }> = ({ tableData }) => 
 
   const columns: TableProps<DataType>['columns'] = [
     {
+      title: '序号',
+      width: 80,
+      render: (text, record, index) => `${index + 1}`
+    },
+    {
       title: '滤嘴通风率 (%)',
       dataIndex: 'filterVentilation',
       render: (text) => <span>{(Number(text) * 100).toFixed(2)}%</span>
