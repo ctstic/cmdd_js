@@ -27,6 +27,7 @@ const RecommendParameter: React.FC = () => {
   const [tableData, setTableData] = useState<any[]>([])
   // 存储计算hash
   const hashValue = useRef('')
+  const [isSaved, setIsSaved] = useState<boolean>(false)
   // 历史数据弹窗
   const [historyModalOpen, setHistoryModalOpen] = useState<boolean>(false)
 
@@ -86,6 +87,7 @@ const RecommendParameter: React.FC = () => {
             tableData: transformedData
           })
         )
+        setIsSaved(true)
 
         setLoading(false)
       } else {
@@ -117,56 +119,58 @@ const RecommendParameter: React.FC = () => {
 
   // 保存和导出的校验
   const validateAndCompareData = async (): Promise<boolean> => {
-    try {
-      // 获取每一步表单的所有值
-      const baseValues = await baseForm.validateFields()
-      const targetValues = await targetForm.validateFields()
-      const weightValues = await weightForm.validateFields()
-      const rangeValues = await rangeForm.validateFields()
+    // 获取每一步表单的所有值
+    const baseValues = await baseForm.validateFields()
+    const targetValues = await targetForm.validateFields()
+    const weightValues = await weightForm.validateFields()
+    const rangeValues = await rangeForm.validateFields()
 
-      const hash = fnv1a(
-        JSON.stringify({
-          baseValues,
-          targetValues,
-          weightValues,
-          rangeValues,
-          tableData
-        })
-      )
-
-      // 返回校验
-      return hash === hashValue.current
-    } catch (error) {
-      notificationApi.error({
-        message: '请检查表单填写！'
+    const hash = fnv1a(
+      JSON.stringify({
+        baseValues,
+        targetValues,
+        weightValues,
+        rangeValues,
+        tableData
       })
-      return false // 如果捕获到异常，则返回 false
-    }
+    )
+
+    // 返回校验
+    return hash === hashValue.current
   }
 
   // 保存
   const handleSave = async (): Promise<void> => {
     if (await validateAndCompareData()) {
-      try {
-        const baseValues = baseForm.getFieldsValue(true)
-        const targetValues = targetForm.getFieldsValue(true)
-        const weightValues = weightForm.getFieldsValue(true)
-        const rangeValues = rangeForm.getFieldsValue(true)
-        const params = {
-          count: rangeValues.size,
-          specimenName: baseValues.modelType,
-          standardParams: baseValues,
-          targetParams: { ...targetValues, ...weightValues },
-          standardDesignParams: rangeValues,
-          recommendedValue: tableData
+      if (isSaved) {
+        try {
+          const baseValues = baseForm.getFieldsValue(true)
+          const targetValues = targetForm.getFieldsValue(true)
+          const weightValues = weightForm.getFieldsValue(true)
+          const rangeValues = rangeForm.getFieldsValue(true)
+          const params = {
+            count: rangeValues.size,
+            specimenName: baseValues.modelType,
+            standardParams: baseValues,
+            targetParams: { ...targetValues, ...weightValues },
+            standardDesignParams: rangeValues,
+            recommendedValue: tableData
+          }
+          await window.electronAPI.recAuxMaterialsSaveAPI.create(params)
+          notificationApi.success({
+            message: '保存成功！'
+          })
+
+          setIsSaved(false)
+        } catch (error) {
+          setIsSaved(false)
+          notificationApi.error({
+            message: '保存异常，请检查表单填写！'
+          })
         }
-        await window.electronAPI.recAuxMaterialsSaveAPI.create(params)
-        notificationApi.success({
-          message: '保存成功！'
-        })
-      } catch (error) {
+      } else {
         notificationApi.error({
-          message: '保存异常，请检查表单填写！'
+          message: '请勿重复保存数据！'
         })
       }
     } else {
