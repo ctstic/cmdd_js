@@ -188,7 +188,7 @@ const BrandSelectPanel: React.FC<BrandSelectPanelProps> = ({
           showSearch
           allowClear
           optionFilterProp="label"
-          placeholder="请选择调入参数"
+          placeholder="请选择基准牌号"
           options={brandNameOption}
           value={selectedMark}
           onChange={onChange}
@@ -205,7 +205,7 @@ const BrandSelectPanel: React.FC<BrandSelectPanelProps> = ({
       </Button>
 
       <Modal
-        title={`请输入基准卷烟${type === 'fucai' ? '辅材参数' : '主流烟气'}调入参数的名字`}
+        title={`基准卷烟${type === 'fucai' ? '辅材参数' : '主流烟气'}牌号名称`}
         open={isModalVisible}
         onOk={handleOk}
         onCancel={() => {
@@ -218,7 +218,7 @@ const BrandSelectPanel: React.FC<BrandSelectPanelProps> = ({
         <Input
           value={paramName}
           onChange={(e) => setParamName(e.target.value)}
-          placeholder="请输入参数名"
+          placeholder="请输入牌号名称"
         />
       </Modal>
     </Flex>

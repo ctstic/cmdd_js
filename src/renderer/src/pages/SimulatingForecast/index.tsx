@@ -99,7 +99,7 @@ const SimulatingForecast: React.FC = () => {
     } catch (error) {
       setLoading(false)
       notificationApi.error({
-        message: '计算异常，请检查表单填写！'
+        message: '计算异常，请检查数据填写是否完整！'
       })
     }
   }
@@ -112,7 +112,7 @@ const SimulatingForecast: React.FC = () => {
     }
     notificationApi.success({
       message: '重置成功',
-      description: '表单和表格数据已重置'
+      description: '数据已重置'
     })
   }
 
@@ -128,7 +128,7 @@ const SimulatingForecast: React.FC = () => {
       return hash === hashValue.current
     } catch (error) {
       notificationApi.error({
-        message: '请检查表单填写！'
+        message: '请检查数据填写是否完整！'
       })
       return false // 如果捕获到异常，则返回 false
     }
@@ -150,12 +150,12 @@ const SimulatingForecast: React.FC = () => {
         })
       } catch (error) {
         notificationApi.error({
-          message: '保存异常，请检查表单填写！'
+          message: '保存异常，请检查数据填写是否完整！'
         })
       }
     } else {
       notificationApi.error({
-        message: '修改值后必须重新计算才可以保存！'
+        message: '参数修改后必须重新计算数据才可以保存！'
       })
     }
   }
@@ -177,12 +177,12 @@ const SimulatingForecast: React.FC = () => {
         })
       } catch (error) {
         notificationApi.error({
-          message: '导出异常，请检查表单填写！'
+          message: '导出异常，请检查数据填写是否完整！'
         })
       }
     } else {
       notificationApi.error({
-        message: '修改值后必须重新计算才可以导出！'
+        message: '参数修改后必须重新计算数据才可以导出！'
       })
     }
   }
