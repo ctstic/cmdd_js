@@ -70,7 +70,7 @@ const RecommendParameter: React.FC = () => {
 
           // 将之前的赋值给prediction，改为直接赋值给 tar nicotine co，因为移除功能导致
           tar: item.prediction[0],
-          nicotine: item.prediction[0],
+          nicotine: item.prediction[1],
           co: item.prediction[2],
           prediction: item.prediction
         }))
