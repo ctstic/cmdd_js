@@ -181,7 +181,7 @@ const ModelingData: React.FC = () => {
       dataIndex: 'quantitative'
     },
     {
-      title: '卷烟纸助燃剂含量 (%)',
+      title: '卷烟纸助燃剂用量 (%)',
       dataIndex: 'citrate',
       render: (text) => <span>{(Number(text) * 100).toFixed(2)}%</span>
     },

@@ -122,7 +122,7 @@ export class SimulationPredictionSaveService {
       '滤棒压降 (Pa)': item.滤棒压降,
       '卷烟纸透气度 (CU)': item.卷烟纸透气度,
       '卷烟纸定量 (g/m²)': item.卷烟纸定量,
-      '卷烟纸助燃剂含量 (%)': item.卷烟纸助燃剂含量,
+      '卷烟纸助燃剂用量 (%)': item.卷烟纸助燃剂用量,
       '焦油 (mg/支)': item.焦油,
       '烟碱 (mg/支)': item.烟碱,
       'CO (mg/支)': item.CO
@@ -137,7 +137,7 @@ export class SimulationPredictionSaveService {
         '滤棒压降 (Pa)',
         '卷烟纸透气度 (CU)',
         '卷烟纸定量 (g/m²)',
-        '卷烟纸助燃剂含量 (%)',
+        '卷烟纸助燃剂用量 (%)',
         '焦油 (mg/支)',
         '烟碱 (mg/支)',
         'CO (mg/支)'
@@ -263,7 +263,7 @@ export class SimulationPredictionSaveService {
       滤棒压降: result.filterPressureDrop as string,
       卷烟纸透气度: result.permeability as string,
       卷烟纸定量: result.quantitative as string,
-      卷烟纸助燃剂含量: result.citrate as string,
+      卷烟纸助燃剂用量: result.citrate as string,
       焦油: result.tar as string,
       烟碱: result.nicotine as string,
       CO: result.co as string

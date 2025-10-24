@@ -216,7 +216,7 @@ export class CigarettesService {
         '滤棒压降(Pa)',
         '卷烟纸透气度(CU)',
         '卷烟纸定量(g/m²)',
-        '卷烟纸助燃剂含量(%)',
+        '卷烟纸助燃剂用量(%)',
         '钾盐占比',
         '焦油(mg/支)',
         '烟碱(mg/支)',
@@ -233,7 +233,7 @@ export class CigarettesService {
             (h.includes('滤棒压降') && col.includes('滤棒压降')) ||
             (h.includes('卷烟纸透气度') && col.includes('卷烟纸透气度')) ||
             (h.includes('卷烟纸定量') && col.includes('卷烟纸定量')) ||
-            (h.includes('卷烟纸助燃剂含量') && col.includes('卷烟纸助燃剂含量')) ||
+            (h.includes('卷烟纸助燃剂用量') && col.includes('卷烟纸助燃剂用量')) ||
             (h.includes('钾盐') && col.includes('钾盐')) ||
             (h.includes('焦油') && col.includes('焦油')) ||
             (h.includes('烟碱') && col.includes('烟碱')) ||
@@ -262,7 +262,7 @@ export class CigarettesService {
           permeability: String(row[columnIndexes['卷烟纸透气度(CU)']] || '').trim(),
           quantitative: String(row[columnIndexes['卷烟纸定量(g/m²)']] || '').trim(),
           citrate: String(
-            Number(row[columnIndexes['卷烟纸助燃剂含量(%)']] || '').toFixed(3)
+            Number(row[columnIndexes['卷烟纸助燃剂用量(%)']] || '').toFixed(3)
           ).trim(),
           potassiumRatio: String(row[columnIndexes['钾盐占比']] || '').trim(),
           tar: String(row[columnIndexes['焦油(mg/支)']] || '').trim(),

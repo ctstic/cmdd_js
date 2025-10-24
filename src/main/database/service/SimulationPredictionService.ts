@@ -202,7 +202,7 @@ export class SimulationPredictionService {
       滤棒压降: result.filterPressureDrop as string,
       卷烟纸透气度: result.permeability as string,
       卷烟纸定量: result.quantitative as string,
-      卷烟纸助燃剂含量: result.citrate as string,
+      卷烟纸助燃剂用量: result.citrate as string,
       焦油: result.tar as string,
       烟碱: result.nicotine as string,
       CO: result.co as string

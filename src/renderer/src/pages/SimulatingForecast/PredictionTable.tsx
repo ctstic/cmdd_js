@@ -112,7 +112,7 @@ const PredictionTable: React.FC<PredictionTableProps> = ({ formRef, actionRef })
           dataIndex: 'quantitative'
         },
         {
-          title: '卷烟纸助燃剂含量 (%)',
+          title: '卷烟纸助燃剂用量 (%)',
           dataIndex: 'citrate'
         }
       ]
