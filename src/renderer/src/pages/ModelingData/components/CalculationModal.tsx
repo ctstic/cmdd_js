@@ -150,7 +150,7 @@ const CalculationModal: React.FC<CalculationModalProps> = ({
               cancelText="否"
               onConfirm={async () => {
                 try {
-                  await window.electronAPI.harmful.delete(record.id)
+                  await window.electronAPI.harmful.delete(record.id, selectedItem)
                   const res = await window.electronAPI.harmful.query('', selectedItem)
                   console.log('🚀 ~ res:', res)
                   info('success', '删除所有相同批次号成功')
