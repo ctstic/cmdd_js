@@ -69,9 +69,9 @@ const RecommendParameter: React.FC = () => {
           citrate: item.designParams.citrate,
 
           // 将之前的赋值给prediction，改为直接赋值给 tar nicotine co，因为移除功能导致
-          tar: item.prediction[0],
+          tar: item.prediction[2],
           nicotine: item.prediction[1],
-          co: item.prediction[2],
+          co: item.prediction[1],
           prediction: item.prediction
         }))
         setTableData(transformedData)
