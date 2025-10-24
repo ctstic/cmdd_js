@@ -129,7 +129,7 @@ const CalculationModal: React.FC<CalculationModalProps> = ({
       dataIndex: 'quantitativeCoef'
     },
     {
-      title: '卷烟纸阻燃剂含量系数',
+      title: '卷烟纸助燃剂含量系数',
       dataIndex: 'citrateCoef'
     },
     // {

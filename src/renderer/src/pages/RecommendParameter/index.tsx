@@ -57,6 +57,7 @@ const RecommendParameter: React.FC = () => {
         recommendedValue: []
       })
 
+      console.log('🚀 ~ handleSubmit ~ data.data:', res)
       if (res.data.data && Array.isArray(res.data.data) && res.data.data.length > 0) {
         // 数据更新
         const transformedData = res.data.data.map((item, index) => ({
@@ -66,9 +67,11 @@ const RecommendParameter: React.FC = () => {
           permeability: item.designParams.permeability,
           quantitative: item.designParams.quantitative,
           citrate: item.designParams.citrate,
-          tar: item.designParams.tar,
-          nicotine: item.designParams.nicotine,
-          co: item.designParams.co,
+
+          // 将之前的赋值给prediction，改为直接赋值给 tar nicotine co，因为移除功能导致
+          tar: item.prediction[0],
+          nicotine: item.prediction[0],
+          co: item.prediction[2],
           prediction: item.prediction
         }))
         setTableData(transformedData)

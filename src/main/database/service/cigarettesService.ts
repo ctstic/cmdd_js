@@ -75,7 +75,10 @@ export class CigarettesService {
    * @param id 卷烟数据ID
    */
   public async deleteCigarettes(id: number): Promise<void> {
-    let cigarettes = this.sqlite.prepare('SELECT * FROM cigarettes WHERE id = ?').get(id) as Record<string, unknown>
+    let cigarettes = this.sqlite.prepare('SELECT * FROM cigarettes WHERE id = ?').get(id) as Record<
+      string,
+      unknown
+    >
     cigarettes = this.mapToCigarettes(cigarettes)
     const length = this.getCigarettesAll(cigarettes.specimenName as string).length
     console.log(length)
@@ -213,7 +216,7 @@ export class CigarettesService {
         '滤棒压降(Pa)',
         '卷烟纸透气度(CU)',
         '卷烟纸定量(g/m²)',
-        '卷烟纸阻燃剂含量(%)',
+        '卷烟纸助燃剂含量(%)',
         '钾盐占比',
         '焦油(mg/支)',
         '烟碱(mg/支)',
@@ -230,7 +233,7 @@ export class CigarettesService {
             (h.includes('滤棒压降') && col.includes('滤棒压降')) ||
             (h.includes('卷烟纸透气度') && col.includes('卷烟纸透气度')) ||
             (h.includes('卷烟纸定量') && col.includes('卷烟纸定量')) ||
-            (h.includes('卷烟纸阻燃剂含量') && col.includes('卷烟纸阻燃剂含量')) ||
+            (h.includes('卷烟纸助燃剂含量') && col.includes('卷烟纸助燃剂含量')) ||
             (h.includes('钾盐') && col.includes('钾盐')) ||
             (h.includes('焦油') && col.includes('焦油')) ||
             (h.includes('烟碱') && col.includes('烟碱')) ||
@@ -258,7 +261,9 @@ export class CigarettesService {
           filterPressureDrop: Number(row[columnIndexes['滤棒压降(Pa)']] || ''),
           permeability: String(row[columnIndexes['卷烟纸透气度(CU)']] || '').trim(),
           quantitative: String(row[columnIndexes['卷烟纸定量(g/m²)']] || '').trim(),
-          citrate: String(Number(row[columnIndexes['卷烟纸阻燃剂含量(%)']] || '').toFixed(3)).trim(),
+          citrate: String(
+            Number(row[columnIndexes['卷烟纸助燃剂含量(%)']] || '').toFixed(3)
+          ).trim(),
           potassiumRatio: String(row[columnIndexes['钾盐占比']] || '').trim(),
           tar: String(row[columnIndexes['焦油(mg/支)']] || '').trim(),
           nicotine: String(row[columnIndexes['烟碱(mg/支)']] || '').trim(),

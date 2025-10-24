@@ -179,7 +179,7 @@ export interface ExcelColumnMapping {
   滤棒压降: string
   卷烟纸透气度: string
   卷烟纸定量: string
-  卷烟纸阻燃剂含量: string
+  卷烟纸助燃剂含量: string
   钾盐占比: string
   焦油: string
   烟碱: string
@@ -192,7 +192,7 @@ export interface ExcelRowData {
   滤棒压降: string
   卷烟纸透气度: string
   卷烟纸定量: string
-  卷烟纸阻燃剂含量: string
+  卷烟纸助燃剂含量: string
   钾盐占比: string
   焦油: string
   烟碱: string
@@ -355,7 +355,7 @@ export interface exportSimDto {
   滤棒压降: string
   卷烟纸透气度: string
   卷烟纸定量: string
-  卷烟纸阻燃剂含量: string
+  卷烟纸助燃剂含量: string
   焦油: string
   烟碱: string
   CO: string

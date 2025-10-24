@@ -11,7 +11,7 @@ export const baseMaterialFields: FormFieldConfig[] = [
   { name: 'filterPressureDrop', label: '滤棒压降', unit: 'Pa' },
   { name: 'permeability', label: '卷烟纸透气度', unit: 'CU' },
   { name: 'quantitative', label: '卷烟纸定量', unit: 'g/m²' },
-  { name: 'citrate', label: '卷烟纸阻燃剂含量', unit: '%' }
+  { name: 'citrate', label: '卷烟纸助燃剂含量', unit: '%' }
 ]
 
 // 目标主流烟气
@@ -75,7 +75,7 @@ export const rangeFields = [
   },
   {
     name: 'citrate',
-    label: '卷烟纸阻燃剂含量',
+    label: '卷烟纸助燃剂含量',
     min: 0.2,
     max: 3,
     step: 0.4,

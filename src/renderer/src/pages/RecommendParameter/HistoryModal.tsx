@@ -79,7 +79,7 @@ const HistoryModal: React.FC<CalculationModalProps> = ({ type, modalOpen, onCanc
     { title: '基准 卷烟纸透气度 (CU)', dataIndex: 'permeability' },
     { title: '基准 卷烟纸定量 (g/m²)', dataIndex: 'quantitative' },
     {
-      title: '基准 卷烟纸阻燃剂含量 (%)',
+      title: '基准 卷烟纸助燃剂含量 (%)',
       dataIndex: 'citrate',
       render: (text) => <span>{Number(text).toFixed(2)}%</span>
     },
@@ -160,7 +160,7 @@ const HistoryModal: React.FC<CalculationModalProps> = ({ type, modalOpen, onCanc
     { title: '卷烟纸透气度 (CU)', dataIndex: 'permeability' },
     { title: '卷烟纸定量 (g/m²)', dataIndex: 'quantitative' },
     {
-      title: '卷烟纸阻燃剂含量 (%)',
+      title: '卷烟纸助燃剂含量 (%)',
       dataIndex: 'citrate',
       render: (text) => <span>{Number(text).toFixed(2)}%</span>
     },
