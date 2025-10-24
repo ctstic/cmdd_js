@@ -67,16 +67,15 @@ export class HarmfulService {
    * 删除有害成分系数记录
    * @param id 系数ID
    */
-  public async deleteHarmful(id: number): Promise<void> {
+  public async deleteHarmful(id: number,specimenName: string): Promise<void> {
     const results = this.sqlite
-      .prepare('SELECT * FROM harmful_constants WHERE id = ?')
-      .all(id) as Record<string, unknown>[]
+      .prepare('SELECT * FROM harmful_constants WHERE id = ? AND specimen_name = ?')
+      .all(id,specimenName) as Record<string, unknown>[]
     // results.map((result) => this.mapToHarmfulConstants(result))
-    console.log(results)
     // 删除对应批次的所有记录
     const result = this.sqlite
-      .prepare('DELETE FROM harmful_constants WHERE batch_no = ?')
-      .run(results[0].batch_no)
+      .prepare('DELETE FROM harmful_constants WHERE batch_no = ? AND specimen_name = ?')
+      .run(results[0].batch_no, specimenName)
     if (result.changes === 0) {
       throw new Error('有害成分系数不存在')
     }

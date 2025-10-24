@@ -19,7 +19,7 @@ export interface HarmfulAPI {
     specimenName: string
   ) => Promise<APIResponse<{ result: schema.HarmfulConstants[] }>>
   generate: (specimenName: string) => Promise<APIResponse<void>>
-  delete: (id: number) => Promise<APIResponse<void>>
+  delete: (id: number, specimenName: string) => Promise<APIResponse<void>>
 }
 
 /** 多因素卷烟模块 API 定义 */

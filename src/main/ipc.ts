@@ -127,9 +127,9 @@ export function registerIPC(): void {
   /**
    * 删除有害成分系数
    */
-  ipcMain.handle('harmful:delete', async (_evt, id: number) => {
+  ipcMain.handle('harmful:delete', async (_evt, id: number,specimenName: string) => {
     try {
-      await harmfulService.deleteHarmful(id)
+      await harmfulService.deleteHarmful(id,specimenName)
       return { success: true }
     } catch (error) {
       console.error('[ipc] harmful:delete failed:', error)
