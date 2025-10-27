@@ -22,6 +22,7 @@
       DetailPrint "User chose to remove all data"
       RMDir /r "$APPDATA\cmdd_js"
       RMDir /r "$LOCALAPPDATA\cmdd_js"
+      RMDir /r "$LOCALAPPDATA\cmdd_js"
       DetailPrint "All user data removed"
       Goto EndChoice
 
