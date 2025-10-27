@@ -60,7 +60,7 @@ const Page: React.FC = () => {
     <div style={{ height: '98vh' }}>
       <LoginFormPage
         backgroundImageUrl={new URL('../../assets/login-img.jpg', import.meta.url).href}
-        title={<span style={{ color: '#fff', fontSize: 32 }}>江苏中烟卷烟辅材数字化设计平台</span>}
+        title={<span style={{ color: '#fff', fontSize: 32 }}>江苏中烟卷烟辅材数字化设计系统</span>}
         subTitle={<span style={{ color: 'rgba(255,255,255,0.85)' }}>用户登录</span>}
         onFinish={handleFinish}
         // 玻璃态卡片，增强可读性（不影响背景图）

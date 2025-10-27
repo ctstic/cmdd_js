@@ -34,6 +34,13 @@ const RecommendParameter: React.FC = () => {
   // 计算
   const handleSubmit = async (): Promise<void> => {
     try {
+      // 1. 先验证权重之和
+      if (!validateWeights()) {
+        notificationApi.error({
+          message: '权重之和不能大于 1，请检查权重设置！'
+        })
+        return // 中断保存流程
+      }
       setLoading(true)
 
       // 获取每一步表单的所有值
@@ -144,6 +151,12 @@ const RecommendParameter: React.FC = () => {
 
   // 保存
   const handleSave = async (): Promise<void> => {
+    if (!validateWeights()) {
+      notificationApi.error({
+        message: '权重之和不能大于 1，请检查权重设置！'
+      })
+      return // 中断保存流程
+    }
     if (await validateAndCompareData()) {
       if (isSaved) {
         try {
@@ -178,13 +191,19 @@ const RecommendParameter: React.FC = () => {
       }
     } else {
       notificationApi.error({
-        message: '保存异常，请检查数据填写是否完整！'
+        message: '参数修改后必须重新提交并生成推荐数据才可以保存！'
       })
     }
   }
-
   // 导出
   const handleExport = async (): Promise<void> => {
+    // 1. 先验证权重之和
+    if (!validateWeights()) {
+      notificationApi.error({
+        message: '权重之和不能大于 1，请检查权重设置！'
+      })
+      return // 中断保存流程
+    }
     if (await validateAndCompareData()) {
       try {
         const baseValues = baseForm.getFieldsValue(true)
@@ -213,6 +232,51 @@ const RecommendParameter: React.FC = () => {
       notificationApi.error({
         message: '参数修改后必须重新提交并生成推荐数据才可以导出！'
       })
+    }
+  }
+  // 在 Form 外部定义验证函数
+  const validateWeightSum = (form: any): { validator: () => Promise<void> } => {
+    return {
+      validator(): Promise<void> {
+        const co = Number(form.getFieldValue('coWeight') || 0)
+        const ni = Number(form.getFieldValue('nicotineWeight') || 0)
+        const tar = Number(form.getFieldValue('tarWeight') || 0)
+        const sum = Number((co + ni + tar).toFixed(2))
+
+        if (sum > 1) {
+          return Promise.reject(new Error('三项权重之和不能大于 1'))
+        }
+        return Promise.resolve()
+      }
+    }
+  }
+
+  // 处理权重变化，实时验证并清除/显示错误
+  const handleWeightChange = (): void => {
+    validateWeights()
+  }
+
+  const validateWeights = (): boolean => {
+    const co = Number(weightForm.getFieldValue('coWeight') || 0)
+    const ni = Number(weightForm.getFieldValue('nicotineWeight') || 0)
+    const tar = Number(weightForm.getFieldValue('tarWeight') || 0)
+    const sum = Number((co + ni + tar).toFixed(2))
+
+    const fieldNames = ['coWeight', 'nicotineWeight', 'tarWeight']
+
+    if (sum > 1) {
+      // 总和大于1，触发所有字段验证（显示错误）
+      weightForm.validateFields(fieldNames).catch(() => {})
+      return false // 验证失败
+    } else {
+      // 总和小于等于1，清除所有字段错误
+      weightForm.setFields(
+        fieldNames.map((name) => ({
+          name,
+          errors: []
+        }))
+      )
+      return true // 验证通过
     }
   }
 
@@ -333,19 +397,8 @@ const RecommendParameter: React.FC = () => {
                         label={`${field.label}${field.unit ? ` (${field.unit})` : ''}`}
                         initialValue={0.33}
                         rules={[
-                          { required: true, message: '请输入焦油权重' },
-                          ({ getFieldValue }) => ({
-                            validator(_, value) {
-                              const co = Number(getFieldValue('coWeight') || 0)
-                              const ni = Number(getFieldValue('nicotineWeight') || 0)
-                              const tar = Number(value || 0)
-                              const sum = Number((co + ni + tar).toFixed(2))
-                              if (sum > 1) {
-                                return Promise.reject(new Error('三项权重之和不能大于 1'))
-                              }
-                              return Promise.resolve()
-                            }
-                          })
+                          { required: true, message: `请输入${field.label}` },
+                          validateWeightSum(weightForm)
                         ]}
                       >
                         <InputNumber
@@ -354,6 +407,7 @@ const RecommendParameter: React.FC = () => {
                           step={0.01}
                           precision={2}
                           placeholder={`请输入${field.label}`}
+                          onChange={handleWeightChange}
                         />
                       </Form.Item>
                     </Col>
