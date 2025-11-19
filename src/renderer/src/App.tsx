@@ -105,7 +105,7 @@ const BasicLayout: React.FC = () => {
               justifySelf: 'start'
             }}
           >
-            江苏中烟卷烟辅材数字化设计平台
+            江苏中烟卷烟辅材数字化设计系统
           </div>
 
           <nav aria-label="主导航" style={{ display: 'flex', gap: 24, justifySelf: 'center' }}>
